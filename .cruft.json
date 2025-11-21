@@ -1,0 +1,29 @@
+{
+  "template": "https://github.com/FAIRmat-NFDI/cookiecutter-nomad-plugin",
+  "commit": "7bfd556fe5c57f6ad5666fe65eed2cf3672f5719",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "full_name": "Svetlana Grinman",
+      "email": "svetlana.grinman@helmholtz-berlin.de",
+      "github_username": "nomad-hzb",
+      "plugin_name": "battery-space",
+      "module_name": "battery_space",
+      "short_description": "A schema package plugin for data space @HZB",
+      "version": "0.1.0",
+      "license": "MIT",
+      "include_schema_package": true,
+      "include_normalizer": false,
+      "include_parser": true,
+      "include_app": true,
+      "include_example_uploads": false,
+      "include_action": false,
+      "_copy_without_render": [
+        "*.html"
+      ],
+      "_template": "https://github.com/FAIRmat-NFDI/cookiecutter-nomad-plugin",
+      "_commit": "7bfd556fe5c57f6ad5666fe65eed2cf3672f5719"
+    }
+  },
+  "directory": null
+}
