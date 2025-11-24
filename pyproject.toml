@@ -12,7 +12,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
 ]
-name = "battery-space"
+name = "nomad-battery-space"
 description = "A schema package plugin for data space @HZB"
 version = "0.1.0"
 readme = "README.md"
@@ -26,7 +26,7 @@ maintainers = [
 license = { file = "LICENSE" }
 dependencies = [
     "nomad-lab>=1.4.0",
-    
+
 ]
 
 [project.urls]
@@ -48,7 +48,7 @@ dev = [
 extra-index-url = [
   "https://gitlab.mpcdf.mpg.de/api/v4/projects/2187/packages/pypi/simple",
 ]
-    
+
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -129,10 +129,10 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [project.entry-points.'nomad.plugin']
-parser_entry_point = "battery_space.parsers:parser_entry_point"
-schema_package_entry_point = "battery_space.schema_packages:schema_package_entry_point"
+parser_entry_point = "nomad_battery_space.parsers:parser_entry_point"
+schema_package_entry_point = "nomad_battery_space.schema_packages:schema_package_entry_point"
 
-app_entry_point = "battery_space.apps:app_entry_point"
+app_entry_point = "nomad_battery_space.apps:app_entry_point"
 
 
 [tool.cruft]

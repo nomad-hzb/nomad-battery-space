@@ -1,4 +1,4 @@
-# battery-space
+# nomad-battery-space
 
 A schema package plugin for data space @HZB
 

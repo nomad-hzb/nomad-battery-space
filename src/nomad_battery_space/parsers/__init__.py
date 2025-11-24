@@ -6,7 +6,7 @@ class NewParserEntryPoint(ParserEntryPoint):
     parameter: int = Field(0, description='Custom configuration parameter')
 
     def load(self):
-        from battery_space.parsers.parser import NewParser
+        from nomad_battery_space.parsers.parser import NewParser
 
         return NewParser(**self.model_dump())
 
