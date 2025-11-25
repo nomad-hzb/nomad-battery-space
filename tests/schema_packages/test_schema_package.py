@@ -9,6 +9,6 @@ def test_schema_package():
     normalize_all(entry_archive)
 
     assert entry_archive.data.name == "bat_01"
-    assert entry_archive.data.components.anode.mass == 1.2
-    assert entry_archive.data.components.cathode.mass_active_material == 2.1
+    assert entry_archive.data.components.anode.mass.magnitude == 1.2
+    assert entry_archive.data.components.cathode.mass_active_material.magnitude == 2.1
     assert entry_archive.data.sample_identifiers.sample_id == "ABC123"
