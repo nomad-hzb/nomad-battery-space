@@ -1,3 +1,25 @@
 data:
   m_def: nomad_battery_space.schema_packages.battery_sample_prototype.BatterySample
-  name: Markus
+  name: bat_01
+  components:
+    anode:
+      material:
+        - m_def: nomad_battery_space.schema_packages.battery_sample_prototype.Substance
+          name: Graphite
+      mass: 1.2
+    cathode:
+      mass: 3.4
+      mass_active_material: 2.1
+      elemental_composition:
+        - element: C
+          concentration: 0.5
+        - element: O
+          concentration: 0.3
+    electrolyte:
+      mass: 0.9
+      volume: 1.1
+    separator:
+      composition: PP/PE
+      thickness: 20.0
+  sample_identifiers:
+    sample_id: ABC123
