@@ -130,7 +130,7 @@ where = ["src"]
 
 [project.entry-points.'nomad.plugin']
 parser_entry_point = "nomad_battery_space.parsers:parser_entry_point"
-schema_package_entry_point = "nomad_battery_space.schema_packages:schema_package_entry_point"
+schema_package_entry_point = "nomad_battery_space.schema_packages:bat_schema_package"
 
 app_entry_point = "nomad_battery_space.apps:app_entry_point"
 
