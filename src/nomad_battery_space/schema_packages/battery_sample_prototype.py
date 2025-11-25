@@ -226,15 +226,21 @@ class Anode(ArchiveSection):
             }
         },
         label="Anode",)
-    material = Quantity(
-        type=Substance,
-        description='Chemical composition or formula of the anode.',
-        a_eln={
-            "component": "ReferenceEditQuantity",
-            "label": "Material (Anode)"
-        },
-        shape=["*"],
+    # material = Quantity(
+    #     type=Substance,
+    #     description='Chemical composition or formula of the anode.',
+    #     a_eln={
+    #         "component": "ReferenceEditQuantity",
+    #         "label": "Material (Anode)"
+    #     },
+    #     shape=["*"],
+    # )
+
+    material = SubSection(
+        section_def=Substance,
+        repeats=True
     )
+
     mass = Quantity(
         type=float,
         description='Total mass of the anode.',
