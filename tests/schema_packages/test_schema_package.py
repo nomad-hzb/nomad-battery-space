@@ -26,10 +26,10 @@ def test_schema_package():
     ctx = battery.m_context
 
     # Resolve linked entries
-    anode = ctx.get(battery.data.components.anode_q)
-    cathode = ctx.get(battery.data.components.cathode_q)
-    electrolyte = ctx.get(battery.data.components.electrolyte_q)
-    separator = ctx.get(battery.data.components.separator_q)
+    anode = ctx.get_reference(battery.data.components.anode_q)
+    cathode = ctx.get_reference(battery.data.components.cathode_q)
+    electrolyte = ctx.get_reference(battery.data.components.electrolyte_q)
+    separator = ctx.get_reference(battery.data.components.separator_q)
 
     # Assertions
     assert battery.data.name == "bat_01"
