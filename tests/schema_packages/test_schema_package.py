@@ -29,9 +29,9 @@ def test_schema_package():
         electrolyte_ref = electrolyte_ref.m_proxy_value
         separator_ref = separator_ref.m_proxy_value
 
-    assert anode_ref == "#anode_01"
-    assert cathode_ref == "#cathode_01"
-    assert electrolyte_ref == "#electrolyte_01"
-    assert separator_ref == "#separator_01"
+    assert anode_ref == "#/anode_01"
+    assert cathode_ref == "#/cathode_01"
+    assert electrolyte_ref == "/#electrolyte_01"
+    assert separator_ref == "#/separator_01"
 
     assert battery.sample_identifiers.sample_id == "ABC123"
