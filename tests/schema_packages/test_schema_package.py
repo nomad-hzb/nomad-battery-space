@@ -2,34 +2,49 @@ import os
 
 from nomad.client import normalize_all, parse
 
+import os
+import shutil
+from nomad.processing import process
+from nomad.datamodel.context import ServerContext
 
-def test_schema_package():
-    base = os.path.join('tests', 'data')
 
-    files = [
-        'anode.archive.yaml',
-        'cathode.archive.yaml',
-        'electrolyte.archive.yaml',
-        'separator.archive.yaml',
-        'battery_sample.archive.yaml',
-    ]
+def load_upload(directory):
+    # Process an entire folder as one upload
+    upload = process(directory)
 
-    # Load archives
-    archives = [parse(os.path.join(base, f))[0] for f in files]
+    # Build server-like context for resolving references
+    ctx = ServerContext(upload)
 
-    # Identify the battery sample record
+    # Each processed archive is inside upload.processed
+    archives = [a for a in upload.processed]
+
+    return ctx, archives
+
+def test_schema_package(tmp_path):
+    data_dir = tmp_path / "upload"
+    data_dir.mkdir()
+
+    # Copy files into temporary upload folder
+    for fname in [
+        "anode.archive.yaml",
+        "cathode.archive.yaml",
+        "electrolyte.archive.yaml",
+        "separator.archive.yaml",
+        "battery_sample.archive.yaml",
+    ]:
+        shutil.copy(os.path.join("tests", "data", fname), data_dir / fname)
+
+    # Process the upload with NOMAD 1.x pipeline
+    ctx, archives = load_upload(data_dir)
+
+    # Find the battery archive
     battery = next(a for a in archives if a.data.m_def.name == "BatterySample")
 
-    # Normalize so references resolve
-    normalize_all(battery)
-
-    ctx = battery.m_context
-
-    # Resolve linked entries
-    anode = ctx.get_reference(battery.data.components.anode_q)
-    cathode = ctx.get_reference(battery.data.components.cathode_q)
-    electrolyte = ctx.get_reference(battery.data.components.electrolyte_q)
-    separator = ctx.get_reference(battery.data.components.separator_q)
+    # Resolve references using ServerContext
+    anode = ctx.resolve(battery.data.components.anode_q)
+    cathode = ctx.resolve(battery.data.components.cathode_q)
+    electrolyte = ctx.resolve(battery.data.components.electrolyte_q)
+    separator = ctx.resolve(battery.data.components.separator_q)
 
     # Assertions
     assert battery.data.name == "bat_01"
