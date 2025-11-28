@@ -8,8 +8,8 @@ def test_schema_package():
     
     print("Parsed entries:", len(archives))
     for i, a in enumerate(archives):
-        print(i, a.data.m_def.name)
-
+        print(i, a.data.name) 
+        
     entry_archive = archives[4] # BatterySample is the 5th entry
     normalize_all(entry_archive)
 
