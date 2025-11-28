@@ -1,6 +1,7 @@
-from nomad.client import parse
-from nomad.normalizing import normalize_all
 import os
+
+from nomad.client import normalize_all, parse
+
 
 def test_schema_package():
     base = os.path.join('tests', 'data')
