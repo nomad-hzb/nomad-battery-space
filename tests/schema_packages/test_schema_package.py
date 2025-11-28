@@ -22,17 +22,20 @@ def test_schema_package():
     for a in archives:
         normalize_all(a)
 
-    # Build a shared upload-like context
-    ctx = ServerContext.from_archives(archives)
+    # Build a map of entry names → archives
+    # NOMAD 1.x resolves '#name' via context._archive_dict
+    archive_dict = {a.data.name: a for a in archives}
 
-    # Assign it to each archive, like NOMAD does after processing
+    # Assign context manually
     for a in archives:
-        a.m_context = ctx
+        a.m_context._archive_dict = archive_dict
 
-    # Find the battery entry
+    # Get battery archive
     battery = next(a for a in archives if a.data.m_def.name == "BatterySample")
 
-    # Resolve references
+    ctx = battery.m_context
+
+    # Resolve via get_reference()
     anode = ctx.get_reference(battery.data.components.anode_q)
     cathode = ctx.get_reference(battery.data.components.cathode_q)
     electrolyte = ctx.get_reference(battery.data.components.electrolyte_q)
