@@ -34,7 +34,9 @@ How-to guides provide step-by-step instructions for a wide range of tasks, with 
 
 ### Explanation
 
-The explanation [section](explanation/explanation.md) provides background knowledge on this plugin.
+The explanation sections provides background knowledge on this plugin:
+
+- [Battery space plugin – reference model](explanation/reference-model.md) 
 
 </div>
 <div markdown="block">
