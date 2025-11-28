@@ -24,11 +24,7 @@ from nomad.datamodel.data import (
     ArchiveSection,
     EntryData,
 )
-from nomad.datamodel.metainfo.basesections import (
-    SectionReference,
-)
 from nomad.datamodel.metainfo.basesections.v1 import (
-    ElementalComposition,
     EntityReference,
 )
 from nomad.datamodel.metainfo.eln import (
@@ -37,12 +33,12 @@ from nomad.datamodel.metainfo.eln import (
     SampleID,
 )
 from nomad.metainfo import (
-    Quantity, 
-    Reference, 
-    SchemaPackage, 
-    Section, 
-    SubSection,
     Enum,
+    Quantity,
+    Reference,
+    SchemaPackage,
+    Section,
+    SubSection,
 )
 
 if TYPE_CHECKING:
