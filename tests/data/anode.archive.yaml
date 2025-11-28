@@ -1,0 +1,5 @@
+data:
+  m_def: nomad_battery_space.schema_packages.battery_sample_prototype.Anode
+  name: anode_01
+  mass: 1.2
+  area: 0.95

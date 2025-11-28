@@ -1,32 +1,39 @@
-import os.path
-
-from nomad.client import normalize_all, parse
-
+from nomad.client import parse
+from nomad.normalizing import normalize_all
+import os
 
 def test_schema_package():
-    archives = parse(os.path.join('tests', 'data', 'test.archive.yaml'))
-    
-    print("Parsed entries:", len(archives))
-    for i, a in enumerate(archives):
-        print(i, a.data.name) 
-        
-    entry_archive = archives[4] # BatterySample is the 5th entry
-    normalize_all(entry_archive)
+    base = os.path.join('tests', 'data')
 
-    assert entry_archive.data.name == "bat_01"
+    files = [
+        'anode.archive.yaml',
+        'cathode.archive.yaml',
+        'electrolyte.archive.yaml',
+        'separator.archive.yaml',
+        'battery_sample.archive.yaml',
+    ]
 
-    # ---- resolve references ----
-    ctx = entry_archive.m_context
+    # Load archives
+    archives = [parse(os.path.join(base, f))[0] for f in files]
 
-    anode = ctx.resolve(entry_archive.data.components.anode_q)
-    cathode = ctx.resolve(entry_archive.data.components.cathode_q)
-    electrolyte = ctx.resolve(entry_archive.data.components.electrolyte_q)
-    separator = ctx.resolve(entry_archive.data.components.separator_q)
+    # Identify the battery sample record
+    battery = next(a for a in archives if a.data.m_def.name == "BatterySample")
 
-    # ---- assertions ----
+    # Normalize so references resolve
+    normalize_all(battery)
+
+    ctx = battery.m_context
+
+    # Resolve linked entries
+    anode = ctx.resolve(battery.data.components.anode_q)
+    cathode = ctx.resolve(battery.data.components.cathode_q)
+    electrolyte = ctx.resolve(battery.data.components.electrolyte_q)
+    separator = ctx.resolve(battery.data.components.separator_q)
+
+    # Assertions
+    assert battery.data.name == "bat_01"
     assert anode.mass.magnitude == 1.2
     assert cathode.mass_active_material.magnitude == 2.1
     assert electrolyte.volume.magnitude == 1.1
     assert separator.thickness.magnitude == 20.0
-
-    assert entry_archive.data.sample_identifiers.sample_id == "ABC123"
+    assert battery.data.sample_identifiers.sample_id == "ABC123"

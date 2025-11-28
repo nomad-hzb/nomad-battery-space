@@ -1,0 +1,6 @@
+data:
+  m_def: nomad_battery_space.schema_packages.battery_sample_prototype.Electrolyte
+  name: electrolyte_01
+  mass: 0.9
+  volume: 1.1
+  state: Liquid

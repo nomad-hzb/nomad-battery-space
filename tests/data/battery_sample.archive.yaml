@@ -1,0 +1,10 @@
+data:
+  m_def: nomad_battery_space.schema_packages.battery_sample_prototype.BatterySample
+  name: bat_01
+  components:
+    anode_q: '#anode_01'
+    cathode_q: '#cathode_01'
+    electrolyte_q: '#electrolyte_01'
+    separator_q: '#separator_01'
+  sample_identifiers:
+    sample_id: ABC123
