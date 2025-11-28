@@ -31,7 +31,7 @@ def test_schema_package():
 
     assert anode_ref == "#/anode_01"
     assert cathode_ref == "#/cathode_01"
-    assert electrolyte_ref == "/#electrolyte_01"
+    assert electrolyte_ref == "#/electrolyte_01"
     assert separator_ref == "#/separator_01"
 
     assert battery.sample_identifiers.sample_id == "ABC123"
