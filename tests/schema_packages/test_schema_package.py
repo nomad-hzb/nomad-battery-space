@@ -6,6 +6,10 @@ from nomad.client import normalize_all, parse
 def test_schema_package():
     archives = parse(os.path.join('tests', 'data', 'test.archive.yaml'))
     
+    print("Parsed entries:", len(archives))
+    for i, a in enumerate(archives):
+        print(i, a.data.m_def.name)
+
     entry_archive = archives[4] # BatterySample is the 5th entry
     normalize_all(entry_archive)
 
