@@ -22,15 +22,17 @@ from typing import (
 
 from nomad.datamodel.data import (
     ArchiveSection,
-    EntryData,
 )
 from nomad.datamodel.metainfo.basesections.v1 import (
     EntityReference,
 )
 from nomad.datamodel.metainfo.eln import (
     ELNSubstance,
-    Sample,
     SampleID,
+)
+from nomad.datamodel.results import (
+    Material,
+    Results,
 )
 from nomad.metainfo import (
     Enum,
@@ -57,9 +59,21 @@ class Anode(ELNSubstance):
     An anode entry in the battery schema.
     '''    
     m_def = Section(
+        label="HZB Battery: Anode",
         a_eln={
             "label": "Anode",
-            "entry_type": "Anode"
+            "entry_type": "Anode",
+            "hide": ['pure_substance', 'substance_identifiers'],
+            "properties": {
+                "order": [
+                    "name", 
+                    "mass",
+                    "area",
+                ],
+                "order_default": [
+                    "description"
+                ]
+            },
         }
     )
     
@@ -68,7 +82,7 @@ class Anode(ELNSubstance):
         description='Total mass of the anode.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Mass (Anode)",
+            "label": "Mass",
             "defaultDisplayUnit": "gram"
         },
         unit="gram",
@@ -79,7 +93,7 @@ class Anode(ELNSubstance):
         description='Geometric surface area of the anode.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Area (Anode)",
+            "label": "Area",
             "defaultDisplayUnit": "centimeter ** 2"
         },
         unit='centimeter ** 2',
@@ -101,9 +115,22 @@ class Cathode(ELNSubstance):
     A Cathode entry in the battery schema.
     '''
     m_def = Section(
+        label="HZB Battery: Cathode",
         a_eln={
             "label": "Cathode",
-            "entry_type": "Cathode"
+            "entry_type": "Cathode",
+            "hide": ['pure_substance', 'substance_identifiers'],
+            "properties": {
+                "order": [
+                    "name", 
+                    "mass",
+                    "area",
+                    "mass_active_material",
+                ],
+                "order_default": [
+                    "description"
+                ]
+            },
         }
     )
     
@@ -112,7 +139,7 @@ class Cathode(ELNSubstance):
         description='Total mass of the cathode.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Mass (Cathode)",
+            "label": "Mass",
             "defaultDisplayUnit": "gram"
         },
         unit="gram",
@@ -122,7 +149,7 @@ class Cathode(ELNSubstance):
         description='Geometric surface area of the cathode.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Area (Cathode)",
+            "label": "Area",
             "defaultDisplayUnit": "centimeter ** 2"
         },
         unit='centimeter ** 2',
@@ -132,7 +159,7 @@ class Cathode(ELNSubstance):
         description='Mass of the active material in the cathode.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Mass of active material (Cathode)",
+            "label": "Mass of active material",
             "defaultDisplayUnit": "%"
         },
         unit="dimensionless",
@@ -159,10 +186,12 @@ class Electrolyte(ELNSubstance):
     An Electrolyte entry in the battery schema.
     '''
     m_def = Section(
+        label="HZB Battery: Electrolyte",
         a_eln={
             "properties": {
                 "order": [
-                    "state",                    
+                    "state", 
+                    "name",                   
                     "volume",
                     "mass",
                 ],
@@ -171,7 +200,8 @@ class Electrolyte(ELNSubstance):
                 ]
             },
             "label": "Electrolyte",
-            "entry_type": "Electrolyte"
+            "entry_type": "Electrolyte",
+            "hide": ['pure_substance', 'substance_identifiers'],
         },
     )
 
@@ -189,21 +219,44 @@ class Electrolyte(ELNSubstance):
         description='Total mass of the electrolyte.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Mass (Electrolyte)",
-            "defaultDisplayUnit": "gram"
+            "label": "Mass",
+            "defaultDisplayUnit": "gram",
+            "units": ["gram", "milligram", "microgram"],
         },
         unit="gram",
     )
+
+    VolumeUnitEnum = Enum(['l', 'ml', 'ul'])
     volume = Quantity(
         type=float,
         description='Volume of the electrolyte.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Volume (Electrolyte)",
-            "defaultDisplayUnit": "milliliter"
+            "label": "Volume",
+            "defaultDisplayUnit": "milliliter",
+            "units": ["liter", "milliliter", "microliter"],
         },
         unit="milliliter",
     )
+    volume_value = Quantity(
+        type=float,
+        description="Volume of the electrolyte (value only, unit chosen separately).",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "Volume",
+        },
+    )
+
+    volume_unit = Quantity(
+        type=VolumeUnitEnum,
+        description="Volume unit",
+        a_eln={
+            "component": "EnumEditQuantity",
+            "label": "Unit",
+        },
+        default="ml",
+    )
+
 
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
         '''
@@ -222,31 +275,26 @@ class Separator(ELNSubstance):
     A Separator entry in the battery schema.
     '''
     m_def = Section(
+        label="HZB Battery: Separator",
         a_eln={
             "properties": {
                 "order": [
-                    "composition",
+                    "name",
                     "thickness"
                 ]
             },
             "label": "Separator",
-            "entry_type": "Separator"
+            "entry_type": "Separator",
+            "hide": ['pure_substance', 'substance_identifiers'],
         },
-        )
-    # composition = Quantity(
-    #     type=str,
-    #     description='Material composition of the separator (e.g., PP/PE).',
-    #     a_eln={
-    #         "component": "StringEditQuantity",
-    #         "label": "Composition (Separator)"
-    #     },
-    # )
+    )
+    
     thickness = Quantity(
         type=float,
         description='Thickness of the separator.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Thickness (Separator)",
+            "label": "thickness",
             "defaultDisplayUnit": "micrometer"
         },
         unit="micrometer",
@@ -333,21 +381,15 @@ class Components(ArchiveSection):
             "label": "Separator"
         },
     )
-    # cathode = SubSection(
-    #     section_def=Cathode,
-    # )
-    # electrolyte = SubSection(
-    #     section_def=Electrolyte,
-    # )
-    # separator = SubSection(
-    #     section_def=Separator,
-    # )
-
-class BatterySample(Sample, EntryData):
+    
+#class BatterySample(Sample, EntryData):
+class BatterySample(ELNSubstance):
     '''
     Basic information about a battery sample including its components.
     '''
+    #m_section_label = 'HZB Battery Space'
     m_def = Section(
+        label="HZB Battery Sample",
         a_eln={
             "properties": {
                 "order": [
@@ -355,16 +397,35 @@ class BatterySample(Sample, EntryData):
                     "sample_identifiers"
                 ]
             },
-            "label": "Battery Sample",
-            "entry_type": "Battery Sample"
+            "label": "HZB Battery",
+            "entry_type": "Battery Sample",
+            "hide": ['pure_substance', 
+                     'substance_identifiers', 
+                     'elemental_composition',
+                     'sample_identifiers'],    
         },
-        label="Battery Sample",)
+    )
+    
     components = SubSection(
         section_def=Components,
     )
     sample_identifiers = SubSection(
         section_def=SampleID,
     )
+
+    aggregated_elements = Quantity(
+        type=str,
+        shape=['*'],
+        description=(
+            'All chemical elements found in referenced components '
+            '(anode, cathode, electrolyte, etc.), used for search.'
+        ),
+        a_eln={
+            # RO, only for controlling purpuses => remove later?
+            "label": "aggregated elements",
+        }
+    )
+
 
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
         '''
@@ -377,4 +438,36 @@ class BatterySample(Sample, EntryData):
         '''
         super().normalize(archive, logger)
 
+        elements = set()
+
+        def extract_elements(component):
+            if component is None:
+                return
+            ec_list = getattr(component, 'elemental_composition', None)
+            if not ec_list:
+                return
+            for comp in ec_list:
+                el = getattr(comp, 'element', None)
+                if el:
+                    elements.add(str(el))
+
+        extract_elements(getattr(self.components, 'anode_q', None))
+        extract_elements(getattr(self.components, 'cathode_q', None))
+        extract_elements(getattr(self.components, 'electrolyte_q', None))
+        extract_elements(getattr(self.components, 'separator_q', None))
+
+        elements_list = sorted(elements)
+
+        # Save into aggregated field
+        self.aggregated_elements = elements_list
+
+        if archive.results is None:
+            archive.results = Results()
+
+        if archive.results.material is None:
+            archive.results.material = Material()
+
+
+        archive.results.material.elements = elements_list
+        
 m_package.__init_metainfo__()
