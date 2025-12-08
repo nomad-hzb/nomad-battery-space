@@ -226,7 +226,7 @@ class Electrolyte(ELNSubstance):
         unit="gram",
     )
 
-    VolumeUnitEnum = Enum(['l', 'ml', 'ul'])
+ #   VolumeUnitEnum = Enum(['l', 'ml', 'ul'])
     volume = Quantity(
         type=float,
         description='Volume of the electrolyte.',
@@ -238,24 +238,24 @@ class Electrolyte(ELNSubstance):
         },
         unit="milliliter",
     )
-    volume_value = Quantity(
-        type=float,
-        description="Volume of the electrolyte (value only, unit chosen separately).",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "Volume",
-        },
-    )
+    # volume_value = Quantity(
+    #     type=float,
+    #     description="Volume of the electrolyte (value only, unit chosen separately).",
+    #     a_eln={
+    #         "component": "NumberEditQuantity",
+    #         "label": "Volume",
+    #     },
+    # )
 
-    volume_unit = Quantity(
-        type=VolumeUnitEnum,
-        description="Volume unit",
-        a_eln={
-            "component": "EnumEditQuantity",
-            "label": "Unit",
-        },
-        default="ml",
-    )
+    # volume_unit = Quantity(
+    #     type=VolumeUnitEnum,
+    #     description="Volume unit",
+    #     a_eln={
+    #         "component": "EnumEditQuantity",
+    #         "label": "Unit",
+    #     },
+    #     default="ml",
+    # )
 
 
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
