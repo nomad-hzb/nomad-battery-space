@@ -1,5 +1,5 @@
-from nomad.metainfo import Quantity, Section, MEnum
 from nomad.datamodel.data import ArchiveSection
+from nomad.metainfo import MEnum, Quantity, Section
 
 
 class BatteryCellAssemblyBase(ArchiveSection):

@@ -20,12 +20,7 @@ from typing import (
     TYPE_CHECKING,
 )
 
-from nomad_battery_space.schema_packages.battery_cell_assembly_package import BatteryCellAssemblyBase
-
-from nomad.datamodel.data import (
-    ArchiveSection,
-    EntryData
-)
+from nomad.datamodel.data import ArchiveSection
 from nomad.datamodel.metainfo.basesections.v1 import (
     EntityReference,
 )
