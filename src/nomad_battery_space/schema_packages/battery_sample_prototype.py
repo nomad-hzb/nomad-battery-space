@@ -20,8 +20,11 @@ from typing import (
     TYPE_CHECKING,
 )
 
+from nomad_battery_space.schema_packages.battery_cell_assembly_package import BatteryCellAssemblyBase
+
 from nomad.datamodel.data import (
     ArchiveSection,
+    EntryData
 )
 from nomad.datamodel.metainfo.basesections.v1 import (
     EntityReference,
@@ -344,7 +347,7 @@ class Components(ArchiveSection):
         },
         label="Components",)
     anode_q = Quantity(
-        type=Reference(Anode.m_def),
+        type=Reference(Anode),
         description='Reference to an Anode entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
@@ -358,7 +361,7 @@ class Components(ArchiveSection):
     #     """,
     # )
     cathode_q = Quantity(
-        type=Reference(Cathode.m_def),
+        type=Reference(Cathode),
         description='Reference to a Cathode entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
@@ -366,7 +369,7 @@ class Components(ArchiveSection):
         },
     )
     electrolyte_q = Quantity(
-        type=Reference(Electrolyte.m_def),
+        type=Reference(Electrolyte),
         description='Reference to a Electrolyte entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
@@ -374,15 +377,15 @@ class Components(ArchiveSection):
         },
     )
     separator_q = Quantity(
-        type=Reference(Separator.m_def),
+        type=Reference(Separator),
         description='Reference to a Separator entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
             "label": "Separator"
         },
     )
-    
-#class BatterySample(Sample, EntryData):
+
+
 class BatterySample(ELNSubstance):
     '''
     Basic information about a battery sample including its components.
@@ -404,6 +407,31 @@ class BatterySample(ELNSubstance):
                      'elemental_composition',
                      'sample_identifiers'],    
         },
+    )
+
+    name = Quantity(
+        type=str,
+        description='The name of the battery entry.',
+        a_eln=dict(component='StringEditQuantity', label='battery name'),
+    )
+    lab_id = Quantity(
+        type=str,
+        description="""
+        A human readable battery ID that is at least unique for the lab.
+        """,
+        a_eln=dict(component='StringEditQuantity', label='battery ID'),
+    )
+    description = Quantity(
+        type=str,
+        description="""
+        A field for adding additional information about the battery that is not captured
+        by the other quantities and subsections.
+        """,
+        a_eln=dict(
+            component='RichTextEditQuantity',
+            label='detailed battery description',
+            props={"height": 200}
+        ),
     )
     
     components = SubSection(
@@ -470,4 +498,127 @@ class BatterySample(ELNSubstance):
 
         archive.results.material.elements = elements_list
         
+
+class CoinCellBattery(BatterySample):
+    m_def = Section(
+        label="HZB Coin Cell Battery",
+        a_eln={
+            "label": "HZB Coin Cell Battery",
+            "entry_type": "Coin Cell",
+            "properties": {
+                "order": [
+                    "components",
+                    "case_id",
+                    "case_crimp",
+                    "pressure"
+                ]
+            },
+             "hide": [
+                "pure_substance",
+                "substance_identifiers",
+                "elemental_composition",
+                "sample_identifiers",
+            ],
+        },
+    )
+
+    case_id = Quantity(
+        type=str,
+        a_eln={
+            "component": "StringEditQuantity",
+            "label": "case-ID",
+        },
+    )
+
+    CaseCrimpEnum = Enum(["manual", "hydraulic"])
+    case_crimp = Quantity(
+        type=CaseCrimpEnum, 
+        a_eln={"component": "EnumEditQuantity", "label": "case-crimp"})
+
+    pressure = Quantity(
+        type=float,
+        unit="pascal",
+        a_eln={
+            "component": "NumberEditQuantity", "label": "pressure (hydraulic only)",              
+            "defaultDisplayUnit": "pascal",
+        },
+    )
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
+        if self.case_crimp == "manual":
+            self.pressure = None
+
+
+class BatteryCase(ArchiveSection):
+    m_def = Section(label="Battery-Case",
+                    a_eln=dict(overview=True)
+    )
+    
+    case_id = Quantity(type=str, a_eln={"component": "StringEditQuantity", "label": "case-ID"})
+    CaseCrimpEnum = Enum(["manual", "hydraulic"])
+    case_crimp = Quantity(type=CaseCrimpEnum, a_eln={"component": "EnumEditQuantity", "label": "case-crimp"})
+    pressure = Quantity(
+        type=float, unit="pascal", 
+        a_eln={
+            "component": "NumberEditQuantity", "label": "pressure (hydraulic only)",              
+            "defaultDisplayUnit": "pascal",
+        },
+    )
+
+class CoinCellBattery2(BatterySample):
+    m_def = Section(
+        label="HZB Coin Cell Battery - 2",
+        a_eln={
+            "label": "HZB Coin Cell Battery - 2",
+            "entry_type": "Coin Cell",
+            "properties": {
+                "order": [
+                    "components",
+                    "battery_case",
+                ]
+            },
+             "hide": [
+                "pure_substance",
+                "substance_identifiers",
+                "elemental_composition",
+                "sample_identifiers",
+            ],
+        },
+    )
+
+    battery_case = SubSection(section_def=BatteryCase, repeats=False)
+
+    def normalize(self, archive, logger):
+        # create a section instance
+        if self.battery_case is None:
+            self.battery_case = BatteryCase() 
+
+        if self.battery_case.case_crimp == "manual":
+            self.battery_case.pressure = None
+
+        super().normalize(archive, logger)
+
+'''
+class BatterySampleHZB(EntryData):
+
+    m_def = Section(
+        label="HZB Battery Sample",
+        a_eln={
+            "properties": {
+                "order": [
+                    "battery_type",
+                ]
+            },
+            "label": "HZB Battery",
+            "entry_type": "Battery Sample",            
+        },
+    )
+
+    battery_type = SubSection(
+        section_def=BatteryCellAssemblyBase
+    )
+'''
+
+
 m_package.__init_metainfo__()
