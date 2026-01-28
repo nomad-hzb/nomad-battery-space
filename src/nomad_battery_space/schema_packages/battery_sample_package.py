@@ -21,9 +21,6 @@ from typing import (
 )
 
 from nomad.datamodel.data import ArchiveSection
-from nomad.datamodel.metainfo.basesections.v1 import (
-    EntityReference,
-)
 from nomad.datamodel.metainfo.eln import (
     ELNSubstance,
     SampleID,
@@ -290,19 +287,19 @@ class Separator(ELNSubstance):
         super().normalize(archive, logger)
 
 
-class AnodeReference(EntityReference):
-    """
-    A section used for referencing an Anode into a Battery.
-    """
+# class AnodeReference(EntityReference):
+#     """
+#     A section used for referencing an Anode into a Battery.
+#     """
 
-    reference = Quantity(
-        type=Anode,
-        description='A reference to a Battery `Anode` entry.',
-        a_eln={
-            "component": 'ReferenceEditQuantity',
-            "label": 'Anode',
-        },
-    )
+#     reference = Quantity(
+#         type=Anode,
+#         description='A reference to a Battery `Anode` entry.',
+#         a_eln={
+#             "component": 'ReferenceEditQuantity',
+#             "label": 'Anode',
+#         },
+#     )
 
 
 class Components(ArchiveSection):
@@ -322,7 +319,7 @@ class Components(ArchiveSection):
         },
         label="Components",)
     anode_q = Quantity(
-        type=Reference(Anode),
+        type=Reference(Anode.m_def),
         description='Reference to an Anode entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
@@ -330,7 +327,7 @@ class Components(ArchiveSection):
         },
     )
     cathode_q = Quantity(
-        type=Reference(Cathode),
+        type=Reference(Cathode.m_def),
         description='Reference to a Cathode entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
@@ -338,7 +335,7 @@ class Components(ArchiveSection):
         },
     )
     electrolyte_q = Quantity(
-        type=Reference(Electrolyte),
+        type=Reference(Electrolyte.m_def),
         description='Reference to a Electrolyte entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
@@ -346,7 +343,7 @@ class Components(ArchiveSection):
         },
     )
     separator_q = Quantity(
-        type=Reference(Separator),
+        type=Reference(Separator.m_def),
         description='Reference to a Separator entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
@@ -472,112 +469,5 @@ class BatterySample(ELNSubstance):
 
         archive.results.material.elements = elements_list
         
-
-class CoinCellBattery(BatterySample):
-    m_def = Section(
-        links=['https://w3id.org/emmo/domain/battery#battery_b7fdab58_6e91_4c84_b097_b06eff86a124'],
-        label="HZB Coin Cell Battery",
-        a_eln={
-            "label": "HZB Coin Cell Battery",
-            "entry_type": "Coin Cell",
-            "properties": {
-                "order": [
-                    "lab_id",
-                    "name",
-                    "datetime",
-                    "case_id",
-                    "case_crimp",
-                    "pressure",
-                    "description",
-                    "tags",
-                    "components",
-                ]
-            },
-             "hide": [
-                "pure_substance",
-                "substance_identifiers",
-                "elemental_composition",
-                "sample_identifiers",
-            ],
-        },
-    )
-
-    case_id = Quantity(
-        type=str,
-        a_eln={
-            "component": "StringEditQuantity",
-            "label": "case-ID",
-        },
-    )
-
-    CaseCrimpEnum = Enum(["manual", "hydraulic"])
-    case_crimp = Quantity(
-        type=CaseCrimpEnum, 
-        a_eln={"component": "EnumEditQuantity", "label": "case-crimp"})
-
-    pressure = Quantity(
-        type=float,
-        unit="pascal",
-        a_eln={
-            "component": "NumberEditQuantity", "label": "pressure (hydraulic only)",              
-            "defaultDisplayUnit": "pascal",
-        },
-    )
-
-    def normalize(self, archive, logger):
-        super().normalize(archive, logger)
-        if self.case_crimp == "manual":
-            self.pressure = None
-
-
-class BatteryCase(ArchiveSection):
-    m_def = Section(label="Battery-Case",
-                    a_eln=dict(overview=True)
-    )
-    
-    case_id = Quantity(type=str, a_eln={"component": "StringEditQuantity", "label": "case-ID"})
-    CaseCrimpEnum = Enum(["manual", "hydraulic"])
-    case_crimp = Quantity(type=CaseCrimpEnum, a_eln={"component": "EnumEditQuantity", "label": "case-crimp"})
-    pressure = Quantity(
-        type=float, unit="pascal", 
-        a_eln={
-            "component": "NumberEditQuantity", "label": "pressure (hydraulic only)",              
-            "defaultDisplayUnit": "pascal",
-        },
-    )
-
-class CoinCellBattery2(BatterySample):
-    m_def = Section(
-        label="HZB Coin Cell Battery - 2",
-        a_eln={
-            "label": "HZB Coin Cell Battery - 2",
-            "entry_type": "Coin Cell",
-            "properties": {
-                "order": [
-                    "components",
-                    "battery_case",
-                ]
-            },
-             "hide": [
-                "pure_substance",
-                "substance_identifiers",
-                "elemental_composition",
-                "sample_identifiers",
-            ],
-        },
-    )
-
-    battery_case = SubSection(section_def=BatteryCase, repeats=False)
-
-    def normalize(self, archive, logger):
-        # create a section instance
-        if self.battery_case is None:
-            self.battery_case = BatteryCase() 
-
-        if self.battery_case.case_crimp == "manual":
-            self.battery_case.pressure = None
-
-        super().normalize(archive, logger)
-
 
 m_package.__init_metainfo__()
