@@ -4,7 +4,7 @@ from nomad.config.models.plugins import SchemaPackageEntryPoint
 class BatterySamplePackageEntryPoint(SchemaPackageEntryPoint):
 
     def load(self):
-        from nomad_battery_space.schema_packages.battery_sample_prototype import (
+        from nomad_battery_space.schema_packages.battery_sample_package import (
             m_package,
         )
 
@@ -27,6 +27,6 @@ bat_schema_package = BatterySamplePackageEntryPoint(
 
 bat_cell_assembly_package = BatteryCellAssemblyPackageEntryPoint(
     name='bat_cell_assembly',
-    description='Schema package for battery cell ssembly @HZB.',
+    description='Schema package for battery cell assembly @HZB.',
 )
 

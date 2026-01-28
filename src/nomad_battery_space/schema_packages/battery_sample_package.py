@@ -48,15 +48,16 @@ if TYPE_CHECKING:
     from structlog.stdlib import (
         BoundLogger,
     )
+from .utils import validate_required
 
 m_package = SchemaPackage()
-
 
 class Anode(ELNSubstance):
     '''
     An anode entry in the battery schema.
     '''    
     m_def = Section(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_b6319c74_d2ce_48c0_a75a_63156776b302'],
         label="HZB Battery: Anode",
         a_eln={
             "label": "Anode",
@@ -113,6 +114,7 @@ class Cathode(ELNSubstance):
     A Cathode entry in the battery schema.
     '''
     m_def = Section(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_35c650ab_3b23_4938_b312_1b0dede2e6d5'],
         label="HZB Battery: Cathode",
         a_eln={
             "label": "Cathode",
@@ -162,10 +164,6 @@ class Cathode(ELNSubstance):
         },
         unit="dimensionless",
     )
-    # elemental_composition = SubSection(
-    #     section_def=ElementalComposition,
-    #     repeats=True,
-    # )
 
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
         '''
@@ -184,6 +182,7 @@ class Electrolyte(ELNSubstance):
     An Electrolyte entry in the battery schema.
     '''
     m_def = Section(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_fb0d9eef_92af_4628_8814_e065ca255d59'],
         label="HZB Battery: Electrolyte",
         a_eln={
             "properties": {
@@ -224,7 +223,6 @@ class Electrolyte(ELNSubstance):
         unit="gram",
     )
 
- #   VolumeUnitEnum = Enum(['l', 'ml', 'ul'])
     volume = Quantity(
         type=float,
         description='Volume of the electrolyte.',
@@ -236,25 +234,6 @@ class Electrolyte(ELNSubstance):
         },
         unit="milliliter",
     )
-    # volume_value = Quantity(
-    #     type=float,
-    #     description="Volume of the electrolyte (value only, unit chosen separately).",
-    #     a_eln={
-    #         "component": "NumberEditQuantity",
-    #         "label": "Volume",
-    #     },
-    # )
-
-    # volume_unit = Quantity(
-    #     type=VolumeUnitEnum,
-    #     description="Volume unit",
-    #     a_eln={
-    #         "component": "EnumEditQuantity",
-    #         "label": "Unit",
-    #     },
-    #     default="ml",
-    # )
-
 
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
         '''
@@ -273,6 +252,7 @@ class Separator(ELNSubstance):
     A Separator entry in the battery schema.
     '''
     m_def = Section(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_331e6cca_f260_4bf8_af55_35304fe1bbe0'],
         label="HZB Battery: Separator",
         a_eln={
             "properties": {
@@ -349,12 +329,6 @@ class Components(ArchiveSection):
             "label": "Anode"
         },
     )
-    # anode_subsection = SubSection(
-    #     section_def=AnodeReference,
-    #     description="""
-    #     The anode as a composite part of the battery.
-    #     """,
-    # )
     cathode_q = Quantity(
         type=Reference(Cathode),
         description='Reference to a Cathode entry.',
@@ -385,14 +359,18 @@ class BatterySample(ELNSubstance):
     '''
     Basic information about a battery sample including its components.
     '''
-    #m_section_label = 'HZB Battery Space'
     m_def = Section(
+        links=['https://w3id.org/emmo/domain/battery#battery_68ed592a_7924_45d0_a108_94d6275d57f0'],
         label="HZB Battery Sample",
         a_eln={
             "properties": {
                 "order": [
+                    "lab_id",
+                    "name",
+                    "datetime",
+                    "description",
+                    "tags",
                     "components",
-                    "sample_identifiers"
                 ]
             },
             "label": "HZB Battery",
@@ -400,21 +378,21 @@ class BatterySample(ELNSubstance):
             "hide": ['pure_substance', 
                      'substance_identifiers', 
                      'elemental_composition',
-                     'sample_identifiers'],    
+                     'sample_identifiers'],  
         },
     )
 
     name = Quantity(
         type=str,
         description='The name of the battery entry.',
-        a_eln=dict(component='StringEditQuantity', label='battery name'),
+        a_eln=dict(component='StringEditQuantity', label='battery name', required=True),
     )
     lab_id = Quantity(
         type=str,
         description="""
         A human readable battery ID that is at least unique for the lab.
         """,
-        a_eln=dict(component='StringEditQuantity', label='battery ID'),
+        a_eln=dict(component='StringEditQuantity', label='battery ID', required=True),
     )
     description = Quantity(
         type=str,
@@ -425,7 +403,7 @@ class BatterySample(ELNSubstance):
         a_eln=dict(
             component='RichTextEditQuantity',
             label='detailed battery description',
-            props={"height": 200}
+            props={"height": 200}, required=True
         ),
     )
     
@@ -444,11 +422,9 @@ class BatterySample(ELNSubstance):
             '(anode, cathode, electrolyte, etc.), used for search.'
         ),
         a_eln={
-            # RO, only for controlling purpuses => remove later?
             "label": "aggregated elements",
         }
     )
-
 
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
         '''
@@ -460,6 +436,9 @@ class BatterySample(ELNSubstance):
             logger (BoundLogger): A structlog logger.
         '''
         super().normalize(archive, logger)
+
+        # Validate required lab/battery id
+        validate_required(self.lab_id, name='battery ID')
 
         elements = set()
 
@@ -496,16 +475,22 @@ class BatterySample(ELNSubstance):
 
 class CoinCellBattery(BatterySample):
     m_def = Section(
+        links=['https://w3id.org/emmo/domain/battery#battery_b7fdab58_6e91_4c84_b097_b06eff86a124'],
         label="HZB Coin Cell Battery",
         a_eln={
             "label": "HZB Coin Cell Battery",
             "entry_type": "Coin Cell",
             "properties": {
                 "order": [
-                    "components",
+                    "lab_id",
+                    "name",
+                    "datetime",
                     "case_id",
                     "case_crimp",
-                    "pressure"
+                    "pressure",
+                    "description",
+                    "tags",
+                    "components",
                 ]
             },
              "hide": [
@@ -593,27 +578,6 @@ class CoinCellBattery2(BatterySample):
             self.battery_case.pressure = None
 
         super().normalize(archive, logger)
-
-'''
-class BatterySampleHZB(EntryData):
-
-    m_def = Section(
-        label="HZB Battery Sample",
-        a_eln={
-            "properties": {
-                "order": [
-                    "battery_type",
-                ]
-            },
-            "label": "HZB Battery",
-            "entry_type": "Battery Sample",            
-        },
-    )
-
-    battery_type = SubSection(
-        section_def=BatteryCellAssemblyBase
-    )
-'''
 
 
 m_package.__init_metainfo__()
