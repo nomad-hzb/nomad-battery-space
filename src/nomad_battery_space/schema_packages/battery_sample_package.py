@@ -323,7 +323,8 @@ class Components(ArchiveSection):
         description='Reference to an Anode entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
-            "label": "Anode"
+            "label": "Anode",
+            "showSectionLabel": True
         },
     )
     cathode_q = Quantity(
@@ -331,7 +332,8 @@ class Components(ArchiveSection):
         description='Reference to a Cathode entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
-            "label": "Cathode"
+            "label": "Cathode",
+            "showSectionLabel": True
         },
     )
     electrolyte_q = Quantity(
@@ -339,7 +341,8 @@ class Components(ArchiveSection):
         description='Reference to a Electrolyte entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
-            "label": "Electrolyte"
+            "label": "Electrolyte",
+            "showSectionLabel": True
         },
     )
     separator_q = Quantity(
@@ -347,7 +350,8 @@ class Components(ArchiveSection):
         description='Reference to a Separator entry.',
         a_eln={
             "component": "ReferenceEditQuantity",
-            "label": "Separator"
+            "label": "Separator",
+            "showSectionLabel": True
         },
     )
 
