@@ -10,6 +10,42 @@ from .utils import validate_required
 
 m_package = SchemaPackage()
 
+# Shared configuration constant
+DEFAULT_HIDE_FIELDS = [
+    "pure_substance",
+    "substance_identifiers",
+    "elemental_composition",
+    "sample_identifiers",
+]
+
+
+def create_millimeter_quantity(label, description, required=False):
+    """Helper function to create millimeter-based float quantities."""
+    return Quantity(
+        type=float,
+        unit="millimeter",
+        description=description,
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": label,
+            "defaultDisplayUnit": "millimeter",
+            "required": required,
+        },
+    )
+
+
+def create_string_quantity(label, description=None, required=False):
+    """Helper function to create string quantities."""
+    return Quantity(
+        type=str,
+        description=description,
+        a_eln={
+            "component": "StringEditQuantity",
+            "label": label,
+            "required": required,
+        },
+    )
+
 class CoinCellBattery(BatterySample):
     m_def = Section(
         links=['https://w3id.org/emmo/domain/battery#battery_b7fdab58_6e91_4c84_b097_b06eff86a124'],
@@ -30,34 +66,34 @@ class CoinCellBattery(BatterySample):
                     "components",
                 ]
             },
-             "hide": [
-                "pure_substance",
-                "substance_identifiers",
-                "elemental_composition",
-                "sample_identifiers",
-            ],
+            "hide": DEFAULT_HIDE_FIELDS,
         },
     )
 
-    case_id = Quantity(
-        type=str,
-        a_eln={
-            "component": "StringEditQuantity",
-            "label": "case-ID",
-        },
+    case_id = create_string_quantity(
+        "case-ID",
+        description=(
+            "Standardized coin cell housing code according to IEC 60086.\n\n"
+            "Letters indicate the electrochemical system (e.g. CR = Li-MnO₂), "
+            "followed by four digits: first two = nominal diameter (mm), "
+            "last two = nominal height (0.1 mm).\n\n"
+            "Example: CR2032 → 20 mm diameter, 3.2 mm height."
+        ),
     )
 
     CaseCrimpEnum = Enum(["manual", "hydraulic"])
     case_crimp = Quantity(
-        type=CaseCrimpEnum, 
+        type=CaseCrimpEnum,
+        description=None,
         a_eln={"component": "EnumEditQuantity", "label": "case-crimp"})
 
     pressure = Quantity(
         type=float,
-        unit="pascal",
+        unit="MPa", # pascal
+        description=None,
         a_eln={
             "component": "NumberEditQuantity", "label": "pressure (hydraulic only)",              
-            "defaultDisplayUnit": "pascal",
+            "defaultDisplayUnit": "MPa",
         },
     )
 
@@ -90,37 +126,16 @@ class PouchCellBattery(BatterySample):
                     "components",
                 ]
             },
-             "hide": [
-                "pure_substance",
-                "substance_identifiers",
-                "elemental_composition",
-                "sample_identifiers",
-            ],
+            "hide": DEFAULT_HIDE_FIELDS,
         },
     )
 
-    cathode_length = Quantity(
-        type=float,
-        unit="millimeter",
-        description="Cathode length",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "cathode length",
-            "defaultDisplayUnit": "millimeter",
-            "required": True,
-        },
+    cathode_length = create_millimeter_quantity(
+        label="cathode length", description="Cathode length", required=True
     )
 
-    cathode_width = Quantity(
-        type=float,
-        unit="millimeter",
-        description="Cathode width",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "cathode width",
-            "defaultDisplayUnit": "millimeter",
-            "required": True,
-        },
+    cathode_width = create_millimeter_quantity(
+        label="cathode width", description="Cathode width", required=True
     )
 
     number_of_layers = Quantity(
@@ -133,37 +148,16 @@ class PouchCellBattery(BatterySample):
         },
     )
 
-    pouch_length = Quantity(
-        type=float,
-        unit="millimeter",
-        description="Pouch length",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "pouch length",
-            "defaultDisplayUnit": "millimeter",
-        },
+    pouch_length = create_millimeter_quantity(
+        label="pouch length", description="Pouch length"
     )
 
-    pouch_width = Quantity(
-        type=float,
-        unit="millimeter",
-        description="Pouch width",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "pouch width",
-            "defaultDisplayUnit": "millimeter",
-        },
+    pouch_width = create_millimeter_quantity(
+        label="pouch width", description="Pouch width"
     )
 
-    pouch_height = Quantity(
-        type=float,
-        unit="millimeter",
-        description="Pouch height",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "pouch height",
-            "defaultDisplayUnit": "millimeter",
-        },
+    pouch_height = create_millimeter_quantity(
+        label="pouch height", description="Pouch height"
     )
 
     def normalize(self, archive, logger):
@@ -174,6 +168,64 @@ class PouchCellBattery(BatterySample):
         validate_required(self.cathode_length, name='cathode length')
         validate_required(self.cathode_width, name='cathode width')
         validate_required(self.number_of_layers, name='number of layers')
+
+
+class CylindricalCellBattery(BatterySample):
+
+    m_def = Section(
+        links=[' https://w3id.org/emmo/domain/battery#battery_ac604ecd_cc60_4b98_b57c_74cd5d3ccd40'],
+        label="HZB Cylindrical Cell Battery",
+        a_eln={
+            "label": "HZB Cylindrical Cell Battery",
+            "entry_type": "Cylindrical Cell",
+            "properties": {
+                "order": [
+                    "lab_id",
+                    "name",
+                    "datetime",
+                    "description",
+                    "cathode_length",
+                    "cathode_width",
+                    "case_id",
+                    "cylindrical_length",
+                    "cylindrical_diameter",
+                    "tags",
+                    "components",
+                ]
+            },
+            "hide": DEFAULT_HIDE_FIELDS,
+        },
+    )
+
+    cathode_length = create_millimeter_quantity(label="cathode length", description="Cathode length")
+
+    cathode_width = create_millimeter_quantity(label="cathode width", description="Cathode width")
+
+    case_id = create_string_quantity(
+        "case-ID",
+        description=(
+            "Standardized cylindrical cell housing code according to IEC 60086.\n\n"
+            "For cylindrical cells, the designation typically consists of letters indicating "
+            "the electrochemical system (e.g. LR = alkaline, CR = lithium manganese dioxide) "
+            "followed by digits defining the standardized size.\n\n"
+            "For numeric codes (e.g. 18650), the first two digits indicate the nominal diameter (mm), "
+            "the next two or three digits the nominal height (mm), and a trailing '0' indicates cylindrical shape.\n\n"
+            "Example: 18650 → 18 mm diameter, 65 mm height, cylindrical form."
+        ),
+    )
+
+    cylindrical_length = create_millimeter_quantity(label="cylindrical length", description="Cylindrical length")
+
+    cylindrical_diameter = create_millimeter_quantity(label="cylindrical diameter", description="Cylindrical diameter")
+
+    def normalize(self, archive, logger):
+        
+        super().normalize(archive, logger)
+
+        # validate mandatory fields 
+        validate_required(self.cathode_length, name='cathode length')
+        validate_required(self.cathode_width, name='cathode width')
+        
 
 
 m_package.__init_metainfo__()
