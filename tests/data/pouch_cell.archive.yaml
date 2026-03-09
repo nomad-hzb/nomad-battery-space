@@ -1,0 +1,19 @@
+data:
+  m_def: nomad_battery_space.schema_packages.battery_cell_assembly_package.PouchCellBattery
+  lab_id: PC_001
+  name: pouch_cell_01
+  datetime: 2024-02-10T14:45:00Z
+  description: Test pouch cell with layered electrode stack
+  cathode_length: 50.5
+  cathode_width: 40.0
+  number_of_layers: 3
+  pouch_length: 60.0
+  pouch_width: 50.0
+  pouch_height: 5.5
+  components:
+    anode_q: '#anode_01'
+    cathode_q: '#cathode_01'
+    electrolyte_q: '#electrolyte_01'
+    separator_q: '#separator_01'
+  sample_identifiers:
+    sample_id: PC_DEF456

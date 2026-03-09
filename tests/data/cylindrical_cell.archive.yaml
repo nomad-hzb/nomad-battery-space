@@ -1,0 +1,18 @@
+data:
+  m_def: nomad_battery_space.schema_packages.battery_cell_assembly_package.CylindricalCellBattery
+  lab_id: CYL_001
+  name: cylindrical_cell_01
+  datetime: 2024-03-05T09:20:00Z
+  description: Test 18650 cylindrical cell
+  case_id: '18650'
+  cathode_length: 45.0
+  cathode_width: 42.0
+  cylindrical_length: 65.0
+  cylindrical_diameter: 18.3
+  components:
+    anode_q: '#anode_01'
+    cathode_q: '#cathode_01'
+    electrolyte_q: '#electrolyte_01'
+    separator_q: '#separator_01'
+  sample_identifiers:
+    sample_id: CYL_GHI789
