@@ -223,8 +223,8 @@ class CylindricalCellBattery(BatterySample):
         super().normalize(archive, logger)
 
         # validate mandatory fields 
-        validate_required(self.cathode_length, name='cathode length')
-        validate_required(self.cathode_width, name='cathode width')
+        # validate_required(self.cathode_length, name='cathode length')
+        # validate_required(self.cathode_width, name='cathode width')
         
 
 
