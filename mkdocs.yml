@@ -2,18 +2,24 @@ site_name: nomad-battery-space
 site_description: A schema package plugin for data space @HZB
 site_author: Svetlana Grinman
 
-repo_url: https://github.com/nomad-hzb/battery-space
+repo_url: https://github.com/nomad-hzb/nomad-battery-space
 edit_uri: ""
 
 nav:
   - Home: index.md
-  - Tutorial: tutorial/tutorial.md
+  - Tutorial: 
+      - Overview: tutorial/tutorial.md
+      - Workflow...: tutorial/register_bat_sample.md
+      - Register Coin Cell Sample: tutorial/register_coin_cell.md
   - How-to guides:
       - Install this Plugin: how_to/install_this_plugin.md
       - Use this Plugin: how_to/use_this_plugin.md
       - Contribute to this plugin: how_to/contribute_to_this_plugin.md
-      - Contribute to the documentation: how_to/contribute_to_the_documentation.md
-  - Explanation: explanation/explanation.md
+  - Explanation: 
+      - Overview: explanation/overview.md
+      - Reference Model: explanation/reference_model.md
+      - Component Types: explanation/component_types.md
+      - Cell Assembly Types: explanation/cell_assembly_types.md
   - Reference: reference/references.md
 plugins:
   - search

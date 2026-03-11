@@ -1,0 +1,15 @@
+data:
+  m_def: nomad_battery_space.schema_packages.battery_cell_assembly_package.CoinCellBattery
+  lab_id: CC_001
+  name: coin_cell_01
+  datetime: 2024-01-15T10:30:00Z
+  description: Test coin cell for 2032 housing
+  case_id: CR2032
+  case_crimp: manual
+  components:
+    anode_q: '#anode_01'
+    cathode_q: '#cathode_01'
+    electrolyte_q: '#electrolyte_01'
+    separator_q: '#separator_01'
+  sample_identifiers:
+    sample_id: CC_ABC123

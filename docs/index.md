@@ -36,7 +36,10 @@ How-to guides provide step-by-step instructions for a wide range of tasks, with 
 
 The explanation sections provides background knowledge on this plugin:
 
-- [Battery space plugin – reference model](explanation/reference-model.md) 
+- [Overview](explanation/overview.md)
+- [Component Types](explanation/component_types.md)
+- [Battery Sample Model](explanation/reference_model.md)
+- [Cell Assembly Types](explanation/cell_assembly_types.md)
 
 </div>
 <div markdown="block">
