@@ -1,3 +1,6 @@
+from nomad.metainfo import Quantity
+
+
 def validate_required(value, *, name: str) -> None:
     """Validate that a required field has a non-empty value.
 
@@ -16,3 +19,58 @@ def validate_required(value, *, name: str) -> None:
     """
     if value is None or (isinstance(value, str) and value.strip() == ""):
         raise ValueError(f"'{name}' is mandatory and must not be empty.")
+
+
+def create_millimeter_quantity(label, description, required=False):
+    """Helper function to create millimeter-based float quantities."""
+    return Quantity(
+        type=float,
+        unit="millimeter",
+        description=description,
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": label,
+            "defaultDisplayUnit": "millimeter",
+            "required": required,
+        },
+    )
+
+
+def create_string_quantity(label, description=None, required=False):
+    """Helper function to create string quantities."""
+    return Quantity(
+        type=str,
+        description=description,
+        a_eln={
+            "component": "StringEditQuantity",
+            "label": label,
+            "required": required,
+        },
+    )
+
+
+def create_area_quantity(label: str = "area", description: str = None, required: bool = False) -> Quantity:
+    """
+    Helper function to create area-based float quantities with centimeter squared units.
+    
+    Args:
+        label: Display label for the quantity (default: "area")
+        description: Description of the quantity (default: None)
+        required: Whether the field is required (default: False)
+    
+    Returns:
+        A Quantity configured for area measurements in cm²
+    """
+    if description is None:
+        description = f'Geometric surface {label.lower()} of the component.'
+    
+    return Quantity(
+        type=float,
+        description=description,
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": label,
+            "defaultDisplayUnit": "centimeter ** 2"
+        },
+        unit='centimeter ** 2',
+    )

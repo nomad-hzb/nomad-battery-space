@@ -6,7 +6,11 @@ from nomad.metainfo import (
 )
 
 from .battery_sample_package import BatterySample
-from .utils import validate_required
+from .utils import (
+    create_millimeter_quantity,
+    create_string_quantity,
+    validate_required,
+)
 
 m_package = SchemaPackage()
 
@@ -19,32 +23,6 @@ DEFAULT_HIDE_FIELDS = [
 ]
 
 
-def create_millimeter_quantity(label, description, required=False):
-    """Helper function to create millimeter-based float quantities."""
-    return Quantity(
-        type=float,
-        unit="millimeter",
-        description=description,
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": label,
-            "defaultDisplayUnit": "millimeter",
-            "required": required,
-        },
-    )
-
-
-def create_string_quantity(label, description=None, required=False):
-    """Helper function to create string quantities."""
-    return Quantity(
-        type=str,
-        description=description,
-        a_eln={
-            "component": "StringEditQuantity",
-            "label": label,
-            "required": required,
-        },
-    )
 
 class CoinCellBattery(BatterySample):
     m_def = Section(
@@ -56,6 +34,7 @@ class CoinCellBattery(BatterySample):
             "properties": {
                 "order": [
                     "lab_id",
+                    "creator",
                     "name",
                     "datetime",
                     "case_id",
@@ -113,6 +92,7 @@ class PouchCellBattery(BatterySample):
             "properties": {
                 "order": [
                     "lab_id",
+                    "creator",
                     "name",
                     "datetime",
                     "cathode_length",
@@ -181,6 +161,7 @@ class CylindricalCellBattery(BatterySample):
             "properties": {
                 "order": [
                     "lab_id",
+                    "creator",
                     "name",
                     "datetime",
                     "description",
