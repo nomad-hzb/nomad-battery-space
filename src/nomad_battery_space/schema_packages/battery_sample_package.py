@@ -20,7 +20,10 @@ from typing import (
     TYPE_CHECKING,
 )
 
-from nomad.datamodel.data import ArchiveSection
+from nomad.datamodel.data import (
+    ArchiveSection,
+    AuthorReference,
+)
 from nomad.datamodel.metainfo.eln import (
     ELNSubstance,
     SampleID,
@@ -45,9 +48,63 @@ if TYPE_CHECKING:
     from structlog.stdlib import (
         BoundLogger,
     )
-from .utils import validate_required
+
+from .utils import create_area_quantity, create_string_quantity, validate_required
 
 m_package = SchemaPackage()
+
+
+class CreatorReference(AuthorReference):
+    """
+    Custom AuthorReference that serializes User/Author objects as dicts for proper GUI display.
+    
+    The standard AuthorReference._serialize_impl() returns just the user_id string,
+    which causes the AuthorEditQuantity GUI component to show empty because it expects
+    a dict with a user_id property.
+    
+    This custom type serializes User/Author objects as dicts: {"user_id": "...", "name": "..."}
+    while still properly deserializing string user_ids back to User objects.
+    """
+    
+    def _serialize_impl(self, section, value):
+        """Serialize User/Author objects as dicts instead of just strings"""
+        if isinstance(value, str):
+            # Keep strings as-is (they'll be converted back in _normalize_impl)
+            return value
+        
+        if isinstance(value, dict):
+            # Already a dict, return as-is
+            return value
+        
+        # Handle Author and User objects (which don't have m_to_dict or have special handling)
+        if hasattr(value, 'user_id') or hasattr(value, 'first_name'):
+            # User object or Author object - serialize to dict
+            result = {}
+            if hasattr(value, 'user_id'):
+                result['user_id'] = value.user_id
+            if hasattr(value, 'name'):
+                result['name'] = value.name
+            if hasattr(value, 'first_name'):
+                result['first_name'] = value.first_name
+            if hasattr(value, 'last_name'):
+                result['last_name'] = value.last_name
+            if hasattr(value, 'email'):
+                result['email'] = value.email
+            if hasattr(value, 'affiliation'):
+                result['affiliation'] = value.affiliation
+            if hasattr(value, 'affiliation_address'):
+                result['affiliation_address'] = value.affiliation_address
+            return result
+        
+        # Fallback: try to convert to dict using m_to_dict if available
+        if hasattr(value, 'm_to_dict'):
+            try:
+                return value.m_to_dict()
+            except Exception:
+                pass
+        
+        raise ValueError(f'Cannot serialize {value}.')
+
 
 class Anode(ELNSubstance):
     '''
@@ -62,9 +119,11 @@ class Anode(ELNSubstance):
             "hide": ['pure_substance', 'substance_identifiers'],
             "properties": {
                 "order": [
-                    "name", 
+                    "name",
+                    "creator", 
                     "mass",
                     "area",
+                    "supplier",
                 ],
                 "order_default": [
                     "description"
@@ -78,21 +137,33 @@ class Anode(ELNSubstance):
         description='Total mass of the anode.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Mass",
+            "label": "mass",
             "defaultDisplayUnit": "gram"
         },
         unit="gram",
     )
 
-    area = Quantity(
-        type=float,
+    area = create_area_quantity(
+        label="area",
         description='Geometric surface area of the anode.',
+    )
+
+    supplier = create_string_quantity(
+        "supplier",
+        description=(
+            "Manufacturer or seller of the material.\n"
+            "Include company name and/or product designation (e.g., MTI).\n"
+            "Essential for material sourcing and reproducibility."
+        ),
+    )
+
+    creator = Quantity(
+        type=CreatorReference,
+        description='Person who created this anode entry.',
         a_eln={
-            "component": "NumberEditQuantity",
-            "label": "Area",
-            "defaultDisplayUnit": "centimeter ** 2"
+            "component": "AuthorEditQuantity",
+            "label": "creator",
         },
-        unit='centimeter ** 2',
     )
 
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
@@ -105,6 +176,27 @@ class Anode(ELNSubstance):
             logger (BoundLogger): A structlog logger.
         '''
         super().normalize(archive, logger)
+        
+        # Auto-fill creator field with current user if empty
+        if not self.creator and archive.metadata.main_author:
+            from nomad.datamodel.data import User
+            main_author = archive.metadata.main_author
+            
+            # Handle both cases: main_author can be a User object or a string user_id
+            if isinstance(main_author, User):
+                # Already a User object, just assign it
+                self.creator = main_author
+            else:
+                # It's a string user_id, need to fetch the User object
+                try:
+                    user = User.get(user_id=main_author)
+                    if user:
+                        self.creator = user
+                    else:
+                        self.creator = main_author
+                except Exception as e:
+                    logger.warning(f"Could not fetch User for creator: {e}")
+                    self.creator = main_author
 
 class Cathode(ELNSubstance):
     '''
@@ -119,10 +211,12 @@ class Cathode(ELNSubstance):
             "hide": ['pure_substance', 'substance_identifiers'],
             "properties": {
                 "order": [
-                    "name", 
+                    "name",
+                    "creator", 
                     "mass",
                     "area",
                     "mass_active_material",
+                    "supplier",
                 ],
                 "order_default": [
                     "description"
@@ -136,30 +230,42 @@ class Cathode(ELNSubstance):
         description='Total mass of the cathode.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Mass",
+            "label": "mass",
             "defaultDisplayUnit": "gram"
         },
         unit="gram",
     )
-    area = Quantity(
-        type=float,
+    area = create_area_quantity(
+        label="area",
         description='Geometric surface area of the cathode.',
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "Area",
-            "defaultDisplayUnit": "centimeter ** 2"
-        },
-        unit='centimeter ** 2',
     )
     mass_active_material = Quantity(
         type=float,
         description='Mass of the active material in the cathode.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Mass of active material",
+            "label": "mass of active material",
             "defaultDisplayUnit": "%"
         },
         unit="dimensionless",
+    )
+
+    supplier = create_string_quantity(
+        "supplier",
+        description=(
+            "Manufacturer or seller of the material.\n "
+            "Include company name and/or product designation (e.g., MTI).\n\n"
+            "Essential for material sourcing and reproducibility."
+        ),
+    )
+
+    creator = Quantity(
+        type=CreatorReference,
+        description='Person who created this cathode entry.',
+        a_eln={
+            "component": "AuthorEditQuantity",
+            "label": "creator",
+        },
     )
 
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
@@ -172,6 +278,27 @@ class Cathode(ELNSubstance):
             logger (BoundLogger): A structlog logger.
         '''
         super().normalize(archive, logger)
+        
+        # Auto-fill creator field with current user if empty
+        if not self.creator and archive.metadata.main_author:
+            from nomad.datamodel.data import User
+            main_author = archive.metadata.main_author
+            
+            # Handle both cases: main_author can be a User object or a string user_id
+            if isinstance(main_author, User):
+                # Already a User object, just assign it
+                self.creator = main_author
+            else:
+                # It's a string user_id, need to fetch the User object
+                try:
+                    user = User.get(user_id=main_author)
+                    if user:
+                        self.creator = user
+                    else:
+                        self.creator = main_author
+                except Exception as e:
+                    logger.warning(f"Could not fetch User for creator: {e}")
+                    self.creator = main_author
 
 
 class Electrolyte(ELNSubstance):
@@ -184,10 +311,12 @@ class Electrolyte(ELNSubstance):
         a_eln={
             "properties": {
                 "order": [
-                    "state", 
-                    "name",                   
+                    "state",
+                    "name",
+                    "creator",                   
                     "volume",
                     "mass",
+                    "supplier",
                 ],
                 "order_default": [
                     "description"
@@ -205,7 +334,7 @@ class Electrolyte(ELNSubstance):
         description='Physical state of the electrolyte.',
         a_eln={
             "component": "EnumEditQuantity",
-            "label": "State",
+            "label": "state",
         }
     )
     mass = Quantity(
@@ -213,7 +342,7 @@ class Electrolyte(ELNSubstance):
         description='Total mass of the electrolyte.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Mass",
+            "label": "mass",
             "defaultDisplayUnit": "gram",
             "units": ["gram", "milligram", "microgram"],
         },
@@ -225,11 +354,29 @@ class Electrolyte(ELNSubstance):
         description='Volume of the electrolyte.',
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "Volume",
+            "label": "volume",
             "defaultDisplayUnit": "milliliter",
             "units": ["liter", "milliliter", "microliter"],
         },
         unit="milliliter",
+    )
+
+    supplier = create_string_quantity(
+        "supplier",
+        description=(
+            "Manufacturer or seller of the material.\n"
+            "Include company name and/or product designation (e.g., MTI).\n"
+            "Essential for material sourcing and reproducibility."
+        ),
+    )
+
+    creator = Quantity(
+        type=CreatorReference,
+        description='Person who created this electrolyte entry.',
+        a_eln={
+            "component": "AuthorEditQuantity",
+            "label": "creator",
+        },
     )
 
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
@@ -242,6 +389,27 @@ class Electrolyte(ELNSubstance):
             logger (BoundLogger): A structlog logger.
         '''
         super().normalize(archive, logger)
+        
+        # Auto-fill creator field with current user if empty
+        if not self.creator and archive.metadata.main_author:
+            from nomad.datamodel.data import User
+            main_author = archive.metadata.main_author
+            
+            # Handle both cases: main_author can be a User object or a string user_id
+            if isinstance(main_author, User):
+                # Already a User object, just assign it
+                self.creator = main_author
+            else:
+                # It's a string user_id, need to fetch the User object
+                try:
+                    user = User.get(user_id=main_author)
+                    if user:
+                        self.creator = user
+                    else:
+                        self.creator = main_author
+                except Exception as e:
+                    logger.warning(f"Could not fetch User for creator: {e}")
+                    self.creator = main_author
 
 
 class Separator(ELNSubstance):
@@ -255,7 +423,10 @@ class Separator(ELNSubstance):
             "properties": {
                 "order": [
                     "name",
-                    "thickness"
+                    "creator",
+                    "thickness",
+                    "area",
+                    "supplier",
                 ]
             },
             "label": "Separator",
@@ -275,6 +446,29 @@ class Separator(ELNSubstance):
         unit="micrometer",
     )
 
+    area = create_area_quantity(
+        label="area",
+        description='Geometric surface area of the separator.',
+    )
+
+    supplier = create_string_quantity(
+        "supplier",
+        description=(
+            "Manufacturer or seller of the material.\n"
+            "Include company name and/or product designation (e.g., MTI).\n"
+            "Essential for material sourcing and reproducibility."
+        ),
+    )
+
+    creator = Quantity(
+        type=CreatorReference,
+        description='Person who created this separator entry.',
+        a_eln={
+            "component": "AuthorEditQuantity",
+            "label": "creator",
+        },
+    )
+
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
         '''
         The normalizer for the `Separator` class.
@@ -285,6 +479,27 @@ class Separator(ELNSubstance):
             logger (BoundLogger): A structlog logger.
         '''
         super().normalize(archive, logger)
+        
+        # Auto-fill creator field with current user if empty
+        if not self.creator and archive.metadata.main_author:
+            from nomad.datamodel.data import User
+            main_author = archive.metadata.main_author
+            
+            # Handle both cases: main_author can be a User object or a string user_id
+            if isinstance(main_author, User):
+                # Already a User object, just assign it
+                self.creator = main_author
+            else:
+                # It's a string user_id, need to fetch the User object
+                try:
+                    user = User.get(user_id=main_author)
+                    if user:
+                        self.creator = user
+                    else:
+                        self.creator = main_author
+                except Exception as e:
+                    logger.warning(f"Could not fetch User for creator: {e}")
+                    self.creator = main_author
 
 
 # class AnodeReference(EntityReference):
@@ -367,6 +582,7 @@ class BatterySample(ELNSubstance):
             "properties": {
                 "order": [
                     "lab_id",
+                    "creator",
                     "name",
                     "datetime",
                     "description",
@@ -395,6 +611,16 @@ class BatterySample(ELNSubstance):
         """,
         a_eln=dict(component='StringEditQuantity', label='battery ID', required=True),
     )
+
+    creator = Quantity(
+        type=CreatorReference,
+        description='Person who created this battery entry.',
+        a_eln={
+            "component": "AuthorEditQuantity",
+            "label": "creator",
+        },
+    )
+
     description = Quantity(
         type=str,
         description="""
@@ -437,6 +663,20 @@ class BatterySample(ELNSubstance):
             logger (BoundLogger): A structlog logger.
         '''
         super().normalize(archive, logger)
+        
+        # Auto-fill creator field with current user if empty
+        if not self.creator and archive.metadata.main_author:
+            try:
+                from nomad.datamodel.data import User
+                # Fetch the full User object to ensure GUI can display it
+                user = User.get(user_id=archive.metadata.main_author)
+                if user:
+                    self.creator = user
+                else:
+                    self.creator = archive.metadata.main_author
+            except Exception as e:
+                logger.warning(f"Could not fetch User for creator: {e}")
+                self.creator = archive.metadata.main_author
 
         # Validate required lab/battery id
         validate_required(self.lab_id, name='battery ID')
