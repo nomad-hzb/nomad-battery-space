@@ -23,6 +23,7 @@ from typing import (
 from nomad.datamodel.data import (
     ArchiveSection,
     AuthorReference,
+    EntryData,
 )
 from nomad.datamodel.metainfo.eln import (
     ELNSubstance,
@@ -50,6 +51,7 @@ if TYPE_CHECKING:
     )
 
 from .utils import create_area_quantity, create_string_quantity, validate_required
+from baseclasses.voila import VoilaNotebook
 
 m_package = SchemaPackage()
 
@@ -713,5 +715,12 @@ class BatterySample(ELNSubstance):
 
         archive.results.material.elements = elements_list
         
+
+class BatSpace_VoilaNotebook(VoilaNotebook, EntryData):
+    m_def = Section(a_eln=dict(hide=['lab_id']))
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
+
 
 m_package.__init_metainfo__()
