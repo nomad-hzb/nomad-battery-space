@@ -5,7 +5,7 @@ from nomad.metainfo import (
     Section,
 )
 
-from .battery_sample_package import BatterySample
+from .bat_sample_package_depricated import BatterySample
 from .utils import (
     create_millimeter_quantity,
     create_string_quantity,
