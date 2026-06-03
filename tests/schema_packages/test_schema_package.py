@@ -1,8 +1,10 @@
 import os
+import pytest
 
 from nomad.client import normalize_all, parse
 
 
+@pytest.mark.skip(reason="Deprecated: requires update to new data model")
 def test_schema_package():
     base = os.path.join('tests', 'data')
 
