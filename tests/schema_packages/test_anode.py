@@ -1,6 +1,6 @@
 import os
-import pytest
 
+import pytest
 from nomad.client import normalize_all, parse
 
 
