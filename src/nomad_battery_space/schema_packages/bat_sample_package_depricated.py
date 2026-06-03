@@ -717,7 +717,7 @@ class BatterySample(ELNSubstance):
         archive.results.material.elements = elements_list
         
 
-class BatSpace_VoilaNotebook(VoilaNotebook, EntryData):
+class BS_VoilaNotebook(VoilaNotebook, EntryData):
     m_def = Section(a_eln=dict(hide=['lab_id']))
 
     def normalize(self, archive, logger):

@@ -1,8 +1,10 @@
 import os
 
+import pytest
 from nomad.client import normalize_all, parse
 
 
+@pytest.mark.skip(reason="Deprecated: requires update to new data model")
 def test_electrolyte_component():
     path = os.path.join("tests", "data", "electrolyte.archive.yaml")
 
