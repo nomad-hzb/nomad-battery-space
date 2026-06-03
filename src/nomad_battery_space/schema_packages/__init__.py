@@ -1,5 +1,6 @@
 from nomad.config.models.plugins import SchemaPackageEntryPoint
 
+
 class HZBBSPackageEntryPoint(SchemaPackageEntryPoint):
 
     def load(self):

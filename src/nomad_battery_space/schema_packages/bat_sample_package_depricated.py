@@ -50,8 +50,9 @@ if TYPE_CHECKING:
         BoundLogger,
     )
 
-from .utils import create_area_quantity, create_string_quantity, validate_required
 from baseclasses.voila import VoilaNotebook
+
+from .utils import create_area_quantity, create_string_quantity, validate_required
 
 m_package = SchemaPackage()
 

@@ -19,24 +19,24 @@
 """
 Battery Components Package
 
-This module implements the generalized data model for battery components
-and the base BatterySample class that can be extended for specific battery types.
+Data model for HZB battery components and sample preparation.
 
-Structure:
-- Batch Components (pre-assembly):
-  * InitialChemical: Bought-in substances (with CAS, composition, supplier)
-  * ElectrodeMaterial: Synthesized electrode materials (composition, synthesis route, mass)
-  * ElectrodeSheet: Cast electrode sheets (binders, collectors, coating mass)
-  * ElectrolyteStock: Salts + solvents (state, volume)
-  * SeparatorStock: Separator material (thickness, area)
+Core components:
+- BS_Chemical: Bought-in substances
+- ElectrodeMaterial: Synthesized electrode materials
+- ElectrodeSheet: Cast electrode sheets
+- ElectrolyteStock: Electrolyte solutions
+- SeparatorStock: Separator material
 
-- Sample Components (cut/prepared):
-  * ElectrodeSample: Prepared electrode sample (size, mass, area)
-  * ElectrolyteSample: Prepared electrolyte sample (volume)
-  * SeparatorSample: Prepared separator sample (area)
+Sample components:
+- ElectrodeSample: Prepared electrode samples with geometry
+- ElectrolyteSample: Prepared electrolyte samples
+- SeparatorSample: Prepared separator samples
 
-- Base Battery Sample:
-  * BatterySample: Base class for all battery types (provides common fields)
+Base class:
+- BatterySample: Base class for all battery types
+
+Geometry support for samples (CircleGeometry, RectangleGeometry, OtherGeometry)
 """
 
 from typing import TYPE_CHECKING
@@ -59,9 +59,9 @@ if TYPE_CHECKING:
     from nomad.datamodel.datamodel import EntryArchive
     from structlog.stdlib import BoundLogger
 
-from .bat_sample_package_depricated import CreatorReference
-from .utils import create_area_quantity, create_string_quantity, validate_required
 from baseclasses.voila import VoilaNotebook
+
+from .utils import create_string_quantity, validate_required
 
 m_package = SchemaPackage()
 
