@@ -1264,7 +1264,7 @@ class BatterySample(ELNSubstance):
     '''
     m_def = Section(
         links=['https://w3id.org/emmo/domain/battery#battery_68ed592a_7924_45d0_a108_94d6275d57f0'],
-        label="HZB Battery Sample",
+        label="HZB Battery: Generic Sample",
         a_eln={
             "label": "HZB Battery: Generic Sample",
             "entry_type": "BatterySample",

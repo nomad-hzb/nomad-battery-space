@@ -55,7 +55,7 @@ class CoinCellBattery(BatterySample):
     """
     m_def = Section(
         links=['https://w3id.org/emmo/domain/battery#battery_b7fdab58_6e91_4c84_b097_b06eff86a124'],
-        label="HZB Coin Cell Battery",
+        label="HZB Battery: Coin Cell",
         a_eln={
             "label": "HZB Battery: Coin Cell",
             "entry_type": "CoinCell",
