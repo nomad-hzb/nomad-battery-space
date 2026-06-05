@@ -45,6 +45,7 @@ from baseclasses import PubChemPureSubstanceSectionCustom
 from nomad.datamodel.data import ArchiveSection, EntryData
 from nomad.datamodel.metainfo.basesections.v1 import SynthesisMethod
 from nomad.datamodel.metainfo.eln import ELNSubstance, SampleID
+from nomad.datamodel.results import Material, Results
 from nomad.metainfo import (
     Enum,
     Quantity,
@@ -61,7 +62,7 @@ if TYPE_CHECKING:
 
 from baseclasses.voila import VoilaNotebook
 
-from .utils import create_string_quantity, validate_required
+from .utils import create_string_quantity, extract_elements, validate_required
 
 m_package = SchemaPackage()
 
@@ -95,7 +96,10 @@ class BS_Chemical(ELNSubstance):
                     "substance_identifiers",
                 ]
             },
-        }
+        },
+        a_template=dict(
+            substance_identifiers=dict(),
+        ),
     )
 
     # creator = Quantity(
@@ -108,6 +112,9 @@ class BS_Chemical(ELNSubstance):
     # )
 
     pure_substance = SubSection(section_def=PubChemPureSubstanceSectionCustom)
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
 
 
 class BS_ChemicalReference(ArchiveSection):
@@ -271,12 +278,12 @@ class ElectrodeMaterial(ELNSubstance):
                     "synthesis",
                     "mass",
                     "yield_percent",
-                ],
-                "order_default": [
                     "description",
                     "elemental_composition",
                     "pure_substance",
                     "chemicals",
+                ],
+                "order_default": [
                     "substance_identifiers",
                 ]
             },
@@ -327,9 +334,57 @@ class ElectrodeMaterial(ELNSubstance):
         unit="dimensionless",
     )
 
+    aggregated_elements = Quantity(
+        type=str,
+        shape=['*'],
+        description=(
+            'All chemical elements found in this material and referenced chemicals used for search.'
+        ),
+        a_eln={
+            "label": "aggregated elements",
+        }
+    )
+
     #TODO: Let user decide whether to use PubChem substance like below or keep it flexible with the dropdown selection
     # 1) pure_substance = SubSection(section_def=PubChemPureSubstanceSectionCustom)
     # 2) creator needed?
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
+        
+        # Collect elements from all sources
+        elements = set()
+        
+        # Collect from own elemental_composition
+        elements.update(extract_elements(self))
+        
+        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
+        if self.chemicals:
+            for chem_ref in self.chemicals:
+                if chem_ref.chemical:
+                    elements.update(extract_elements(chem_ref.chemical))
+        
+        # Store aggregated elements
+        elements_list = sorted(elements)
+        self.aggregated_elements = elements_list
+        
+        # Store aggregated elements in elemental_composition
+        if elements:
+            if not self.elemental_composition:
+                self.elemental_composition = []
+            from nomad.datamodel.metainfo.eln import ElementalComposition
+            self.elemental_composition = [
+                ElementalComposition(element=el) for el in elements_list
+            ]
+        
+        # Save to results
+        if archive.results is None:
+            archive.results = Results()
+
+        if archive.results.material is None:
+            archive.results.material = Material()
+
+        archive.results.material.elements = elements_list
 
 
 class ActiveMaterialComponent(ArchiveSection):
@@ -473,6 +528,62 @@ class ElectrodeSheet(ELNSubstance):
         description="Geometric surface area of the electrode sheet.",
     )
 
+    aggregated_elements = Quantity(
+        type=str,
+        shape=['*'],
+        description=(
+            'All chemical elements found in electrode materials and chemicals used for search.'
+        ),
+        a_eln={
+            "label": "aggregated elements",
+        }
+    )
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
+        
+        # Collect elements from all sources
+        elements = set()
+        
+        # Collect from own elemental_composition
+        elements.update(extract_elements(self))
+        
+        # Collect from electrode_materials (ActiveMaterialComponent with ElectrodeMaterial)
+        if self.electrode_materials:
+            for mat_component in self.electrode_materials:
+                if mat_component.material:
+                    elements.update(extract_elements(mat_component.material))
+        
+        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
+        if self.chemicals:
+            for chem_ref in self.chemicals:
+                if chem_ref.chemical:
+                    elements.update(extract_elements(chem_ref.chemical))
+        
+        # Store aggregated elements
+        elements_list = sorted(elements)
+        self.aggregated_elements = elements_list
+        
+        # Store aggregated elements in elemental_composition
+        if elements:
+            # Ensure elemental_composition exists and update it
+            if not self.elemental_composition:
+                self.elemental_composition = []
+            # Create element entries from the set
+            from nomad.datamodel.metainfo.eln import ElementalComposition
+            self.elemental_composition = [
+                ElementalComposition(element=el) for el in elements_list
+            ]
+        
+        # Save to results
+        if archive.results is None:
+            archive.results = Results()
+
+        if archive.results.material is None:
+            archive.results.material = Material()
+
+        archive.results.material.elements = elements_list
+
 
 class ElectrolyteStock(ELNSubstance):
     """
@@ -549,6 +660,56 @@ class ElectrolyteStock(ELNSubstance):
         },
     )
 
+    aggregated_elements = Quantity(
+        type=str,
+        shape=['*'],
+        description=(
+            'All chemical elements found in this electrolyte and referenced chemicals used for search.'
+        ),
+        a_eln={
+            "label": "aggregated elements",
+        }
+    )
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
+        
+        # Collect elements from all sources
+        elements = set()
+        
+        # Collect from own elemental_composition
+        elements.update(extract_elements(self))
+        
+        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
+        if self.chemicals:
+            for chem_ref in self.chemicals:
+                if chem_ref.chemical:
+                    elements.update(extract_elements(chem_ref.chemical))
+        
+        # Store aggregated elements
+        elements_list = sorted(elements)
+        self.aggregated_elements = elements_list
+        
+        # Store aggregated elements in elemental_composition
+        if elements:
+            # Ensure elemental_composition exists and update it
+            if not self.elemental_composition:
+                self.elemental_composition = []
+            # Create element entries from the set
+            from nomad.datamodel.metainfo.eln import ElementalComposition
+            self.elemental_composition = [
+                ElementalComposition(element=el) for el in elements_list
+            ]
+        
+        # Save to results
+        if archive.results is None:
+            archive.results = Results()
+
+        if archive.results.material is None:
+            archive.results.material = Material()
+
+        archive.results.material.elements = elements_list
+
 
 class SeparatorStock(ELNSubstance):
     """
@@ -617,6 +778,56 @@ class SeparatorStock(ELNSubstance):
     #     unit="dimensionless",
     # )
 
+    aggregated_elements = Quantity(
+        type=str,
+        shape=['*'],
+        description=(
+            'All chemical elements found in this separator and referenced chemicals used for search.'
+        ),
+        a_eln={
+            "label": "aggregated elements",
+        }
+    )
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
+        
+        # Collect elements from all sources
+        elements = set()
+        
+        # Collect from own elemental_composition
+        elements.update(extract_elements(self))
+        
+        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
+        if self.chemicals:
+            for chem_ref in self.chemicals:
+                if chem_ref.chemical:
+                    elements.update(extract_elements(chem_ref.chemical))
+        
+        # Store aggregated elements
+        elements_list = sorted(elements)
+        self.aggregated_elements = elements_list
+        
+        # Store aggregated elements in elemental_composition
+        if elements:
+            # Ensure elemental_composition exists and update it
+            if not self.elemental_composition:
+                self.elemental_composition = []
+            # Create element entries from the set
+            from nomad.datamodel.metainfo.eln import ElementalComposition
+            self.elemental_composition = [
+                ElementalComposition(element=el) for el in elements_list
+            ]
+        
+        # Save to results
+        if archive.results is None:
+            archive.results = Results()
+
+        if archive.results.material is None:
+            archive.results.material = Material()
+
+        archive.results.material.elements = elements_list
+
 
 # ============================================================================
 # SAMPLE COMPONENTS (Cut/Prepared from Batch)
@@ -626,7 +837,7 @@ class GeometricalShape(ArchiveSection):
     """Base class for sample geometry."""
     
     m_def = Section(
-        label ='Select shape from the dropdown',
+        label='Select shape from the dropdown',
     )
 
 
@@ -634,7 +845,7 @@ class CircleGeometry(GeometricalShape):
     """Circular sample geometry with diameter."""
     
     m_def = Section(
-        label ='Circle',
+        label='Circle',
     )
     
     diameter = Quantity(
@@ -674,7 +885,7 @@ class RectangleGeometry(GeometricalShape):
     """Rectangular sample geometry with length and width."""
     
     m_def = Section(
-        label ='Rectangle',
+        label='Rectangle',
     )
     
     length = Quantity(
@@ -801,11 +1012,57 @@ class ElectrodeSample(ELNSubstance):
             "label": "chemicals",
             "showSectionLabel": True,
         },
+    )
+
+    aggregated_elements = Quantity(
+        type=str,
+        shape=['*'],
+        description=(
+            'All chemical elements found in electrode sheet and chemicals used for search.'
+        ),
+        a_eln={
+            "label": "aggregated elements",
+        }
     )    
         
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
+        # Collect elements from all sources
+        elements = set()
+        
+        # Collect from electrode_sheet (ElectrodeSheet)
+        if self.electrode_sheet:
+            elements.update(extract_elements(self.electrode_sheet))
+        
+        # Collect from own chemicals (BS_ChemicalReference with BS_Chemical)
+        if self.chemicals:
+            for chem_ref in self.chemicals:
+                if chem_ref.chemical:
+                    elements.update(extract_elements(chem_ref.chemical))
+        
+        # Store aggregated elements
+        elements_list = sorted(elements)
+        self.aggregated_elements = elements_list
+        
+        # Store aggregated elements in elemental_composition
+        if elements:
+            if not self.elemental_composition:
+                self.elemental_composition = []
+            from nomad.datamodel.metainfo.eln import ElementalComposition
+            self.elemental_composition = [
+                ElementalComposition(element=el) for el in elements_list
+            ]
+        
+        # Save to results
+        if archive.results is None:
+            archive.results = Results()
+
+        if archive.results.material is None:
+            archive.results.material = Material()
+
+        archive.results.material.elements = elements_list
+
 
 class ElectrolyteSample(ELNSubstance):
     """
@@ -866,6 +1123,49 @@ class ElectrolyteSample(ELNSubstance):
         unit="milligram",
     )
 
+    aggregated_elements = Quantity(
+        type=str,
+        shape=['*'],
+        description=(
+            'All chemical elements found in electrolyte stock used for search.'
+        ),
+        a_eln={
+            "label": "aggregated elements",
+        }
+    )
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
+        
+        # Collect elements from all sources
+        elements = set()
+        
+        # Collect from electrolyte_stock (ElectrolyteStock)
+        if self.electrolyte_stock:
+            elements.update(extract_elements(self.electrolyte_stock))
+        
+        # Store aggregated elements
+        elements_list = sorted(elements)
+        self.aggregated_elements = elements_list
+        
+        # Store aggregated elements in elemental_composition
+        if elements:
+            if not self.elemental_composition:
+                self.elemental_composition = []
+            from nomad.datamodel.metainfo.eln import ElementalComposition
+            self.elemental_composition = [
+                ElementalComposition(element=el) for el in elements_list
+            ]
+        
+        # Save to results
+        if archive.results is None:
+            archive.results = Results()
+
+        if archive.results.material is None:
+            archive.results.material = Material()
+
+        archive.results.material.elements = elements_list
+
 
 class SeparatorSample(ELNSubstance):
     """
@@ -907,6 +1207,49 @@ class SeparatorSample(ELNSubstance):
         description="Geometric surface area of the separator sample used in assembly.",
     )
 
+    aggregated_elements = Quantity(
+        type=str,
+        shape=['*'],
+        description=(
+            'All chemical elements found in separator stock used for search.'
+        ),
+        a_eln={
+            "label": "aggregated elements",
+        }
+    )
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
+        
+        # Collect elements from all sources
+        elements = set()
+        
+        # Collect from separator_stock (SeparatorStock)
+        if self.separator_stock:
+            elements.update(extract_elements(self.separator_stock))
+        
+        # Store aggregated elements
+        elements_list = sorted(elements)
+        self.aggregated_elements = elements_list
+        
+        # Store aggregated elements in elemental_composition
+        if elements:
+            if not self.elemental_composition:
+                self.elemental_composition = []
+            from nomad.datamodel.metainfo.eln import ElementalComposition
+            self.elemental_composition = [
+                ElementalComposition(element=el) for el in elements_list
+            ]
+        
+        # Save to results
+        if archive.results is None:
+            archive.results = Results()
+
+        if archive.results.material is None:
+            archive.results.material = Material()
+
+        archive.results.material.elements = elements_list
+
 
 # ============================================================================
 # BASE BATTERY SAMPLE
@@ -923,7 +1266,7 @@ class BatterySample(ELNSubstance):
         links=['https://w3id.org/emmo/domain/battery#battery_68ed592a_7924_45d0_a108_94d6275d57f0'],
         label="HZB Battery Sample",
         a_eln={
-            "label": "HZB Battery",
+            "label": "HZB Battery: Generic Sample",
             "entry_type": "BatterySample",
             "hide": ['pure_substance', 
                      'substance_identifiers', 
@@ -1035,7 +1378,33 @@ class BatterySample(ELNSubstance):
         # Validate required lab/battery id
         validate_required(self.lab_id, name='battery ID')
 
-        #TODO: Auto-populate aggregated_elements from all referenced components (electrode materials, electrolyte chemicals, separator chemicals)
+        # Auto-populate aggregated_elements from all referenced components
+        elements = set()
+
+        # Collect elements from all battery components
+        if self.working_electrode:
+            elements.update(extract_elements(self.working_electrode))
+        if self.counter_electrode:
+            elements.update(extract_elements(self.counter_electrode))
+        if self.reference_electrode:
+            elements.update(extract_elements(self.reference_electrode))
+        if self.separator:
+            elements.update(extract_elements(self.separator))
+        if self.electrolyte:
+            elements.update(extract_elements(self.electrolyte))
+
+        # Store aggregated elements
+        elements_list = sorted(elements)
+        self.aggregated_elements = elements_list
+
+        # Save to results
+        if archive.results is None:
+            archive.results = Results()
+
+        if archive.results.material is None:
+            archive.results.material = Material()
+
+        archive.results.material.elements = elements_list
 
 
 # ============================================================================

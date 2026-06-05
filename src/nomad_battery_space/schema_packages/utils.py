@@ -1,6 +1,33 @@
 from nomad.metainfo import Quantity
 
 
+def extract_elements(component):
+    """
+    Extract chemical elements from a component's elemental_composition.
+    
+    This utility function iterates through a component's elemental_composition
+    list and extracts all unique element symbols, returning them as a set
+    of strings for aggregation.
+    
+    Args:
+        component: The component object to extract elements from
+        
+    Returns:
+        set: Set of element strings found in the component's elemental_composition
+    """
+    elements = set()
+    if component is None:
+        return elements
+    ec_list = getattr(component, 'elemental_composition', None)
+    if not ec_list:
+        return elements
+    for comp in ec_list:
+        el = getattr(comp, 'element', None)
+        if el:
+            elements.add(str(el))
+    return elements
+
+
 def validate_required(value, *, name: str) -> None:
     """Validate that a required field has a non-empty value.
 
