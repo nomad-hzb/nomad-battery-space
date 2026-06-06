@@ -640,7 +640,7 @@ class ElectrolyteStock(ELNSubstance):
         type=str,
         shape=['*'],
         description=(
-            'All chemical elements found in this electrolyte and referenced chemicals used for search.'
+            'Chemical elements aggregated from all referenced components for NOMAD search.'
         ),
         a_eln={
             "label": "aggregated elements",
@@ -746,7 +746,7 @@ class SeparatorStock(ELNSubstance):
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
-        description='Chemical elements aggregated for NOMAD search.',
+        description='Chemical elements aggregated from all referenced components for NOMAD search.',
         a_eln={
             "label": "aggregated elements",
         }
