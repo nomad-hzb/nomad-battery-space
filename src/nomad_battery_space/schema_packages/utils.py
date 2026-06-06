@@ -3,28 +3,36 @@ from nomad.metainfo import Quantity
 
 def extract_elements(component):
     """
-    Extract chemical elements from a component's elemental_composition.
+    Extract chemical elements from a component with hierarchical aggregation support.
     
-    This utility function iterates through a component's elemental_composition
-    list and extracts all unique element symbols, returning them as a set
-    of strings for aggregation.
+    This utility function extracts all unique element symbols from a component,
+    prioritizing aggregated_elements (which contain hierarchically aggregated elements
+    from referenced components) and falling back to elemental_composition (for 
+    base components like BS_Chemical).
     
     Args:
         component: The component object to extract elements from
         
     Returns:
-        set: Set of element strings found in the component's elemental_composition
+        set: Set of element strings found in the component
     """
     elements = set()
     if component is None:
         return elements
+    
+    # Priority 1: Use aggregated_elements if available (hierarchical aggregation)
+    agg_elems = getattr(component, 'aggregated_elements', None)
+    if agg_elems:
+        elements.update(agg_elems)
+    
+    # Priority 2: Fall back to elemental_composition for base components
     ec_list = getattr(component, 'elemental_composition', None)
-    if not ec_list:
-        return elements
-    for comp in ec_list:
-        el = getattr(comp, 'element', None)
-        if el:
-            elements.add(str(el))
+    if ec_list:
+        for comp in ec_list:
+            el = getattr(comp, 'element', None)
+            if el:
+                elements.add(str(el))
+    
     return elements
 
 

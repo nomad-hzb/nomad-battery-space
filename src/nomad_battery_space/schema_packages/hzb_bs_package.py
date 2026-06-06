@@ -337,9 +337,7 @@ class ElectrodeMaterial(ELNSubstance):
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
-        description=(
-            'All chemical elements found in this material and referenced chemicals used for search.'
-        ),
+        description='Chemical elements aggregated from all referenced components for NOMAD search.',
         a_eln={
             "label": "aggregated elements",
         }
@@ -367,15 +365,6 @@ class ElectrodeMaterial(ELNSubstance):
         # Store aggregated elements
         elements_list = sorted(elements)
         self.aggregated_elements = elements_list
-        
-        # Store aggregated elements in elemental_composition
-        if elements:
-            if not self.elemental_composition:
-                self.elemental_composition = []
-            from nomad.datamodel.metainfo.eln import ElementalComposition
-            self.elemental_composition = [
-                ElementalComposition(element=el) for el in elements_list
-            ]
         
         # Save to results
         if archive.results is None:
@@ -531,9 +520,7 @@ class ElectrodeSheet(ELNSubstance):
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
-        description=(
-            'All chemical elements found in electrode materials and chemicals used for search.'
-        ),
+        description='Chemical elements aggregated from all referenced components for NOMAD search.',
         a_eln={
             "label": "aggregated elements",
         }
@@ -563,17 +550,6 @@ class ElectrodeSheet(ELNSubstance):
         # Store aggregated elements
         elements_list = sorted(elements)
         self.aggregated_elements = elements_list
-        
-        # Store aggregated elements in elemental_composition
-        if elements:
-            # Ensure elemental_composition exists and update it
-            if not self.elemental_composition:
-                self.elemental_composition = []
-            # Create element entries from the set
-            from nomad.datamodel.metainfo.eln import ElementalComposition
-            self.elemental_composition = [
-                ElementalComposition(element=el) for el in elements_list
-            ]
         
         # Save to results
         if archive.results is None:
@@ -664,7 +640,7 @@ class ElectrolyteStock(ELNSubstance):
         type=str,
         shape=['*'],
         description=(
-            'All chemical elements found in this electrolyte and referenced chemicals used for search.'
+            'Chemical elements aggregated from all referenced components for NOMAD search.'
         ),
         a_eln={
             "label": "aggregated elements",
@@ -689,17 +665,6 @@ class ElectrolyteStock(ELNSubstance):
         # Store aggregated elements
         elements_list = sorted(elements)
         self.aggregated_elements = elements_list
-        
-        # Store aggregated elements in elemental_composition
-        if elements:
-            # Ensure elemental_composition exists and update it
-            if not self.elemental_composition:
-                self.elemental_composition = []
-            # Create element entries from the set
-            from nomad.datamodel.metainfo.eln import ElementalComposition
-            self.elemental_composition = [
-                ElementalComposition(element=el) for el in elements_list
-            ]
         
         # Save to results
         if archive.results is None:
@@ -781,9 +746,7 @@ class SeparatorStock(ELNSubstance):
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
-        description=(
-            'All chemical elements found in this separator and referenced chemicals used for search.'
-        ),
+        description='Chemical elements aggregated from all referenced components for NOMAD search.',
         a_eln={
             "label": "aggregated elements",
         }
@@ -807,17 +770,6 @@ class SeparatorStock(ELNSubstance):
         # Store aggregated elements
         elements_list = sorted(elements)
         self.aggregated_elements = elements_list
-        
-        # Store aggregated elements in elemental_composition
-        if elements:
-            # Ensure elemental_composition exists and update it
-            if not self.elemental_composition:
-                self.elemental_composition = []
-            # Create element entries from the set
-            from nomad.datamodel.metainfo.eln import ElementalComposition
-            self.elemental_composition = [
-                ElementalComposition(element=el) for el in elements_list
-            ]
         
         # Save to results
         if archive.results is None:
@@ -1017,9 +969,7 @@ class ElectrodeSample(ELNSubstance):
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
-        description=(
-            'All chemical elements found in electrode sheet and chemicals used for search.'
-        ),
+        description='Chemical elements aggregated from all referenced components for NOMAD search.',
         a_eln={
             "label": "aggregated elements",
         }
@@ -1044,15 +994,6 @@ class ElectrodeSample(ELNSubstance):
         # Store aggregated elements
         elements_list = sorted(elements)
         self.aggregated_elements = elements_list
-        
-        # Store aggregated elements in elemental_composition
-        if elements:
-            if not self.elemental_composition:
-                self.elemental_composition = []
-            from nomad.datamodel.metainfo.eln import ElementalComposition
-            self.elemental_composition = [
-                ElementalComposition(element=el) for el in elements_list
-            ]
         
         # Save to results
         if archive.results is None:
@@ -1126,9 +1067,7 @@ class ElectrolyteSample(ELNSubstance):
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
-        description=(
-            'All chemical elements found in electrolyte stock used for search.'
-        ),
+        description='Chemical elements aggregated from all referenced components for NOMAD search.',
         a_eln={
             "label": "aggregated elements",
         }
@@ -1147,15 +1086,6 @@ class ElectrolyteSample(ELNSubstance):
         # Store aggregated elements
         elements_list = sorted(elements)
         self.aggregated_elements = elements_list
-        
-        # Store aggregated elements in elemental_composition
-        if elements:
-            if not self.elemental_composition:
-                self.elemental_composition = []
-            from nomad.datamodel.metainfo.eln import ElementalComposition
-            self.elemental_composition = [
-                ElementalComposition(element=el) for el in elements_list
-            ]
         
         # Save to results
         if archive.results is None:
@@ -1210,9 +1140,7 @@ class SeparatorSample(ELNSubstance):
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
-        description=(
-            'All chemical elements found in separator stock used for search.'
-        ),
+        description='Chemical elements aggregated from all referenced components for NOMAD search.',
         a_eln={
             "label": "aggregated elements",
         }
@@ -1231,15 +1159,6 @@ class SeparatorSample(ELNSubstance):
         # Store aggregated elements
         elements_list = sorted(elements)
         self.aggregated_elements = elements_list
-        
-        # Store aggregated elements in elemental_composition
-        if elements:
-            if not self.elemental_composition:
-                self.elemental_composition = []
-            from nomad.datamodel.metainfo.eln import ElementalComposition
-            self.elemental_composition = [
-                ElementalComposition(element=el) for el in elements_list
-            ]
         
         # Save to results
         if archive.results is None:
@@ -1328,9 +1247,7 @@ class BatterySample(ELNSubstance):
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
-        description=(
-            'All chemical elements found in referenced components used for search.'
-        ),
+        description='Chemical elements aggregated from all referenced components for NOMAD search.',
         a_eln={
             "label": "aggregated elements",
         }
