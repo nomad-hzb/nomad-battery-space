@@ -41,7 +41,7 @@ Geometry support for samples (CircleGeometry, RectangleGeometry, OtherGeometry)
 
 from typing import TYPE_CHECKING
 
-from baseclasses import PubChemPureSubstanceSectionCustom, ProductInfo
+from baseclasses import ProductInfo, PubChemPureSubstanceSectionCustom
 from nomad.datamodel.data import ArchiveSection, EntryData
 from nomad.datamodel.metainfo.basesections.v1 import SynthesisMethod
 from nomad.datamodel.metainfo.eln import ELNSubstance, SampleID
