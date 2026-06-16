@@ -41,7 +41,7 @@ Geometry support for samples (CircleGeometry, RectangleGeometry, OtherGeometry)
 
 from typing import TYPE_CHECKING
 
-from baseclasses import PubChemPureSubstanceSectionCustom
+from baseclasses import PubChemPureSubstanceSectionCustom, ProductInfo
 from nomad.datamodel.data import ArchiveSection, EntryData
 from nomad.datamodel.metainfo.basesections.v1 import SynthesisMethod
 from nomad.datamodel.metainfo.eln import ELNSubstance, SampleID
@@ -166,6 +166,7 @@ class BS_ChemicalReference(ArchiveSection):
     )
 
     volume = Quantity(
+        links=['http://purl.obolibrary.org/obo/PATO_0000918', 'https://purl.archive.org/tfsco/TFSCO_00002158'],
         type=float,
         description="Volume of the chemical used.",
         a_eln={
@@ -178,6 +179,7 @@ class BS_ChemicalReference(ArchiveSection):
     )
 
     mass = Quantity(
+        links=['http://purl.obolibrary.org/obo/PATO_0000125', 'https://purl.archive.org/tfsco/TFSCO_00005020'],
         type=float,
         description="Mass of the chemical used.",
         a_eln={
@@ -188,6 +190,45 @@ class BS_ChemicalReference(ArchiveSection):
         },
         unit="gram",
     )
+
+    concentration_mol = Quantity(
+        links=['http://purl.obolibrary.org/obo/PATO_0000033'],
+        type=float,
+        description="Molar concentration of the chemical (mol per liter).",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "concentration (mol/l)",
+            "defaultDisplayUnit": "mol/l",
+            "units": ["mol/l", "mmol/l", "mol/ml"],
+        },
+        unit="mol/l",
+    )
+
+    # concentration_mass = Quantity(
+    #     links=['http://purl.obolibrary.org/obo/PATO_0000033'],
+    #     type=float,
+    #     description="Mass concentration of the chemical (mass per volume).",
+    #     a_eln={
+    #         "component": "NumberEditQuantity",
+    #         "label": "concentration (mass)",
+    #         "defaultDisplayUnit": "mg/ml",
+    #         "units": ["g/l", "mg/ml", "mg/l"],
+    #     },
+    #     unit="mg/ml",
+    # )
+
+    # concentration_vol = Quantity(
+    #     links=['http://purl.obolibrary.org/obo/PATO_0000033'],
+    #     type=float,
+    #     description="Volume-to-volume concentration (v/v), e.g. for liquid additives or solvents.",
+    #     a_eln={
+    #         "component": "NumberEditQuantity",
+    #         "label": "concentration (v/v)",
+    #         "defaultDisplayUnit": "%",
+    #         "units": ["%", "ul/ml", "ml/l"],
+    #     },
+    #     unit="dimensionless",
+    # )
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
@@ -287,7 +328,10 @@ class ElectrodeMaterial(ELNSubstance):
                     "substance_identifiers",
                 ]
             },
-        }
+        },
+        a_template=dict(
+            substance_identifiers=dict(),
+        ),
     )
 
     chemical_composition_or_formulas = create_string_quantity(
@@ -433,6 +477,18 @@ class ActiveMaterialComponent(ArchiveSection):
         unit="milligram",
     )
 
+    wt_percent = Quantity(
+        type=float,
+        description="Weight percent (wt%) of this material component in the electrode sheet.",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "wt%",
+            "defaultDisplayUnit": "%",
+            "props": {"minValue": 0, "maxValue": 100},
+        },
+        unit="dimensionless",
+    )
+
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         # Auto-populate material_name from the referenced ElectrodeMaterial
@@ -464,7 +520,8 @@ class ElectrodeSheet(ELNSubstance):
                 "order": [
                     "name",
                     "casting_procedure",
-                    "coating_mass",     
+                    "coating_mass",
+                    "thickness",     
                     "dimensions",    
                     "chemicals",
                     "electrode_materials",           
@@ -474,7 +531,10 @@ class ElectrodeSheet(ELNSubstance):
                     "substance_identifiers",
                 ]
             },
-        }
+        },
+        a_template=dict(
+            substance_identifiers=dict(),
+        ),
     )
 
     casting_procedure = create_string_quantity(
@@ -501,6 +561,14 @@ class ElectrodeSheet(ELNSubstance):
         },
     )
 
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased electrode sheets.",
+        a_eln={
+            "label": "Product Info / Supplier",
+        },
+    )
+
     coating_mass = Quantity(
         type=float,
         description="Total mass of the coating.",
@@ -510,6 +578,17 @@ class ElectrodeSheet(ELNSubstance):
             "defaultDisplayUnit": "gram",
         },
         unit="gram",
+    )
+
+    thickness = Quantity(
+        type=float,
+        description="Thickness of the electrode sheet.",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "thickness",
+            "defaultDisplayUnit": "micrometer",
+        },
+        unit="micrometer",
     )
 
     dimensions = SubSection(
@@ -589,7 +668,10 @@ class ElectrolyteStock(ELNSubstance):
                     "substance_identifiers",
                 ]
             },
-        }
+        },
+        a_template=dict(
+            substance_identifiers=dict(),
+        ),
     )
 
     StateEnum = Enum(["Liquid", "Solid"])
@@ -633,6 +715,14 @@ class ElectrolyteStock(ELNSubstance):
         a_eln={
             "label": "chemicals",
             "showSectionLabel": True,
+        },
+    )
+
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased electrolyte stocks.",
+        a_eln={
+            "label": "Product Info / Supplier",
         },
     )
 
@@ -702,7 +792,10 @@ class SeparatorStock(ELNSubstance):
                     "substance_identifiers",
                 ]
             },
-        }
+        },
+        a_template=dict(
+            substance_identifiers=dict(),
+        ),
     )
 
     thickness = Quantity(
@@ -728,6 +821,14 @@ class SeparatorStock(ELNSubstance):
         a_eln={
             "label": "chemicals",
             "showSectionLabel": True,
+        },
+    )
+
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased separator stocks.",
+        a_eln={
+            "label": "Product Info / Supplier",
         },
     )
 
@@ -919,6 +1020,7 @@ class ElectrodeSample(ELNSubstance):
                 "order": [
                     "name",
                     "electrode_sheet",
+                    "thickness",
                     "mass",
                     "shape",
                     "chemicals",
@@ -928,7 +1030,10 @@ class ElectrodeSample(ELNSubstance):
                     "substance_identifiers",
                 ]
             },
-        }
+        },
+        a_template=dict(
+            substance_identifiers=dict(),
+        ),
     )
 
     electrode_sheet = Quantity(
@@ -938,6 +1043,17 @@ class ElectrodeSample(ELNSubstance):
                 "component": "ReferenceEditQuantity",
                 "showSectionLabel": True,
                },
+    )
+
+    thickness = Quantity(
+        type=float,
+        description="Thickness of the electrode sample. If cut from an electrode sheet, this will be automatically set from the parent sheet's thickness on save. Manual entry is only used if the parent sheet has no thickness value.",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "thickness",
+            "defaultDisplayUnit": "micrometer",
+        },
+        unit="micrometer",
     )
 
     mass = Quantity(
@@ -966,6 +1082,14 @@ class ElectrodeSample(ELNSubstance):
         },
     )
 
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased electrode samples.",
+        a_eln={
+            "label": "Product Info / Supplier",
+        },
+    )
+
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -977,6 +1101,12 @@ class ElectrodeSample(ELNSubstance):
         
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+        
+        # If sample is cut from a sheet, always use the sheet's thickness (override manual entry)
+        # Only accept manual thickness if the parent sheet has no thickness value
+        if self.electrode_sheet:
+            if hasattr(self.electrode_sheet, 'thickness') and self.electrode_sheet.thickness:
+                self.thickness = self.electrode_sheet.thickness
         
         # Collect elements from all sources
         elements = set()
@@ -1209,6 +1339,9 @@ class BatterySample(ELNSubstance):
                 ]
             },
         },
+        a_template=dict(
+            substance_identifiers=dict(),
+        ),
     )
 
     lab_id = Quantity(
