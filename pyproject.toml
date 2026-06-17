@@ -26,7 +26,7 @@ maintainers = [
 license = { file = "LICENSE" }
 dependencies = [
     "nomad-lab>=1.4.0",
-    "nomad-baseclasses @ git+https://github.com/nomad-hzb/nomad-baseclasses.git",
+    "nomad-baseclasses @ git+https://github.com/nomad-hzb/nomad-baseclasses.git@v1.0.1",
 ]
 
 [project.urls]
