@@ -21,6 +21,9 @@ hzb_bat_search_app = App(
             '*#nomad_battery_space.schema_packages.battery_cell_assembly_package.CoinCellBattery',
             '*#nomad_battery_space.schema_packages.battery_cell_assembly_package.CylindricalCellBattery',
             '*#nomad_battery_space.schema_packages.battery_cell_assembly_package.PouchCellBattery',
+            '*#nomad_battery_space.schema_packages.battery_sample_package.Anode',
+            '*#nomad_battery_space.schema_packages.battery_sample_package.Cathode',
+            '*#nomad_battery_space.schema_packages.battery_sample_package.BatterySample',
         ]
     ),
     # filters_locked={'section_defs.definition_qualified_name': [schema]},
@@ -57,4 +60,21 @@ hzb_bat_search_app = App(
             # ),
         ],
     ),
+    # BatterySample exclusive: move that into extra app
+    # dashboard=Dashboard(
+    #     widgets=[
+    #         WidgetPeriodicTable(
+    #             title='Aggregated elements',
+    #             layout={
+    #                 'sm': Layout(minH=3, minW=3, h=9, w=12, y=0, x=0),
+    #                 'md': Layout(minH=3, minW=3, h=9, w=12, y=0, x=0),
+    #                 'lg': Layout(minH=3, minW=3, h=9, w=12, y=0, x=0),
+    #                 'xl': Layout(minH=3, minW=3, h=10, w=12, y=0, x=0),
+    #                 'xxl': Layout(minH=3, minW=3, h=10, w=12, y=0, x=0),
+    #             },
+    #             search_quantity='data.aggregated_elements#nomad_battery_space.schema_packages.battery_sample_package.BatterySample',
+    #             scale='linear',
+    #         ),
+    #     ]
+    # ),
 )
