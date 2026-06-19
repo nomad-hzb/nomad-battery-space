@@ -37,7 +37,7 @@ For coin-shaped battery cells following IEC 60086 standardization.
 
 ```yaml
 data:
-  m_def: nomad_battery_space.schema_packages.battery_cell_assembly_package.CoinCellBattery
+  m_def: nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBattery
   lab_id: CC_001
   name: coin_cell_cr2032_01
   datetime: 2024-01-15T10:30:00Z
@@ -76,7 +76,7 @@ For single-unit flexible packet battery cells.
 
 ```yaml
 data:
-  m_def: nomad_battery_space.schema_packages.battery_cell_assembly_package.PouchCellBattery
+  m_def: nomad_battery_space.schema_packages.hzb_bs_assembly_package.PouchCellBattery
   lab_id: PC_001
   name: pouch_cell_01
   datetime: 2024-02-10T14:45:00Z
@@ -118,7 +118,7 @@ For cylindrical form factor battery cells (18650, 21700, 32650, etc.).
 
 ```yaml
 data:
-  m_def: nomad_battery_space.schema_packages.battery_cell_assembly_package.CylindricalCellBattery
+  m_def: nomad_battery_space.schema_packages.hzb_bs_assembly_package.CylindricalCellBattery
   lab_id: CYL_001
   name: cylindrical_cell_18650_01
   datetime: 2024-03-05T09:20:00Z

@@ -8,9 +8,7 @@ from nomad.config.models.ui import (
 )
 
 # i see a problem here, because it is only referencing one type of batteries. not used currently
-schema = (
-    'nomad_battery_space.schema_packages.battery_cell_assembly_package.CoinCellBattery'
-)
+schema = 'nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBattery'
 
 hzb_bat_search_app = App(
     label='HZB Batteries Search App',
@@ -18,12 +16,12 @@ hzb_bat_search_app = App(
     category='battery space',
     search_quantities=SearchQuantities(
         include=[
-            '*#nomad_battery_space.schema_packages.battery_cell_assembly_package.CoinCellBattery',
-            '*#nomad_battery_space.schema_packages.battery_cell_assembly_package.CylindricalCellBattery',
-            '*#nomad_battery_space.schema_packages.battery_cell_assembly_package.PouchCellBattery',
-            '*#nomad_battery_space.schema_packages.battery_sample_package.Anode',
-            '*#nomad_battery_space.schema_packages.battery_sample_package.Cathode',
-            '*#nomad_battery_space.schema_packages.battery_sample_package.BatterySample',
+            '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBattery',
+            '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.CylindricalCellBattery',
+            '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.PouchCellBattery',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.Anode',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.Cathode',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.BatterySample',
         ]
     ),
     # filters_locked={'section_defs.definition_qualified_name': [schema]},
@@ -72,7 +70,7 @@ hzb_bat_search_app = App(
     #                 'xl': Layout(minH=3, minW=3, h=10, w=12, y=0, x=0),
     #                 'xxl': Layout(minH=3, minW=3, h=10, w=12, y=0, x=0),
     #             },
-    #             search_quantity='data.aggregated_elements#nomad_battery_space.schema_packages.battery_sample_package.BatterySample',
+    #             search_quantity='data.aggregated_elements#nomad_battery_space.schema_packages.hzb_bs_package.BatterySample',
     #             scale='linear',
     #         ),
     #     ]

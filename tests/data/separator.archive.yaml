@@ -1,4 +1,4 @@
 data:
-  m_def: nomad_battery_space.schema_packages.battery_sample_package.Separator
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.Separator
   name: separator_01
   thickness: 20.0

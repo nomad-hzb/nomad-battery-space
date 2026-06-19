@@ -26,7 +26,7 @@ maintainers = [
 license = { file = "LICENSE" }
 dependencies = [
     "nomad-lab>=1.4.0",
-    "nomad-baseclasses @ git+https://github.com/nomad-hzb/nomad-baseclasses.git",
+    "nomad-baseclasses @ git+https://github.com/nomad-hzb/nomad-baseclasses.git@v1.0.1",
 ]
 
 [project.urls]
@@ -133,9 +133,10 @@ where = ["src"]
 [project.entry-points.'nomad.plugin']
 parser_entry_point = "nomad_battery_space.parsers:parser_entry_point"
 app_entry_point = "nomad_battery_space.apps:app_entry_point"
+
 hzb_bat_search_app = "nomad_battery_space.apps:hzb_bat_search_app_entry_point"
-schema_package_entry_point = "nomad_battery_space.schema_packages:bat_schema_package"
-bat_cell_assembly_package = "nomad_battery_space.schema_packages:bat_cell_assembly_package"
+hzb_bs_package = "nomad_battery_space.schema_packages:hzb_bs_package"
+hzb_bs_assembly_package = "nomad_battery_space.schema_packages:hzb_bs_assembly_package"
 
 [tool.cruft]
 # Avoid updating workflow files, this leads to permissions issues
