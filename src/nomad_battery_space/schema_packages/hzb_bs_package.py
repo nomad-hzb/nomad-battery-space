@@ -233,14 +233,20 @@ class BS_ChemicalReference(ArchiveSection):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         # Auto-populate chemical_name from the referenced BS_Chemical's entry metadata
-        if self.chemical and not self.chemical_name:
-            if hasattr(self.chemical, 'name') and self.chemical.name:
-                self.chemical_name = self.chemical.name
-            elif hasattr(self.chemical, 'entry_metadata') and self.chemical.entry_metadata:
-                try:
-                    self.chemical_name = self.chemical.entry_metadata.entry_name
-                except (AttributeError, TypeError):
-                    pass
+        try:
+            if self.chemical:
+                if hasattr(self.chemical, 'name') and self.chemical.name:
+                    self.chemical_name = self.chemical.name
+                elif hasattr(self.chemical, 'entry_metadata') and self.chemical.entry_metadata:
+                    try:
+                        self.chemical_name = self.chemical.entry_metadata.entry_name
+                    except (AttributeError, TypeError):
+                        pass
+            # Notify parent to re-normalize
+            if self.m_parent and hasattr(self.m_parent, 'normalize'):
+                self.m_parent.normalize(archive, logger)
+        except Exception as e:
+            logger.error(f"Error normalizing BS_ChemicalReference: {e}")
 
 
 class MaterialSynthesisMethodReference(ArchiveSection):
@@ -398,17 +404,19 @@ class ElectrodeMaterial(ELNSubstance):
         elements = set()
         
         # Collect from own elemental_composition
-        elements.update(extract_elements(self))
+        elements.update(extract_elements(self, use_aggregated=False))
         
-        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
+        # Collect from chemicals 
         if self.chemicals:
             for chem_ref in self.chemicals:
                 if chem_ref.chemical:
-                    elements.update(extract_elements(chem_ref.chemical))
+                    elements.update(extract_elements(chem_ref.chemical, use_aggregated=True))
         
         # Store aggregated elements
         elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
+        # Clear old list and assign fresh copy 
+        self.aggregated_elements = []
+        self.aggregated_elements = list(elements_list)
         
         # Save to results
         if archive.results is None:
@@ -416,8 +424,8 @@ class ElectrodeMaterial(ELNSubstance):
 
         if archive.results.material is None:
             archive.results.material = Material()
-
-        archive.results.material.elements = elements_list
+       
+        archive.results.material.elements = list(elements_list)
 
 
 class ActiveMaterialComponent(ArchiveSection):
@@ -492,14 +500,20 @@ class ActiveMaterialComponent(ArchiveSection):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         # Auto-populate material_name from the referenced ElectrodeMaterial
-        if self.material and not self.material_name:
-            if hasattr(self.material, 'name') and self.material.name:
-                self.material_name = self.material.name
-            elif hasattr(self.material, 'entry_metadata') and self.material.entry_metadata:
-                try:
-                    self.material_name = self.material.entry_metadata.entry_name
-                except (AttributeError, TypeError):
-                    pass
+        try:
+            if self.material:
+                if hasattr(self.material, 'name') and self.material.name:
+                    self.material_name = self.material.name
+                elif hasattr(self.material, 'entry_metadata') and self.material.entry_metadata:
+                    try:
+                        self.material_name = self.material.entry_metadata.entry_name
+                    except (AttributeError, TypeError):
+                        pass
+            # Notify parent to re-normalize
+            if self.m_parent and hasattr(self.m_parent, 'normalize'):
+                self.m_parent.normalize(archive, logger)
+        except Exception as e:
+            logger.error(f"Error normalizing ActiveMaterialComponent: {e}")
 
 
 class ElectrodeSheet(ELNSubstance):
@@ -565,7 +579,7 @@ class ElectrodeSheet(ELNSubstance):
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased electrode sheets.",
         a_eln={
-            "label": "Product Info / Supplier",
+            "label": "product info / supplier",
         },
     )
 
@@ -605,39 +619,57 @@ class ElectrodeSheet(ELNSubstance):
         }
     )
 
-    def normalize(self, archive, logger):
-        super().normalize(archive, logger)
-        
-        # Collect elements from all sources
-        elements = set()
-        
-        # Collect from own elemental_composition
-        elements.update(extract_elements(self))
-        
-        # Collect from electrode_materials (ActiveMaterialComponent with ElectrodeMaterial)
+    def _normalize_children(self, archive, logger):
+        """Normalize all referenced child components."""
         if self.electrode_materials:
             for mat_component in self.electrode_materials:
                 if mat_component.material:
-                    elements.update(extract_elements(mat_component.material))
+                    mat_component.material.normalize(archive, logger)
         
-        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
         if self.chemicals:
             for chem_ref in self.chemicals:
                 if chem_ref.chemical:
-                    elements.update(extract_elements(chem_ref.chemical))
+                    chem_ref.chemical.normalize(archive, logger)
+    
+    def _collect_and_store_elements(self, archive):
+        """Collect elements from all sources and store in aggregated_elements."""
+        elements = set()
+        
+        # Collect from own elemental_composition 
+        elements.update(extract_elements(self, use_aggregated=False))
+        
+        # Collect from electrode_materials 
+        if self.electrode_materials:
+            for mat_component in self.electrode_materials:
+                if mat_component.material:
+                    elements.update(extract_elements(mat_component.material, use_aggregated=True))
+        
+        # Collect from chemicals 
+        if self.chemicals:
+            for chem_ref in self.chemicals:
+                if chem_ref.chemical:
+                    elements.update(extract_elements(chem_ref.chemical, use_aggregated=True))
         
         # Store aggregated elements
         elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
+        self.aggregated_elements = []
+        self.aggregated_elements = list(elements_list)
         
         # Save to results
         if archive.results is None:
             archive.results = Results()
-
         if archive.results.material is None:
             archive.results.material = Material()
+        archive.results.material.elements = list(elements_list)
 
-        archive.results.material.elements = elements_list
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
+        
+        # First: normalize all referenced materials and chemicals to ensure fresh data
+        self._normalize_children(archive, logger)
+        
+        # Collect and store elements
+        self._collect_and_store_elements(archive)
 
 
 class ElectrolyteStock(ELNSubstance):
@@ -722,7 +754,7 @@ class ElectrolyteStock(ELNSubstance):
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased electrolyte stocks.",
         a_eln={
-            "label": "Product Info / Supplier",
+            "label": "product info / supplier",
         },
     )
 
@@ -740,21 +772,29 @@ class ElectrolyteStock(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
-        # Collect elements from all sources
-        elements = set()
-        
-        # Collect from own elemental_composition
-        elements.update(extract_elements(self))
-        
-        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
+        # First: normalize all referenced chemicals to ensure fresh data
         if self.chemicals:
             for chem_ref in self.chemicals:
                 if chem_ref.chemical:
-                    elements.update(extract_elements(chem_ref.chemical))
+                    chem_ref.chemical.normalize(archive, logger)
+        
+        # Collect elements from all sources
+        elements = set()
+        
+        # Collect from own elemental_composition 
+        elements.update(extract_elements(self, use_aggregated=False))
+        
+        # Collect from chemicals 
+        if self.chemicals:
+            for chem_ref in self.chemicals:
+                if chem_ref.chemical:
+                    elements.update(extract_elements(chem_ref.chemical, use_aggregated=True))
         
         # Store aggregated elements
         elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
+        # Clear old list and assign fresh copy 
+        self.aggregated_elements = []
+        self.aggregated_elements = list(elements_list)
         
         # Save to results
         if archive.results is None:
@@ -763,7 +803,7 @@ class ElectrolyteStock(ELNSubstance):
         if archive.results.material is None:
             archive.results.material = Material()
 
-        archive.results.material.elements = elements_list
+        archive.results.material.elements = list(elements_list)
 
 
 class SeparatorStock(ELNSubstance):
@@ -828,7 +868,7 @@ class SeparatorStock(ELNSubstance):
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased separator stocks.",
         a_eln={
-            "label": "Product Info / Supplier",
+            "label": "product info / supplier",
         },
     )
 
@@ -856,21 +896,29 @@ class SeparatorStock(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
-        # Collect elements from all sources
-        elements = set()
-        
-        # Collect from own elemental_composition
-        elements.update(extract_elements(self))
-        
-        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
+        # First: normalize all referenced chemicals to ensure fresh data
         if self.chemicals:
             for chem_ref in self.chemicals:
                 if chem_ref.chemical:
-                    elements.update(extract_elements(chem_ref.chemical))
+                    chem_ref.chemical.normalize(archive, logger)
+        
+        # Collect elements from all sources
+        elements = set()
+        
+        # Collect from own elemental_composition 
+        elements.update(extract_elements(self, use_aggregated=False))
+        
+        # Collect from chemicals 
+        if self.chemicals:
+            for chem_ref in self.chemicals:
+                if chem_ref.chemical:
+                    elements.update(extract_elements(chem_ref.chemical, use_aggregated=True))
         
         # Store aggregated elements
         elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
+        # Clear old list and assign fresh copy 
+        self.aggregated_elements = []
+        self.aggregated_elements = list(elements_list)
         
         # Save to results
         if archive.results is None:
@@ -879,7 +927,7 @@ class SeparatorStock(ELNSubstance):
         if archive.results.material is None:
             archive.results.material = Material()
 
-        archive.results.material.elements = elements_list
+        archive.results.material.elements = list(elements_list)
 
 
 # ============================================================================
@@ -1047,7 +1095,7 @@ class ElectrodeSample(ELNSubstance):
 
     thickness = Quantity(
         type=float,
-        description="Thickness of the electrode sample. If cut from an electrode sheet, this will be automatically set from the parent sheet's thickness on save. Manual entry is only used if the parent sheet has no thickness value.",
+        description="Thickness of the electrode sample. If cut from an electrode sheet, this will be automatically set from the parent sheet's thickness on save. Manual entry is only used if there is no parent set or the parent sheet has no thickness value.",
         a_eln={
             "component": "NumberEditQuantity",
             "label": "thickness",
@@ -1086,7 +1134,7 @@ class ElectrodeSample(ELNSubstance):
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased electrode samples.",
         a_eln={
-            "label": "Product Info / Supplier",
+            "label": "product info / supplier",
         },
     )
 
@@ -1102,8 +1150,17 @@ class ElectrodeSample(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
+        # First: normalize referenced electrode_sheet and chemicals to ensure fresh data
+        if self.electrode_sheet:
+            self.electrode_sheet.normalize(archive, logger)
+        
+        if self.chemicals:
+            for chem_ref in self.chemicals:
+                if chem_ref.chemical:
+                    chem_ref.chemical.normalize(archive, logger)
+        
         # If sample is cut from a sheet, always use the sheet's thickness (override manual entry)
-        # Only accept manual thickness if the parent sheet has no thickness value
+        # Only accept manual thickness if there is no parent set or the parent sheet has no thickness value
         if self.electrode_sheet:
             if hasattr(self.electrode_sheet, 'thickness') and self.electrode_sheet.thickness:
                 self.thickness = self.electrode_sheet.thickness
@@ -1113,17 +1170,18 @@ class ElectrodeSample(ELNSubstance):
         
         # Collect from electrode_sheet (ElectrodeSheet)
         if self.electrode_sheet:
-            elements.update(extract_elements(self.electrode_sheet))
+            elements.update(extract_elements(self.electrode_sheet, use_aggregated=True))
         
         # Collect from own chemicals (BS_ChemicalReference with BS_Chemical)
         if self.chemicals:
             for chem_ref in self.chemicals:
                 if chem_ref.chemical:
-                    elements.update(extract_elements(chem_ref.chemical))
+                    elements.update(extract_elements(chem_ref.chemical, use_aggregated=True))
         
         # Store aggregated elements
         elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
+        self.aggregated_elements = []
+        self.aggregated_elements = list(elements_list)
         
         # Save to results
         if archive.results is None:
@@ -1132,7 +1190,7 @@ class ElectrodeSample(ELNSubstance):
         if archive.results.material is None:
             archive.results.material = Material()
 
-        archive.results.material.elements = elements_list
+        archive.results.material.elements = list(elements_list)
 
 
 class ElectrolyteSample(ELNSubstance):
@@ -1206,16 +1264,22 @@ class ElectrolyteSample(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
+        # First: normalize referenced electrolyte_stock to ensure fresh data
+        if self.electrolyte_stock:
+            self.electrolyte_stock.normalize(archive, logger)
+        
         # Collect elements from all sources
         elements = set()
         
-        # Collect from electrolyte_stock (ElectrolyteStock)
+        # Collect from electrolyte_stock 
         if self.electrolyte_stock:
-            elements.update(extract_elements(self.electrolyte_stock))
+            elements.update(extract_elements(self.electrolyte_stock, use_aggregated=True))
         
         # Store aggregated elements
         elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
+        # Clear old list and assign fresh copy 
+        self.aggregated_elements = []
+        self.aggregated_elements = list(elements_list)
         
         # Save to results
         if archive.results is None:
@@ -1224,7 +1288,7 @@ class ElectrolyteSample(ELNSubstance):
         if archive.results.material is None:
             archive.results.material = Material()
 
-        archive.results.material.elements = elements_list
+        archive.results.material.elements = list(elements_list)
 
 
 class SeparatorSample(ELNSubstance):
@@ -1243,6 +1307,7 @@ class SeparatorSample(ELNSubstance):
                 "order": [
                     "name",
                     "separator_stock",
+                    "thickness",
                     "dimensions",
                 ],
                 "order_default": [
@@ -1262,6 +1327,17 @@ class SeparatorSample(ELNSubstance):
         },
     )
 
+    thickness = Quantity(
+        type=float,
+        description="Thickness of the separator sample. If cut from a separator stock, this will be automatically set from the parent stock's thickness on save. Manual entry is only used if there is no parent set or the parent stock has no thickness value.",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "thickness",
+            "defaultDisplayUnit": "micrometer",
+        },
+        unit="micrometer",
+    )
+
     dimensions = SubSection(
         section_def=GeometricalShape,
         description="Geometric surface area of the separator sample used in assembly.",
@@ -1279,16 +1355,28 @@ class SeparatorSample(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
+        # First: normalize referenced separator_stock to ensure fresh data
+        if self.separator_stock:
+            self.separator_stock.normalize(archive, logger)
+        
+        # If sample is cut from a stock, always use the stock's thickness (override manual entry)
+        # Only accept manual thickness if there is no parent set or the parent stock has no thickness value
+        if self.separator_stock:
+            if hasattr(self.separator_stock, 'thickness') and self.separator_stock.thickness:
+                self.thickness = self.separator_stock.thickness
+        
         # Collect elements from all sources
         elements = set()
         
-        # Collect from separator_stock (SeparatorStock)
+        # Collect from separator_stock
         if self.separator_stock:
-            elements.update(extract_elements(self.separator_stock))
+            elements.update(extract_elements(self.separator_stock, use_aggregated=True))
         
         # Store aggregated elements
         elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
+        # Clear old list and assign fresh copy
+        self.aggregated_elements = []
+        self.aggregated_elements = list(elements_list)
         
         # Save to results
         if archive.results is None:
@@ -1297,7 +1385,7 @@ class SeparatorSample(ELNSubstance):
         if archive.results.material is None:
             archive.results.material = Material()
 
-        archive.results.material.elements = elements_list
+        archive.results.material.elements = list(elements_list)
 
 
 # ============================================================================
@@ -1425,6 +1513,18 @@ class BatterySample(ELNSubstance):
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
         super().normalize(archive, logger)
 
+        # First: normalize all referenced battery components to ensure fresh data
+        if self.working_electrode:
+            self.working_electrode.normalize(archive, logger)
+        if self.counter_electrode:
+            self.counter_electrode.normalize(archive, logger)
+        if self.reference_electrode:
+            self.reference_electrode.normalize(archive, logger)
+        if self.separator:
+            self.separator.normalize(archive, logger)
+        if self.electrolyte:
+            self.electrolyte.normalize(archive, logger)
+
         # Validate required lab/battery id
         validate_required(self.lab_id, name='battery ID')
 
@@ -1433,19 +1533,21 @@ class BatterySample(ELNSubstance):
 
         # Collect elements from all battery components
         if self.working_electrode:
-            elements.update(extract_elements(self.working_electrode))
+            elements.update(extract_elements(self.working_electrode, use_aggregated=True))
         if self.counter_electrode:
-            elements.update(extract_elements(self.counter_electrode))
+            elements.update(extract_elements(self.counter_electrode, use_aggregated=True))
         if self.reference_electrode:
-            elements.update(extract_elements(self.reference_electrode))
+            elements.update(extract_elements(self.reference_electrode, use_aggregated=True))
         if self.separator:
-            elements.update(extract_elements(self.separator))
+            elements.update(extract_elements(self.separator, use_aggregated=True))
         if self.electrolyte:
-            elements.update(extract_elements(self.electrolyte))
+            elements.update(extract_elements(self.electrolyte, use_aggregated=True))
 
         # Store aggregated elements
         elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
+        # Clear old list and assign fresh copy
+        self.aggregated_elements = []
+        self.aggregated_elements = list(elements_list)
 
         # Save to results
         if archive.results is None:
@@ -1454,7 +1556,8 @@ class BatterySample(ELNSubstance):
         if archive.results.material is None:
             archive.results.material = Material()
 
-        archive.results.material.elements = elements_list
+        # Force fresh list to prevent accumulation
+        archive.results.material.elements = list(elements_list)
 
 
 # ============================================================================
