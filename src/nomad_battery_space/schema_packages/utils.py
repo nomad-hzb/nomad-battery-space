@@ -138,7 +138,7 @@ def normalize_referenced_components(chemicals=None, materials=None, archive=None
                 mat_comp.material.normalize(archive, logger)
 
 
-def collect_and_store_elements(component, archive, chemicals=None, materials=None):
+def collect_and_store_elements(component, archive, chemicals=None, materials=None, referenced_components=None):
     """
     Collect elements from component sources and store in aggregated_elements and results.
     
@@ -147,6 +147,7 @@ def collect_and_store_elements(component, archive, chemicals=None, materials=Non
         archive: The archive object for results storage
         chemicals: List of chemical references to collect from
         materials: List of material components to collect from
+        referenced_components: List of directly referenced components to collect from (e.g., electrode_sheet, separator_stock)
     """
     elements = set()
     
@@ -164,6 +165,12 @@ def collect_and_store_elements(component, archive, chemicals=None, materials=Non
         for mat_comp in materials:
             if mat_comp.material:
                 elements.update(extract_elements(mat_comp.material, use_aggregated=True))
+    
+    # From referenced components (e.g., electrode_sheet, separator_stock)
+    if referenced_components:
+        for ref_comp in referenced_components:
+            if ref_comp:
+                elements.update(extract_elements(ref_comp, use_aggregated=True))
     
     # Store aggregated elements
     elements_list = sorted(elements)

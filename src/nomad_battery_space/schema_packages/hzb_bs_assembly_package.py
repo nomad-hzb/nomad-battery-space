@@ -26,12 +26,14 @@ like case type and crimping method.
 
 from typing import TYPE_CHECKING
 
+from nomad.datamodel.metainfo.basesections.v1 import ReadableIdentifiers
 from nomad.metainfo import (
     Enum,
     Quantity,
     SchemaPackage,
     Section,
 )
+from nomad.metainfo.metainfo import SubSection
 
 if TYPE_CHECKING:
     from nomad.datamodel.datamodel import EntryArchive
@@ -59,7 +61,7 @@ class CoinCellBattery(BatterySample):
         a_eln={
             "label": "HZB Battery: Coin Cell",
             "entry_type": "CoinCell",
-            "hide": ['pure_substance',"substance_identifiers", 'elemental_composition'],
+            "hide": ['pure_substance','elemental_composition'],
             "properties": {
                 "order": [
                     "lab_id",
@@ -76,10 +78,18 @@ class CoinCellBattery(BatterySample):
                 ],
                 "order_default": [
                     "description",
-                    "sample_identifiers",
+                    "substance_identifiers",
                 ]
             },
         },
+        a_template=dict(
+            substance_identifiers=dict(),
+        ),
+    )
+
+    substance_identifiers = SubSection(
+        section_def=ReadableIdentifiers,
+        a_eln=dict(label='sample identifiers')
     )
 
     # ---- Coin Cell Specific Parameters ----
