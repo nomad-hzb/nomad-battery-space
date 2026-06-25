@@ -41,7 +41,7 @@ Geometry support for samples (CircleGeometry, RectangleGeometry, OtherGeometry)
 
 from typing import TYPE_CHECKING
 
-from baseclasses import ProductInfo, PubChemPureSubstanceSectionCustom
+from baseclasses import ProductInfo
 from nomad.datamodel.data import ArchiveSection, EntryData
 from nomad.datamodel.metainfo.basesections.v1 import (
     ReadableIdentifiers,

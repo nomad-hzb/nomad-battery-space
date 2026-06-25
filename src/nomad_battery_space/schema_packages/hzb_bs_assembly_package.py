@@ -26,14 +26,12 @@ like case type and crimping method.
 
 from typing import TYPE_CHECKING
 
-from nomad.datamodel.metainfo.basesections.v1 import ReadableIdentifiers
 from nomad.metainfo import (
     Enum,
     Quantity,
     SchemaPackage,
     Section,
 )
-from nomad.metainfo.metainfo import SubSection
 
 if TYPE_CHECKING:
     from nomad.datamodel.datamodel import EntryArchive
