@@ -1,17 +1,21 @@
+from nomad.datamodel.results import Material, Results
 from nomad.metainfo import Quantity
 
 
-def extract_elements(component):
+def extract_elements(component, use_aggregated=True):
     """
     Extract chemical elements from a component with hierarchical aggregation support.
     
-    This utility function extracts all unique element symbols from a component,
-    prioritizing aggregated_elements (which contain hierarchically aggregated elements
-    from referenced components) and falling back to elemental_composition (for 
-    base components like BS_Chemical).
+    This function extracts all unique element symbols from a component.
+    For referenced components, it prioritizes aggregated_elements (hierarchical).
+    For the component itself during normalization, set use_aggregated=False to avoid 
+    using outdated aggregated_elements.
     
     Args:
         component: The component object to extract elements from
+        use_aggregated: If True, use aggregated_elements from referenced components.
+                       If False, only use elemental_composition (to avoid circular reference
+                       during normalization of the component itself).
         
     Returns:
         set: Set of element strings found in the component
@@ -20,12 +24,14 @@ def extract_elements(component):
     if component is None:
         return elements
     
-    # Priority 1: Use aggregated_elements if available (hierarchical aggregation)
-    agg_elems = getattr(component, 'aggregated_elements', None)
-    if agg_elems:
-        elements.update(agg_elems)
+    # For referenced components: use aggregated_elements if available (hierarchical)
+    if use_aggregated:
+        agg_elems = getattr(component, 'aggregated_elements', None)
+        if agg_elems:
+            elements.update(agg_elems)
+            return elements  
     
-    # Priority 2: Fall back to elemental_composition for base components
+    # Extract from elemental_composition (direct composition of this component)
     ec_list = getattr(component, 'elemental_composition', None)
     if ec_list:
         for comp in ec_list:
@@ -109,3 +115,72 @@ def create_area_quantity(label: str = "area", description: str = None, required:
         },
         unit='centimeter ** 2',
     )
+
+
+def normalize_referenced_components(chemicals=None, materials=None, archive=None, logger=None):
+    """
+    Normalize all referenced child components (chemicals and/or materials).
+    
+    Args:
+        chemicals: List of chemical references to normalize
+        materials: List of material components to normalize
+        archive: The archive object
+        logger: The logger object
+    """
+    if chemicals:
+        for chem_ref in chemicals:
+            if chem_ref.chemical:
+                chem_ref.chemical.normalize(archive, logger)
+    
+    if materials:
+        for mat_comp in materials:
+            if mat_comp.material:
+                mat_comp.material.normalize(archive, logger)
+
+
+def collect_and_store_elements(component, archive, chemicals=None, materials=None, referenced_components=None):
+    """
+    Collect elements from component sources and store in aggregated_elements and results.
+    
+    Args:
+        component: The component object to store elements in
+        archive: The archive object for results storage
+        chemicals: List of chemical references to collect from
+        materials: List of material components to collect from
+        referenced_components: List of directly referenced components to collect from (e.g., electrode_sheet, separator_stock)
+    """
+    elements = set()
+    
+    # From own elemental_composition
+    elements.update(extract_elements(component, use_aggregated=False))
+    
+    # From chemicals
+    if chemicals:
+        for chem_ref in chemicals:
+            if chem_ref.chemical:
+                elements.update(extract_elements(chem_ref.chemical, use_aggregated=True))
+    
+    # From materials
+    if materials:
+        for mat_comp in materials:
+            if mat_comp.material:
+                elements.update(extract_elements(mat_comp.material, use_aggregated=True))
+    
+    # From referenced components (e.g., electrode_sheet, separator_stock)
+    if referenced_components:
+        for ref_comp in referenced_components:
+            if ref_comp:
+                elements.update(extract_elements(ref_comp, use_aggregated=True))
+    
+    # Store aggregated elements
+    elements_list = sorted(elements)
+    component.aggregated_elements = []
+    component.aggregated_elements = list(elements_list)
+    
+    # Save to results
+    if archive:
+        if archive.results is None:
+            archive.results = Results()
+        if archive.results.material is None:
+            archive.results.material = Material()
+        archive.results.material.elements = list(elements_list)

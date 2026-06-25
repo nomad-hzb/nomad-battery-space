@@ -59,7 +59,7 @@ class CoinCellBattery(BatterySample):
         a_eln={
             "label": "HZB Battery: Coin Cell",
             "entry_type": "CoinCell",
-            "hide": ['pure_substance',"substance_identifiers", 'elemental_composition'],
+            "hide": ['pure_substance','elemental_composition'],
             "properties": {
                 "order": [
                     "lab_id",
@@ -73,13 +73,17 @@ class CoinCellBattery(BatterySample):
                     "reference_electrode",
                     "separator",
                     "electrolyte",
+                    "product_info"
                 ],
                 "order_default": [
                     "description",
-                    "sample_identifiers",
+                    "substance_identifiers",
                 ]
             },
         },
+        a_template=dict(
+            substance_identifiers=dict(),
+        ),
     )
 
     # ---- Coin Cell Specific Parameters ----
