@@ -44,6 +44,7 @@ from typing import TYPE_CHECKING
 from baseclasses import ProductInfo, PubChemPureSubstanceSectionCustom
 from nomad.datamodel.data import ArchiveSection, EntryData
 from nomad.datamodel.metainfo.basesections.v1 import (
+    ReadableIdentifiers,
     SynthesisMethod,
 )
 from nomad.datamodel.metainfo.eln import ELNSubstance
@@ -116,7 +117,15 @@ class BS_Chemical(ELNSubstance):
     #     },
     # )
 
-    pure_substance = SubSection(section_def=PubChemPureSubstanceSectionCustom)
+    # pure_substance = SubSection(section_def=PubChemPureSubstanceSectionCustom)
+
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased chemicals.",
+        a_eln={
+            "label": "product info / supplier",
+        },
+    )
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
@@ -403,6 +412,14 @@ class ElectrodeMaterial(ELNSubstance):
         description="Volume and mass information for the synthesized electrode material.",
         a_eln={
             "label": "volume and weights",
+        },
+    )
+
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased electrode materials.",
+        a_eln={
+            "label": "product info / supplier",
         },
     )
 
@@ -1146,6 +1163,14 @@ class ElectrolyteSample(ELNSubstance):
         },
     )
 
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased electrolyte samples.",
+        a_eln={
+            "label": "product info / supplier",
+        },
+    )
+
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -1212,6 +1237,14 @@ class SeparatorSample(ELNSubstance):
         },
     )
 
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased separator samples.",
+        a_eln={
+            "label": "product info / supplier",
+        },
+    )
+
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -1269,10 +1302,11 @@ class BatterySample(ELNSubstance):
                     "separator",
                     "electrolyte",
                     "procedure_sketch",
+                    "aggregated_elements",
+                    "product_info"
                 ],
                 "order_default": [
                     "description",
-                    "aggregated_elements",
                     "substance_identifiers", 
                 ]
             },
@@ -1282,6 +1316,10 @@ class BatterySample(ELNSubstance):
         ),
     )
 
+    substance_identifiers = SubSection(
+        section_def=ReadableIdentifiers,
+        a_eln=dict(label='sample identifiers')
+    )
     lab_id = Quantity(
         type=str,
         description="""
@@ -1324,6 +1362,13 @@ class BatterySample(ELNSubstance):
         }
     )
 
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased batteries or battery assemblies.",
+        a_eln={
+            "label": "product info / supplier",
+        },
+    )
 
     # ---- Battery Components ----
 

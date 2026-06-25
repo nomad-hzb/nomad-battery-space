@@ -75,6 +75,7 @@ class CoinCellBattery(BatterySample):
                     "reference_electrode",
                     "separator",
                     "electrolyte",
+                    "product_info"
                 ],
                 "order_default": [
                     "description",
@@ -85,11 +86,6 @@ class CoinCellBattery(BatterySample):
         a_template=dict(
             substance_identifiers=dict(),
         ),
-    )
-
-    substance_identifiers = SubSection(
-        section_def=ReadableIdentifiers,
-        a_eln=dict(label='sample identifiers')
     )
 
     # ---- Coin Cell Specific Parameters ----
