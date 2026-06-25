@@ -41,11 +41,13 @@ Geometry support for samples (CircleGeometry, RectangleGeometry, OtherGeometry)
 
 from typing import TYPE_CHECKING
 
-from baseclasses import ProductInfo, PubChemPureSubstanceSectionCustom
+from baseclasses import ProductInfo
 from nomad.datamodel.data import ArchiveSection, EntryData
-from nomad.datamodel.metainfo.basesections.v1 import SynthesisMethod
-from nomad.datamodel.metainfo.eln import ELNSubstance, SampleID
-from nomad.datamodel.results import Material, Results
+from nomad.datamodel.metainfo.basesections.v1 import (
+    ReadableIdentifiers,
+    SynthesisMethod,
+)
+from nomad.datamodel.metainfo.eln import ELNSubstance
 from nomad.metainfo import (
     Enum,
     Quantity,
@@ -62,7 +64,11 @@ if TYPE_CHECKING:
 
 from baseclasses.voila import VoilaNotebook
 
-from .utils import create_string_quantity, extract_elements, validate_required
+from .utils import (
+    collect_and_store_elements,
+    create_string_quantity,
+    validate_required,
+)
 
 m_package = SchemaPackage()
 
@@ -88,12 +94,12 @@ class BS_Chemical(ELNSubstance):
                 "order": [
                     "name",
                     #"creator",
-                ],
-                "order_default": [
-                    "description",
                     "elemental_composition",
                     "pure_substance",
                     "substance_identifiers",
+                ],
+                "order_default": [
+                    "description",
                 ]
             },
         },
@@ -111,7 +117,15 @@ class BS_Chemical(ELNSubstance):
     #     },
     # )
 
-    pure_substance = SubSection(section_def=PubChemPureSubstanceSectionCustom)
+    # pure_substance = SubSection(section_def=PubChemPureSubstanceSectionCustom)
+
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased chemicals.",
+        a_eln={
+            "label": "product info / supplier",
+        },
+    )
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
@@ -233,14 +247,17 @@ class BS_ChemicalReference(ArchiveSection):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         # Auto-populate chemical_name from the referenced BS_Chemical's entry metadata
-        if self.chemical and not self.chemical_name:
-            if hasattr(self.chemical, 'name') and self.chemical.name:
-                self.chemical_name = self.chemical.name
-            elif hasattr(self.chemical, 'entry_metadata') and self.chemical.entry_metadata:
-                try:
-                    self.chemical_name = self.chemical.entry_metadata.entry_name
-                except (AttributeError, TypeError):
-                    pass
+        try:
+            if self.chemical:
+                if hasattr(self.chemical, 'name') and self.chemical.name:
+                    self.chemical_name = self.chemical.name
+                elif hasattr(self.chemical, 'entry_metadata') and self.chemical.entry_metadata:
+                    try:
+                        self.chemical_name = self.chemical.entry_metadata.entry_name
+                    except (AttributeError, TypeError):
+                        pass
+        except Exception as e:
+            logger.error(f"Error normalizing BS_ChemicalReference: {e}")
 
 
 class MaterialSynthesisMethodReference(ArchiveSection):
@@ -269,6 +286,19 @@ class MaterialSynthesisMethodReference(ArchiveSection):
         },
     )
 
+# class BS_InstrumentReference(EntityReference):
+#     """
+#     A section used for referencing an Instrument.
+#     """
+
+#     reference = Quantity(
+#         type=Instrument,
+#         description='A reference to a NOMAD `Instrument` entry.',
+#         a_eln=ELNAnnotation(
+#             component='ReferenceEditQuantity',
+#             label='instrument reference',
+#         ),
+#     )
 
 class MaterialSynthesisMethod(SynthesisMethod):
     """
@@ -289,6 +319,14 @@ class MaterialSynthesisMethod(SynthesisMethod):
         }
     )
     
+    # instruments = SubSection(
+    #     section_def=InstrumentReference,
+    #     description="""
+    #     A list of all the instruments and their role in this process.
+    #     """,
+    #     repeats=True,
+    # )
+
     references = SubSection(
         section_def=MaterialSynthesisMethodReference,
         repeats=True,
@@ -317,9 +355,9 @@ class ElectrodeMaterial(ELNSubstance):
                     "creator",
                     "chemical_composition_or_formulas",
                     "synthesis",
-                    "mass",
                     "yield_percent",
                     "description",
+                    "volume_and_weights",
                     "elemental_composition",
                     "pure_substance",
                     "chemicals",
@@ -354,18 +392,6 @@ class ElectrodeMaterial(ELNSubstance):
         description="Detailed synthesis methodology including steps, instruments, timing, and publication references.",
     )
 
-    mass = Quantity(
-        type=float,
-        description="Total mass of synthesized electrode material.",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "mass",
-            "defaultDisplayUnit": "gram",
-            "units": ["gram", "milligram", "microgram"],
-        },
-        unit="gram",
-    )
-
     yield_percent = Quantity(
         type=float,
         description="Synthesis yield percentage.",
@@ -376,6 +402,22 @@ class ElectrodeMaterial(ELNSubstance):
             "props": {"minValue": 0, "maxValue": 100},
         },
         unit="dimensionless",
+    )
+
+    volume_and_weights = SubSection(
+        section_def=SectionProxy('VolumeAndWeights'),
+        description="Volume and mass information for the synthesized electrode material.",
+        a_eln={
+            "label": "volume and weights",
+        },
+    )
+
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased electrode materials.",
+        a_eln={
+            "label": "product info / supplier",
+        },
     )
 
     aggregated_elements = Quantity(
@@ -394,30 +436,14 @@ class ElectrodeMaterial(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
-        # Collect elements from all sources
-        elements = set()
-        
-        # Collect from own elemental_composition
-        elements.update(extract_elements(self))
-        
-        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
+        # Normalize all referenced chemicals to ensure fresh data
         if self.chemicals:
             for chem_ref in self.chemicals:
                 if chem_ref.chemical:
-                    elements.update(extract_elements(chem_ref.chemical))
+                    chem_ref.chemical.normalize(archive, logger)
         
-        # Store aggregated elements
-        elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
-        
-        # Save to results
-        if archive.results is None:
-            archive.results = Results()
-
-        if archive.results.material is None:
-            archive.results.material = Material()
-
-        archive.results.material.elements = elements_list
+        # Collect and store elements from all sources
+        collect_and_store_elements(self, archive, chemicals=self.chemicals)
 
 
 class ActiveMaterialComponent(ArchiveSection):
@@ -492,14 +518,17 @@ class ActiveMaterialComponent(ArchiveSection):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         # Auto-populate material_name from the referenced ElectrodeMaterial
-        if self.material and not self.material_name:
-            if hasattr(self.material, 'name') and self.material.name:
-                self.material_name = self.material.name
-            elif hasattr(self.material, 'entry_metadata') and self.material.entry_metadata:
-                try:
-                    self.material_name = self.material.entry_metadata.entry_name
-                except (AttributeError, TypeError):
-                    pass
+        try:
+            if self.material:
+                if hasattr(self.material, 'name') and self.material.name:
+                    self.material_name = self.material.name
+                elif hasattr(self.material, 'entry_metadata') and self.material.entry_metadata:
+                    try:
+                        self.material_name = self.material.entry_metadata.entry_name
+                    except (AttributeError, TypeError):
+                        pass
+        except Exception as e:
+            logger.error(f"Error normalizing ActiveMaterialComponent: {e}")
 
 
 class ElectrodeSheet(ELNSubstance):
@@ -520,9 +549,7 @@ class ElectrodeSheet(ELNSubstance):
                 "order": [
                     "name",
                     "casting_procedure",
-                    "coating_mass",
-                    "thickness",     
-                    "dimensions",    
+                    "dimensions_and_weights",
                     "chemicals",
                     "electrode_materials",           
                 ],
@@ -565,35 +592,16 @@ class ElectrodeSheet(ELNSubstance):
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased electrode sheets.",
         a_eln={
-            "label": "Product Info / Supplier",
+            "label": "product info / supplier",
         },
     )
 
-    coating_mass = Quantity(
-        type=float,
-        description="Total mass of the coating.",
+    dimensions_and_weights = SubSection(
+        section_def=SectionProxy('DimensionsAndWeights'),
+        description="Geometric surface area and mass information for the electrode sheet.",
         a_eln={
-            "component": "NumberEditQuantity",
-            "label": "coating mass",
-            "defaultDisplayUnit": "gram",
+            "label": "dimensions and weights",
         },
-        unit="gram",
-    )
-
-    thickness = Quantity(
-        type=float,
-        description="Thickness of the electrode sheet.",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "thickness",
-            "defaultDisplayUnit": "micrometer",
-        },
-        unit="micrometer",
-    )
-
-    dimensions = SubSection(
-        section_def=SectionProxy("GeometricalShape"),
-        description="Geometric surface area of the electrode sheet.",
     )
 
     aggregated_elements = Quantity(
@@ -608,36 +616,19 @@ class ElectrodeSheet(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
-        # Collect elements from all sources
-        elements = set()
-        
-        # Collect from own elemental_composition
-        elements.update(extract_elements(self))
-        
-        # Collect from electrode_materials (ActiveMaterialComponent with ElectrodeMaterial)
+        # Normalize all referenced materials and chemicals to ensure fresh data
         if self.electrode_materials:
             for mat_component in self.electrode_materials:
                 if mat_component.material:
-                    elements.update(extract_elements(mat_component.material))
+                    mat_component.material.normalize(archive, logger)
         
-        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
         if self.chemicals:
             for chem_ref in self.chemicals:
                 if chem_ref.chemical:
-                    elements.update(extract_elements(chem_ref.chemical))
+                    chem_ref.chemical.normalize(archive, logger)
         
-        # Store aggregated elements
-        elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
-        
-        # Save to results
-        if archive.results is None:
-            archive.results = Results()
-
-        if archive.results.material is None:
-            archive.results.material = Material()
-
-        archive.results.material.elements = elements_list
+        # Collect and store elements from all sources
+        collect_and_store_elements(self, archive, materials=self.electrode_materials, chemicals=self.chemicals)
 
 
 class ElectrolyteStock(ELNSubstance):
@@ -659,8 +650,7 @@ class ElectrolyteStock(ELNSubstance):
                 "order": [
                     "name",
                     "state",
-                    "volume",
-                    "mass",
+                    "volume_and_weights",
                     "chemicals",
                 ],
                 "order_default": [
@@ -685,29 +675,6 @@ class ElectrolyteStock(ELNSubstance):
         }
     )
 
-    volume = Quantity(
-        type=float,
-        description="Volume of electrolyte stock.",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "volume",
-            "defaultDisplayUnit": "milliliter",
-            "units": ["liter", "milliliter", "microliter"],
-        },
-        unit="milliliter",
-    )
-
-    mass = Quantity(
-        type=float,
-        description="Total mass of the electrolyte stock.",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "mass",
-            "defaultDisplayUnit": "gram",
-        },
-        unit="gram",
-    )
-
     chemicals = SubSection(
         section_def=BS_ChemicalReference,
         repeats=True,
@@ -722,7 +689,15 @@ class ElectrolyteStock(ELNSubstance):
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased electrolyte stocks.",
         a_eln={
-            "label": "Product Info / Supplier",
+            "label": "product info / supplier",
+        },
+    )
+
+    volume_and_weights = SubSection(
+        section_def=SectionProxy('VolumeAndWeights'),
+        description="Volume and mass information for the electrolyte stock.",
+        a_eln={
+            "label": "volume and weights",
         },
     )
 
@@ -740,30 +715,14 @@ class ElectrolyteStock(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
-        # Collect elements from all sources
-        elements = set()
-        
-        # Collect from own elemental_composition
-        elements.update(extract_elements(self))
-        
-        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
+        # Normalize all referenced chemicals to ensure fresh data
         if self.chemicals:
             for chem_ref in self.chemicals:
                 if chem_ref.chemical:
-                    elements.update(extract_elements(chem_ref.chemical))
+                    chem_ref.chemical.normalize(archive, logger)
         
-        # Store aggregated elements
-        elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
-        
-        # Save to results
-        if archive.results is None:
-            archive.results = Results()
-
-        if archive.results.material is None:
-            archive.results.material = Material()
-
-        archive.results.material.elements = elements_list
+        # Collect and store elements from all sources
+        collect_and_store_elements(self, archive, chemicals=self.chemicals)
 
 
 class SeparatorStock(ELNSubstance):
@@ -783,8 +742,7 @@ class SeparatorStock(ELNSubstance):
             "properties": {
                 "order": [
                     "name",
-                    "thickness",                    
-                    "dimensions",
+                    "dimensions_and_weights",
                     "chemicals",
                 ],
                 "order_default": [
@@ -796,22 +754,6 @@ class SeparatorStock(ELNSubstance):
         a_template=dict(
             substance_identifiers=dict(),
         ),
-    )
-
-    thickness = Quantity(
-        type=float,
-        description="Thickness of the separator material.",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "thickness",
-            "defaultDisplayUnit": "micrometer",
-        },
-        unit="micrometer",
-    )
-
-    dimensions = SubSection(
-        section_def=SectionProxy('GeometricalShape'),
-        description="Geometric dimensions of the separator stock (length and width).",
     )
 
     chemicals = SubSection(
@@ -828,7 +770,7 @@ class SeparatorStock(ELNSubstance):
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased separator stocks.",
         a_eln={
-            "label": "Product Info / Supplier",
+            "label": "product info / supplier",
         },
     )
 
@@ -844,6 +786,14 @@ class SeparatorStock(ELNSubstance):
     #     unit="dimensionless",
     # )
 
+    dimensions_and_weights = SubSection(
+        section_def=SectionProxy('DimensionsAndWeights'),
+        description="Thickness and geometric dimensions of the separator stock.",
+        a_eln={
+            "label": "Dimensions and Weights",
+        },
+    )
+
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -856,30 +806,14 @@ class SeparatorStock(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
-        # Collect elements from all sources
-        elements = set()
-        
-        # Collect from own elemental_composition
-        elements.update(extract_elements(self))
-        
-        # Collect from chemicals (BS_ChemicalReference with BS_Chemical)
+        # Normalize all referenced chemicals to ensure fresh data
         if self.chemicals:
             for chem_ref in self.chemicals:
                 if chem_ref.chemical:
-                    elements.update(extract_elements(chem_ref.chemical))
+                    chem_ref.chemical.normalize(archive, logger)
         
-        # Store aggregated elements
-        elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
-        
-        # Save to results
-        if archive.results is None:
-            archive.results = Results()
-
-        if archive.results.material is None:
-            archive.results.material = Material()
-
-        archive.results.material.elements = elements_list
+        # Collect and store elements from all sources
+        collect_and_store_elements(self, archive, chemicals=self.chemicals)
 
 
 # ============================================================================
@@ -1002,6 +936,84 @@ class OtherGeometry(GeometricalShape):
     )
 
 
+# ============================================================================
+# COMPOSITE SUBSECTIONS FOR DIMENSIONS, WEIGHT, AND VOLUME
+# ============================================================================
+
+class DimensionsAndWeights(ArchiveSection):
+    """
+    Composite subsection combining thickness, mass, and shape information for solid materials.
+    
+    """
+    
+    m_def = Section(
+        label='dimensions and weights',
+    )
+    
+    thickness = Quantity(
+        type=float,
+        description="Thickness of the solid material.",
+        unit="micrometer",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "thickness",
+            "defaultDisplayUnit": "micrometer",
+        },
+    )
+    
+    mass = Quantity(
+        type=float,
+        description="Mass of the material.",
+        unit="gram",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "mass",
+            "defaultDisplayUnit": "gram",
+            "units": ["gram", "milligram", "microgram"],
+        },
+    )
+    
+    shape = SubSection(
+        section_def=SectionProxy('GeometricalShape'),
+        description="Geometric shape and dimensions of the material."
+    )
+
+
+class VolumeAndWeights(ArchiveSection):
+    """
+    Composite subsection combining mass and volume information for materials and liquids.
+
+    """
+    
+    m_def = Section(
+        label='volume and weights',
+    )
+    
+    volume = Quantity(
+        type=float,
+        description="Volume of the material or solution.",
+        unit="milliliter",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "volume",
+            "defaultDisplayUnit": "milliliter",
+            "units": ["liter", "milliliter", "microliter"],
+        },
+    )
+
+    mass = Quantity(
+        type=float,
+        description="Mass of the material or solution.",
+        unit="gram",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "mass",
+            "defaultDisplayUnit": "gram",
+            "units": ["gram", "milligram", "microgram"],
+        },
+    )
+    
+    
 class ElectrodeSample(ELNSubstance):
     """
     Prepared electrode sample for battery assembly.
@@ -1020,9 +1032,7 @@ class ElectrodeSample(ELNSubstance):
                 "order": [
                     "name",
                     "electrode_sheet",
-                    "thickness",
-                    "mass",
-                    "shape",
+                    "dimensions_and_weights",
                     "chemicals",
                 ],
                 "order_default": [
@@ -1045,31 +1055,12 @@ class ElectrodeSample(ELNSubstance):
                },
     )
 
-    thickness = Quantity(
-        type=float,
-        description="Thickness of the electrode sample. If cut from an electrode sheet, this will be automatically set from the parent sheet's thickness on save. Manual entry is only used if the parent sheet has no thickness value.",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "thickness",
-            "defaultDisplayUnit": "micrometer",
+    dimensions_and_weights = SubSection(
+        section_def=SectionProxy('DimensionsAndWeights'),
+        description="Geometric shape, dimensions and mass information for the electrode sample.",
+        a_eln={            
+            "label": "dimensions and weights",
         },
-        unit="micrometer",
-    )
-
-    mass = Quantity(
-        type=float,
-        description="Mass of the prepared electrode sample.",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "mass",
-            "defaultDisplayUnit": "milligram",
-        },
-        unit="milligram",
-    )
-
-    shape = SubSection(
-        section_def=GeometricalShape,
-        description="Geometric shape and dimensions of the electrode sample.",
     )
 
     chemicals = SubSection(
@@ -1086,7 +1077,7 @@ class ElectrodeSample(ELNSubstance):
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased electrode samples.",
         a_eln={
-            "label": "Product Info / Supplier",
+            "label": "product info / supplier",
         },
     )
 
@@ -1102,37 +1093,23 @@ class ElectrodeSample(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
-        # If sample is cut from a sheet, always use the sheet's thickness (override manual entry)
-        # Only accept manual thickness if the parent sheet has no thickness value
+        # Parent-override: Copy thickness from parent sheet
+        if self.electrode_sheet and self.electrode_sheet.dimensions_and_weights:
+            if not self.dimensions_and_weights:
+                self.dimensions_and_weights = DimensionsAndWeights()
+            if self.electrode_sheet.dimensions_and_weights.thickness:
+                self.dimensions_and_weights.thickness = self.electrode_sheet.dimensions_and_weights.thickness
+        
+        # Normalize referenced components
         if self.electrode_sheet:
-            if hasattr(self.electrode_sheet, 'thickness') and self.electrode_sheet.thickness:
-                self.thickness = self.electrode_sheet.thickness
-        
-        # Collect elements from all sources
-        elements = set()
-        
-        # Collect from electrode_sheet (ElectrodeSheet)
-        if self.electrode_sheet:
-            elements.update(extract_elements(self.electrode_sheet))
-        
-        # Collect from own chemicals (BS_ChemicalReference with BS_Chemical)
+            self.electrode_sheet.normalize(archive, logger)
         if self.chemicals:
             for chem_ref in self.chemicals:
                 if chem_ref.chemical:
-                    elements.update(extract_elements(chem_ref.chemical))
+                    chem_ref.chemical.normalize(archive, logger)
         
-        # Store aggregated elements
-        elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
-        
-        # Save to results
-        if archive.results is None:
-            archive.results = Results()
-
-        if archive.results.material is None:
-            archive.results.material = Material()
-
-        archive.results.material.elements = elements_list
+        # Collect and store elements from all sources
+        collect_and_store_elements(self, archive, chemicals=self.chemicals, referenced_components=[self.electrode_sheet])
 
 
 class ElectrolyteSample(ELNSubstance):
@@ -1151,15 +1128,17 @@ class ElectrolyteSample(ELNSubstance):
                 "order": [
                     "name",
                     "electrolyte_stock",
-                    "volume",
-                    "mass",
+                    "volume_and_weights",
                 ],
                 "order_default": [
                     "description",
                     "substance_identifiers",
                 ]
             },
-        }
+        },
+        a_template=dict(
+            substance_identifiers=dict(),
+        ),
     )
 
     electrolyte_stock = Quantity(
@@ -1171,27 +1150,20 @@ class ElectrolyteSample(ELNSubstance):
                },
     )
 
-    volume = Quantity(
-        type=float,
-        description="Volume of electrolyte used in the battery.",
+    volume_and_weights = SubSection(
+        section_def=SectionProxy('VolumeAndWeights'),
+        description="Volume and mass information for the electrolyte sample.",
         a_eln={
-            "component": "NumberEditQuantity",
-            "label": "volume",
-            "defaultDisplayUnit": "microliter",
-            "units": ["milliliter", "microliter"],
+            "label": "volume and weights",
         },
-        unit="microliter",
     )
 
-    mass = Quantity(
-        type=float,
-        description="Mass of electrolyte sample.",
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased electrolyte samples.",
         a_eln={
-            "component": "NumberEditQuantity",
-            "label": "mass",
-            "defaultDisplayUnit": "milligram",
+            "label": "product info / supplier",
         },
-        unit="milligram",
     )
 
     aggregated_elements = Quantity(
@@ -1206,25 +1178,12 @@ class ElectrolyteSample(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
-        # Collect elements from all sources
-        elements = set()
-        
-        # Collect from electrolyte_stock (ElectrolyteStock)
+        # Normalize referenced electrolyte_stock
         if self.electrolyte_stock:
-            elements.update(extract_elements(self.electrolyte_stock))
+            self.electrolyte_stock.normalize(archive, logger)
         
-        # Store aggregated elements
-        elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
-        
-        # Save to results
-        if archive.results is None:
-            archive.results = Results()
-
-        if archive.results.material is None:
-            archive.results.material = Material()
-
-        archive.results.material.elements = elements_list
+        # Collect and store elements from all sources
+        collect_and_store_elements(self, archive, referenced_components=[self.electrolyte_stock])
 
 
 class SeparatorSample(ELNSubstance):
@@ -1243,14 +1202,17 @@ class SeparatorSample(ELNSubstance):
                 "order": [
                     "name",
                     "separator_stock",
-                    "dimensions",
+                    "dimensions_and_weights",
                 ],
                 "order_default": [
                     "description",
                     "substance_identifiers",
                 ]
-            },
-        }
+            },            
+        },
+        a_template=dict(
+            substance_identifiers=dict(),
+        ),
     )
 
     separator_stock = Quantity(
@@ -1262,9 +1224,20 @@ class SeparatorSample(ELNSubstance):
         },
     )
 
-    dimensions = SubSection(
-        section_def=GeometricalShape,
-        description="Geometric surface area of the separator sample used in assembly.",
+    dimensions_and_weights = SubSection(
+        section_def=SectionProxy('DimensionsAndWeights'),
+        description="Thickness and geometric dimensions of the separator sample.",
+        a_eln={
+            "label": "Dimensions and Weights",
+        },
+    )
+
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased separator samples.",
+        a_eln={
+            "label": "product info / supplier",
+        },
     )
 
     aggregated_elements = Quantity(
@@ -1279,25 +1252,19 @@ class SeparatorSample(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
-        # Collect elements from all sources
-        elements = set()
+        # Parent-override: Copy thickness from parent stock
+        if self.separator_stock and self.separator_stock.dimensions_and_weights:
+            if not self.dimensions_and_weights:
+                self.dimensions_and_weights = DimensionsAndWeights()
+            if self.separator_stock.dimensions_and_weights.thickness:
+                self.dimensions_and_weights.thickness = self.separator_stock.dimensions_and_weights.thickness
         
-        # Collect from separator_stock (SeparatorStock)
+        # Normalize referenced components
         if self.separator_stock:
-            elements.update(extract_elements(self.separator_stock))
+            self.separator_stock.normalize(archive, logger)
         
-        # Store aggregated elements
-        elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
-        
-        # Save to results
-        if archive.results is None:
-            archive.results = Results()
-
-        if archive.results.material is None:
-            archive.results.material = Material()
-
-        archive.results.material.elements = elements_list
+        # Collect and store elements from all sources
+        collect_and_store_elements(self, archive, referenced_components=[self.separator_stock])
 
 
 # ============================================================================
@@ -1318,7 +1285,6 @@ class BatterySample(ELNSubstance):
             "label": "HZB Battery: Generic Sample",
             "entry_type": "BatterySample",
             "hide": ['pure_substance', 
-                     'substance_identifiers', 
                      'elemental_composition'],  
             "properties": {
                 "order": [
@@ -1331,11 +1297,12 @@ class BatterySample(ELNSubstance):
                     "separator",
                     "electrolyte",
                     "procedure_sketch",
+                    "aggregated_elements",
+                    "product_info"
                 ],
                 "order_default": [
                     "description",
-                    "aggregated_elements",
-                    "sample_identifiers",
+                    "substance_identifiers", 
                 ]
             },
         },
@@ -1344,6 +1311,10 @@ class BatterySample(ELNSubstance):
         ),
     )
 
+    substance_identifiers = SubSection(
+        section_def=ReadableIdentifiers,
+        a_eln=dict(label='sample identifiers')
+    )
     lab_id = Quantity(
         type=str,
         description="""
@@ -1386,8 +1357,12 @@ class BatterySample(ELNSubstance):
         }
     )
 
-    sample_identifiers = SubSection(
-        section_def=SampleID,
+    product_info = SubSection(
+        section_def=ProductInfo,
+        description="Product information for supplier/commercially purchased batteries or battery assemblies.",
+        a_eln={
+            "label": "product info / supplier",
+        },
     )
 
     # ---- Battery Components ----
@@ -1425,36 +1400,30 @@ class BatterySample(ELNSubstance):
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
         super().normalize(archive, logger)
 
+        # Normalize all referenced battery components to ensure fresh data
+        if self.working_electrode:
+            self.working_electrode.normalize(archive, logger)
+        if self.counter_electrode:
+            self.counter_electrode.normalize(archive, logger)
+        if self.reference_electrode:
+            self.reference_electrode.normalize(archive, logger)
+        if self.separator:
+            self.separator.normalize(archive, logger)
+        if self.electrolyte:
+            self.electrolyte.normalize(archive, logger)
+
         # Validate required lab/battery id
         validate_required(self.lab_id, name='battery ID')
 
-        # Auto-populate aggregated_elements from all referenced components
-        elements = set()
-
-        # Collect elements from all battery components
-        if self.working_electrode:
-            elements.update(extract_elements(self.working_electrode))
-        if self.counter_electrode:
-            elements.update(extract_elements(self.counter_electrode))
-        if self.reference_electrode:
-            elements.update(extract_elements(self.reference_electrode))
-        if self.separator:
-            elements.update(extract_elements(self.separator))
-        if self.electrolyte:
-            elements.update(extract_elements(self.electrolyte))
-
-        # Store aggregated elements
-        elements_list = sorted(elements)
-        self.aggregated_elements = elements_list
-
-        # Save to results
-        if archive.results is None:
-            archive.results = Results()
-
-        if archive.results.material is None:
-            archive.results.material = Material()
-
-        archive.results.material.elements = elements_list
+        # Collect and store elements from all referenced components
+        referenced_components = [
+            self.working_electrode,
+            self.counter_electrode,
+            self.reference_electrode,
+            self.separator,
+            self.electrolyte,
+        ]
+        collect_and_store_elements(self, archive, referenced_components=referenced_components)
 
 
 # ============================================================================

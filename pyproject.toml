@@ -14,7 +14,7 @@ classifiers = [
 ]
 name = "nomad-battery-space"
 description = "A schema package plugin for data space @HZB"
-version = "0.1.0"
+version = "0.1.1"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
