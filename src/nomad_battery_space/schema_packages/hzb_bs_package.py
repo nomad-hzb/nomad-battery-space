@@ -256,9 +256,6 @@ class BS_ChemicalReference(ArchiveSection):
                         self.chemical_name = self.chemical.entry_metadata.entry_name
                     except (AttributeError, TypeError):
                         pass
-            # Notify parent to re-normalize
-            if self.m_parent and hasattr(self.m_parent, 'normalize'):
-                self.m_parent.normalize(archive, logger)
         except Exception as e:
             logger.error(f"Error normalizing BS_ChemicalReference: {e}")
 
@@ -530,9 +527,6 @@ class ActiveMaterialComponent(ArchiveSection):
                         self.material_name = self.material.entry_metadata.entry_name
                     except (AttributeError, TypeError):
                         pass
-            # Notify parent to re-normalize
-            if self.m_parent and hasattr(self.m_parent, 'normalize'):
-                self.m_parent.normalize(archive, logger)
         except Exception as e:
             logger.error(f"Error normalizing ActiveMaterialComponent: {e}")
 
@@ -1003,6 +997,7 @@ class VolumeAndWeights(ArchiveSection):
             "component": "NumberEditQuantity",
             "label": "volume",
             "defaultDisplayUnit": "milliliter",
+            "units": ["liter", "milliliter", "microliter"],
         },
     )
 

@@ -174,8 +174,7 @@ def collect_and_store_elements(component, archive, chemicals=None, materials=Non
     
     # Store aggregated elements
     elements_list = sorted(elements)
-    component.aggregated_elements = []
-    component.aggregated_elements = list(elements_list)
+    component.aggregated_elements = elements_list
     
     # Save to results
     if archive:
