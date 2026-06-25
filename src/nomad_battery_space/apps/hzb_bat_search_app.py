@@ -19,8 +19,9 @@ hzb_bat_search_app = App(
             '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBattery',
             '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.CylindricalCellBattery',
             '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.PouchCellBattery',
-            '*#nomad_battery_space.schema_packages.hzb_bs_package.Anode',
-            '*#nomad_battery_space.schema_packages.hzb_bs_package.Cathode',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.Electrode',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
+            #'data.aggregated_elements#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.BatterySample',
         ]
     ),
@@ -70,7 +71,7 @@ hzb_bat_search_app = App(
     #                 'xl': Layout(minH=3, minW=3, h=10, w=12, y=0, x=0),
     #                 'xxl': Layout(minH=3, minW=3, h=10, w=12, y=0, x=0),
     #             },
-    #             search_quantity='data.aggregated_elements#nomad_battery_space.schema_packages.hzb_bs_package.BatterySample',
+    #             search_quantity='data.aggregated_elements#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
     #             scale='linear',
     #         ),
     #     ]
