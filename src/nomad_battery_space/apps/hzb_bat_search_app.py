@@ -1,7 +1,9 @@
 from nomad.config.models.ui import (
     App,
+    Axis,
     Column,
     Menu,
+    MenuItemHistogram,
     MenuItemTerms,
     MenuItemVisibility,
     SearchQuantities,
@@ -21,6 +23,7 @@ hzb_bat_search_app = App(
             '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.PouchCellBattery',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.Electrode',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.DimensionsAndWeights',
             #'data.aggregated_elements#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.BatterySample',
         ]
@@ -50,6 +53,13 @@ hzb_bat_search_app = App(
                 search_quantity='entry_type',
                 title='Entry Type',
                 options=10,
+            ),
+            MenuItemHistogram(
+                title='thickness',
+                x=Axis(
+                    search_quantity='data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet'
+                ),
+                width=6,
             ),
             MenuItemVisibility(),
             # Beispiel: nach einem eigenen String-Feld filtern
