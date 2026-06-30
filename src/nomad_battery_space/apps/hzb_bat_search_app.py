@@ -42,24 +42,29 @@ hzb_bat_search_app = App(
     ],
     menu=Menu(
         title='Filter',
+        size='sm',
         items=[
             # Nach Autor filtern – authors.name ist ein Built-in-Feld
             MenuItemTerms(
                 search_quantity='authors.name',
                 title='Author',
-                options=10,
+                options=0,
+                show_input=False,
             ),
             MenuItemTerms(
                 search_quantity='entry_type',
                 title='Entry Type',
-                options=10,
+                show_input=False,
+                options=0,
             ),
             MenuItemHistogram(
-                title='thickness',
+                title='Thickness',
                 x=Axis(
                     search_quantity='data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet'
                 ),
-                width=6,
+                # width=6,
+                show_input=False,
+                show_statistics=False,
             ),
             MenuItemVisibility(),
             # Beispiel: nach einem eigenen String-Feld filtern
