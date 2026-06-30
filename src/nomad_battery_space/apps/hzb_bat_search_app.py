@@ -12,6 +12,36 @@ from nomad.config.models.ui import (
 
 # i see a problem here, because it is only referencing one type of batteries. not used currently
 schema = 'nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBattery'
+classes_with_similar_properties: list[str] = [
+    'ElectrodeSheet',
+    'ElectrodeSample',
+    'SeparatorStock',
+    'SeparatorSample',
+]
+
+# since inherited properties not yet supported (https://gitlab.mpcdf.mpg.de/nomad-lab/nomad-FAIR/-/work_items/2163) to have one common filter we need extra ones for each class. we try it DRY:
+subclass_filter_menus: dict[str, Menu] = {}
+for class_name in classes_with_similar_properties:
+    menu = Menu(
+        title=f'{class_name} Properties',
+        items=[
+            MenuItemHistogram(
+                title='Thickness',
+                x=Axis(
+                    search_quantity=f'data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.{class_name}'
+                ),
+            ),
+            MenuItemHistogram(
+                title='Mass',
+                x=Axis(
+                    search_quantity=f'data.dimensions_and_weights.mass#nomad_battery_space.schema_packages.hzb_bs_package.{class_name}'
+                ),
+            ),
+        ],
+    )
+
+    subclass_filter_menus[class_name] = menu
+
 
 hzb_bat_search_app = App(
     label='HZB Batteries Search App',
@@ -25,7 +55,9 @@ hzb_bat_search_app = App(
             '*#nomad_battery_space.schema_packages.hzb_bs_package.Electrode',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample',
-            '*#nomad_battery_space.schema_packages.hzb_bs_package.DimensionsAndWeights',
+            # '*#nomad_battery_space.schema_packages.hzb_bs_package.DimensionsAndWeights',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorStock'
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorSample'
             #'data.aggregated_elements#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.BatterySample',
         ]
@@ -35,12 +67,6 @@ hzb_bat_search_app = App(
         Column(quantity='entry_id', selected=True),
         Column(quantity='entry_name', selected=True),
         Column(quantity='entry_type', selected=True),
-        # This is CoinCell specific
-        # Column(quantity=f'data.pressure#{schema}', selected=True),
-        # Column(
-        #     quantity=f'data.case_crimp#{schema}',
-        #     selected=True,
-        # ),
     ],
     menu=Menu(
         title='Filter',
@@ -59,77 +85,12 @@ hzb_bat_search_app = App(
                 show_input=False,
                 options=0,
             ),
-            Menu(
-                title='ElectroSheet Properties',
-                items=[
-                    MenuItemHistogram(
-                        title='Thickness',
-                        x=Axis(
-                            search_quantity='data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet'
-                        ),
-                    ),
-                    MenuItemHistogram(
-                        title='Mass',
-                        x=Axis(
-                            search_quantity='data.dimensions_and_weights.mass#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet'
-                        ),
-                    ),
-                ],
-            ),
-            Menu(
-                title='ElectroSample Properties',
-                items=[
-                    MenuItemHistogram(
-                        title='Thickness',
-                        x=Axis(
-                            search_quantity='data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample'
-                        ),
-                    ),
-                    MenuItemHistogram(
-                        title='Mass',
-                        x=Axis(
-                            search_quantity='data.dimensions_and_weights.mass#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample'
-                        ),
-                    ),
-                ],
-            ),
-            # Only one filter to search inherited properties in multiple classes is not yet implemented, but planned in future: https://gitlab.mpcdf.mpg.de/nomad-lab/nomad-FAIR/-/work_items/2163
-            # MenuItemHistogram(
-            #     title='Thickness Electrode Sheet',
-            #     x=Axis(
-            #         search_quantity='data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet'
-            #     ),
-            #     show_input=False,
-            #     show_statistics=False,
-            # ),
-            # MenuItemHistogram(
-            #     title='Thickness Electrode Sample',
-            #     x=Axis(
-            #         search_quantity='data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample'
-            #     ),
-            #     # width=6,
-            #     show_input=False,
-            #     show_statistics=False,
-            # ),
+            subclass_filter_menus['ElectrodeSheet'],
+            subclass_filter_menus['ElectrodeSample'],
+            subclass_filter_menus['SeparatorStock'],
+            subclass_filter_menus['SeparatorSample'],
             MenuItemVisibility(),
             MenuItemCustomQuantities(title='Custom Conditions'),
         ],
     ),
-    # BatterySample exclusive: move that into extra app
-    # dashboard=Dashboard(
-    #     widgets=[
-    #         WidgetPeriodicTable(
-    #             title='Aggregated elements',
-    #             layout={
-    #                 'sm': Layout(minH=3, minW=3, h=9, w=12, y=0, x=0),
-    #                 'md': Layout(minH=3, minW=3, h=9, w=12, y=0, x=0),
-    #                 'lg': Layout(minH=3, minW=3, h=9, w=12, y=0, x=0),
-    #                 'xl': Layout(minH=3, minW=3, h=10, w=12, y=0, x=0),
-    #                 'xxl': Layout(minH=3, minW=3, h=10, w=12, y=0, x=0),
-    #             },
-    #             search_quantity='data.aggregated_elements#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
-    #             scale='linear',
-    #         ),
-    #     ]
-    # ),
 )
