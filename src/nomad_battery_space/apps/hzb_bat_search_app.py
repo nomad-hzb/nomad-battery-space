@@ -3,6 +3,7 @@ from nomad.config.models.ui import (
     Axis,
     Column,
     Menu,
+    MenuItemCustomQuantities,
     MenuItemHistogram,
     MenuItemTerms,
     MenuItemVisibility,
@@ -23,6 +24,7 @@ hzb_bat_search_app = App(
             '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.PouchCellBattery',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.Electrode',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.DimensionsAndWeights',
             #'data.aggregated_elements#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.BatterySample',
@@ -57,21 +59,60 @@ hzb_bat_search_app = App(
                 show_input=False,
                 options=0,
             ),
-            MenuItemHistogram(
-                title='Thickness',
-                x=Axis(
-                    search_quantity='data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet'
-                ),
-                # width=6,
-                show_input=False,
-                show_statistics=False,
+            Menu(
+                title='ElectroSheet Properties',
+                items=[
+                    MenuItemHistogram(
+                        title='Thickness',
+                        x=Axis(
+                            search_quantity='data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet'
+                        ),
+                    ),
+                    MenuItemHistogram(
+                        title='Mass',
+                        x=Axis(
+                            search_quantity='data.dimensions_and_weights.mass#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet'
+                        ),
+                    ),
+                ],
             ),
-            MenuItemVisibility(),
-            # Beispiel: nach einem eigenen String-Feld filtern
-            # MenuItemTerms(
-            #     search_quantity=f'data.anode_material#{schema}',
-            #     title='Anode Material',
+            Menu(
+                title='ElectroSample Properties',
+                items=[
+                    MenuItemHistogram(
+                        title='Thickness',
+                        x=Axis(
+                            search_quantity='data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample'
+                        ),
+                    ),
+                    MenuItemHistogram(
+                        title='Mass',
+                        x=Axis(
+                            search_quantity='data.dimensions_and_weights.mass#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample'
+                        ),
+                    ),
+                ],
+            ),
+            # Only one filter to search inherited properties in multiple classes is not yet implemented, but planned in future: https://gitlab.mpcdf.mpg.de/nomad-lab/nomad-FAIR/-/work_items/2163
+            # MenuItemHistogram(
+            #     title='Thickness Electrode Sheet',
+            #     x=Axis(
+            #         search_quantity='data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet'
+            #     ),
+            #     show_input=False,
+            #     show_statistics=False,
             # ),
+            # MenuItemHistogram(
+            #     title='Thickness Electrode Sample',
+            #     x=Axis(
+            #         search_quantity='data.dimensions_and_weights.thickness#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample'
+            #     ),
+            #     # width=6,
+            #     show_input=False,
+            #     show_statistics=False,
+            # ),
+            MenuItemVisibility(),
+            MenuItemCustomQuantities(title='Custom Conditions'),
         ],
     ),
     # BatterySample exclusive: move that into extra app
