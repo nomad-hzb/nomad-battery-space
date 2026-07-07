@@ -5,6 +5,7 @@ from nomad.config.models.ui import (
     Menu,
     MenuItemCustomQuantities,
     MenuItemHistogram,
+    MenuItemOptimade,
     MenuItemTerms,
     MenuItemVisibility,
     SearchQuantities,
@@ -72,23 +73,31 @@ hzb_bat_search_app = App(
         title='Filter',
         size='sm',
         items=[
-            # Nach Autor filtern – authors.name ist ein Built-in-Feld
-            MenuItemTerms(
-                search_quantity='authors.name',
+            Menu(
                 title='Author',
-                options=0,
-                show_input=False,
+                items=[
+                    MenuItemTerms(
+                        search_quantity='authors.name',
+                        title='Author',
+                        options=10,
+                    ),
+                ],
             ),
-            MenuItemTerms(
-                search_quantity='entry_type',
+            Menu(
                 title='Entry Type',
-                show_input=False,
-                options=0,
+                items=[
+                    MenuItemTerms(
+                        search_quantity='entry_type',
+                        title='Entry Type',
+                        options=10,
+                    ),
+                ],
             ),
             subclass_filter_menus['ElectrodeSheet'],
             subclass_filter_menus['ElectrodeSample'],
             subclass_filter_menus['SeparatorStock'],
             subclass_filter_menus['SeparatorSample'],
+            MenuItemOptimade(title='Optimade'),
             MenuItemVisibility(),
             MenuItemCustomQuantities(title='Custom Conditions'),
         ],
