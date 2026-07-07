@@ -132,10 +132,9 @@ where = ["src"]
 
 [project.entry-points.'nomad.plugin']
 parser_entry_point = "nomad_battery_space.parsers:parser_entry_point"
-
 app_entry_point = "nomad_battery_space.apps:app_entry_point"
 
-
+hzb_bat_search_app = "nomad_battery_space.apps:hzb_bat_search_app_entry_point"
 hzb_bs_package = "nomad_battery_space.schema_packages:hzb_bs_package"
 hzb_bs_assembly_package = "nomad_battery_space.schema_packages:hzb_bs_assembly_package"
 
