@@ -42,7 +42,7 @@ Geometry support for samples (CircleGeometry, RectangleGeometry, OtherGeometry)
 from typing import TYPE_CHECKING
 
 from baseclasses import ProductInfo
-from nomad.datamodel.data import ArchiveSection, EntryData
+from nomad.datamodel.data import ArchiveSection
 from nomad.datamodel.metainfo.basesections.v1 import (
     ReadableIdentifiers,
     SynthesisMethod,
@@ -54,7 +54,6 @@ from nomad.metainfo import (
     Reference,
     SchemaPackage,
     Section,
-    SectionProxy,
     SubSection,
 )
 
@@ -62,9 +61,12 @@ if TYPE_CHECKING:
     from nomad.datamodel.datamodel import EntryArchive
     from structlog.stdlib import BoundLogger
 
-from baseclasses.voila import VoilaNotebook
-
-from .utils import (
+from .utilities import (
+    DimensionsAndWeights,
+    Notes,
+    VolumeAndWeights,
+)
+from .utilities.helpers import (
     collect_and_store_elements,
     create_string_quantity,
     validate_required,
@@ -90,16 +92,17 @@ class BS_Chemical(ELNSubstance):
         a_eln={
             "label": "HZB Battery: Chemical",
             "entry_type": "Chemical",
+            "hide": ['description'],
             "properties": {
                 "order": [
                     "name",
                     #"creator",
                     "elemental_composition",
                     "pure_substance",
-                    "substance_identifiers",
+                    "product_info",
                 ],
                 "order_default": [
-                    "description",
+                    "substance_identifiers",
                 ]
             },
         },
@@ -119,6 +122,9 @@ class BS_Chemical(ELNSubstance):
 
     # pure_substance = SubSection(section_def=PubChemPureSubstanceSectionCustom)
 
+    notes = SubSection(
+        section_def=Notes,
+    )
     product_info = SubSection(
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased chemicals.",
@@ -154,12 +160,10 @@ class BS_ChemicalReference(ArchiveSection):
             "showSectionLabel": True
         },
     )
-
     chemical_name = Quantity(
         type=str,
         description="Auto-populated name of the referenced chemical for display in the UI list.",
     )
-
     role = Quantity(
         type=str,
         description="Role of this chemical in the synthesis or formulation.",
@@ -178,7 +182,6 @@ class BS_ChemicalReference(ArchiveSection):
             ),
         ),
     )
-
     volume = Quantity(
         links=['http://purl.obolibrary.org/obo/PATO_0000918', 'https://purl.archive.org/tfsco/TFSCO_00002158'],
         type=float,
@@ -187,11 +190,9 @@ class BS_ChemicalReference(ArchiveSection):
             "component": "NumberEditQuantity",
             "label": "volume",
             "defaultDisplayUnit": "milliliter",
-            "units": ["liter", "milliliter", "microliter"],
         },
         unit="milliliter",
     )
-
     mass = Quantity(
         links=['http://purl.obolibrary.org/obo/PATO_0000125', 'https://purl.archive.org/tfsco/TFSCO_00005020'],
         type=float,
@@ -200,49 +201,62 @@ class BS_ChemicalReference(ArchiveSection):
             "component": "NumberEditQuantity",
             "label": "mass",
             "defaultDisplayUnit": "gram",
-            "units": ["gram", "milligram", "microgram"],
         },
         unit="gram",
     )
-
     concentration_mol = Quantity(
         links=['http://purl.obolibrary.org/obo/PATO_0000033'],
         type=float,
         description="Molar concentration of the chemical (mol per liter).",
         a_eln={
             "component": "NumberEditQuantity",
-            "label": "concentration (mol/l)",
+            "label": "molar concentration",
             "defaultDisplayUnit": "mol/l",
-            "units": ["mol/l", "mmol/l", "mol/ml"],
         },
         unit="mol/l",
     )
-
-    # concentration_mass = Quantity(
-    #     links=['http://purl.obolibrary.org/obo/PATO_0000033'],
-    #     type=float,
-    #     description="Mass concentration of the chemical (mass per volume).",
-    #     a_eln={
-    #         "component": "NumberEditQuantity",
-    #         "label": "concentration (mass)",
-    #         "defaultDisplayUnit": "mg/ml",
-    #         "units": ["g/l", "mg/ml", "mg/l"],
-    #     },
-    #     unit="mg/ml",
-    # )
-
-    # concentration_vol = Quantity(
-    #     links=['http://purl.obolibrary.org/obo/PATO_0000033'],
-    #     type=float,
-    #     description="Volume-to-volume concentration (v/v), e.g. for liquid additives or solvents.",
-    #     a_eln={
-    #         "component": "NumberEditQuantity",
-    #         "label": "concentration (v/v)",
-    #         "defaultDisplayUnit": "%",
-    #         "units": ["%", "ul/ml", "ml/l"],
-    #     },
-    #     unit="dimensionless",
-    # )
+    concentration_mass = Quantity(
+        links=['http://purl.obolibrary.org/obo/PATO_0000033'],
+        type=float,
+        description="Mass concentration by volume (mass per volume).",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "mass concentration",
+            "defaultDisplayUnit": "g/l",
+        },
+        unit="g/l",
+    )
+    fraction = Quantity(
+        links=['http://purl.obolibrary.org/obo/PATO_0000033'],
+        type=float,
+        description="Concentration expressed as a ratio or percentage (mass, volume, or mole fractions). \n"
+                    "Applicable for both liquids and solids. \n\n"
+                    "Available units: % (percent), ppm (parts per million).",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "fraction",
+            "defaultDisplayUnit": "%",
+        },
+        unit="dimensionless",
+    )
+    mass_fraction = Quantity(
+        type=float,
+        description="Mass of solute per unit mass of total solution.",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "mass fraction (wt%)",
+            "minValue": 0, 
+            "maxValue": 100,
+        },
+    )
+    volume_fraction = Quantity(
+        type=float,
+        description="Volume of solute per unit volume of total solution.",
+        a_eln={
+            "component": "NumberEditQuantity",
+            "label": "volume fraction (% V/V)",
+        },
+    )
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
@@ -275,7 +289,6 @@ class MaterialSynthesisMethodReference(ArchiveSection):
             "label": "DOI",
         },
     )
-    
     paper_reference = Quantity(
         type=str,
         shape=['*'],
@@ -348,12 +361,11 @@ class ElectrodeMaterial(ELNSubstance):
         a_eln={
             "label": "HZB Battery: Electrode Material",
             "entry_type": "ElectrodeMaterial",
-            #"hide": ['pure_substance', 'substance_identifiers'],
+            "hide": ['description'],
             "properties": {
                 "order": [
                     "name",
-                    "creator",
-                    "chemical_composition_or_formulas",
+                    #"creator",
                     "synthesis",
                     "yield_percent",
                     "description",
@@ -361,6 +373,7 @@ class ElectrodeMaterial(ELNSubstance):
                     "elemental_composition",
                     "pure_substance",
                     "chemicals",
+                    "product_info",
                 ],
                 "order_default": [
                     "substance_identifiers",
@@ -372,10 +385,10 @@ class ElectrodeMaterial(ELNSubstance):
         ),
     )
 
-    chemical_composition_or_formulas = create_string_quantity(
-        "chemical composition/formula",
-        description="Chemical composition or formula of the synthesized electrode material (e.g., LiCoO2, NCA, etc.).",
-    )
+    # chemical_composition_or_formulas = create_string_quantity(
+    #     "chemical composition/formula",
+    #     description="Chemical composition or formula of the synthesized electrode material (e.g., LiCoO2, NCA, etc.).",
+    # )
 
     chemicals = SubSection(
         section_def=BS_ChemicalReference,
@@ -386,7 +399,6 @@ class ElectrodeMaterial(ELNSubstance):
             "showSectionLabel": True,
         },
     )
-
     synthesis = SubSection(
         section_def=MaterialSynthesisMethod,
         description="Detailed synthesis methodology including steps, instruments, timing, and publication references.",
@@ -403,15 +415,10 @@ class ElectrodeMaterial(ELNSubstance):
         },
         unit="dimensionless",
     )
-
     volume_and_weights = SubSection(
-        section_def=SectionProxy('VolumeAndWeights'),
+        section_def=VolumeAndWeights,
         description="Volume and mass information for the synthesized electrode material.",
-        a_eln={
-            "label": "volume and weights",
-        },
     )
-
     product_info = SubSection(
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased electrode materials.",
@@ -419,7 +426,6 @@ class ElectrodeMaterial(ELNSubstance):
             "label": "product info / supplier",
         },
     )
-
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -428,10 +434,9 @@ class ElectrodeMaterial(ELNSubstance):
             "label": "aggregated elements",
         }
     )
-
-    #TODO: Let user decide whether to use PubChem substance like below or keep it flexible with the dropdown selection
-    # 1) pure_substance = SubSection(section_def=PubChemPureSubstanceSectionCustom)
-    # 2) creator needed?
+    notes = SubSection(
+        section_def=Notes,
+    )
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
@@ -468,12 +473,10 @@ class ActiveMaterialComponent(ArchiveSection):
                "showSectionLabel": True,
                },
     )
-
     material_name = Quantity(
         type=str,
         description="Auto-populated name of the referenced electrode material for display in the UI list."
     )
-
     role = Quantity(
         type=str,
         description="Role of this material in the sheet (e.g., active material, binder, current collector, additive).",
@@ -490,7 +493,6 @@ class ActiveMaterialComponent(ArchiveSection):
             ),
         ),
     )
-
     mass = Quantity(
         type=float,
         description="Mass of this material component in the sheet.",
@@ -502,17 +504,15 @@ class ActiveMaterialComponent(ArchiveSection):
         },
         unit="milligram",
     )
-
     wt_percent = Quantity(
         type=float,
         description="Weight percent (wt%) of this material component in the electrode sheet.",
         a_eln={
             "component": "NumberEditQuantity",
             "label": "wt%",
-            "defaultDisplayUnit": "%",
-            "props": {"minValue": 0, "maxValue": 100},
+            "minValue": 0, 
+            "maxValue": 100,
         },
-        unit="dimensionless",
     )
 
     def normalize(self, archive, logger):
@@ -544,17 +544,19 @@ class ElectrodeSheet(ELNSubstance):
         a_eln={
             "label": "HZB Battery: Electrode Sheet",
             "entry_type": "ElectrodeSheet",
-            "hide": ['pure_substance', 'elemental_composition'], 
+            "hide": ['description'], 
             "properties": {
                 "order": [
                     "name",
                     "casting_procedure",
                     "dimensions_and_weights",
+                    'elemental_composition',
+                    'pure_substance',
                     "chemicals",
-                    "electrode_materials",           
+                    "electrode_materials",   
+                    "product_info"        
                 ],
                 "order_default": [
-                    "description",
                     "substance_identifiers",
                 ]
             },
@@ -565,7 +567,7 @@ class ElectrodeSheet(ELNSubstance):
     )
 
     casting_procedure = create_string_quantity(
-        "casting procedure (drop-down???)",
+        "casting procedure",
         description="Procedure used to cast the electrode sheet (e.g., dropcast, spray coating, etc.).",
     )
 
@@ -577,7 +579,6 @@ class ElectrodeSheet(ELNSubstance):
             "label": "electrode materials",
         },
     )
-
     chemicals = SubSection(
         section_def=BS_ChemicalReference,
         repeats=True,
@@ -587,7 +588,6 @@ class ElectrodeSheet(ELNSubstance):
             "showSectionLabel": True,
         },
     )
-
     product_info = SubSection(
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased electrode sheets.",
@@ -595,15 +595,10 @@ class ElectrodeSheet(ELNSubstance):
             "label": "product info / supplier",
         },
     )
-
     dimensions_and_weights = SubSection(
-        section_def=SectionProxy('DimensionsAndWeights'),
+        section_def=DimensionsAndWeights,
         description="Geometric surface area and mass information for the electrode sheet.",
-        a_eln={
-            "label": "dimensions and weights",
-        },
     )
-
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -611,6 +606,9 @@ class ElectrodeSheet(ELNSubstance):
         a_eln={
             "label": "aggregated elements",
         }
+    )
+    notes = SubSection(
+        section_def=Notes,
     )
 
     def normalize(self, archive, logger):
@@ -652,6 +650,7 @@ class ElectrolyteStock(ELNSubstance):
                     "state",
                     "volume_and_weights",
                     "chemicals",
+                    "product_info"  
                 ],
                 "order_default": [
                     "description",
@@ -674,7 +673,6 @@ class ElectrolyteStock(ELNSubstance):
             "label": "state",
         }
     )
-
     chemicals = SubSection(
         section_def=BS_ChemicalReference,
         repeats=True,
@@ -684,7 +682,6 @@ class ElectrolyteStock(ELNSubstance):
             "showSectionLabel": True,
         },
     )
-
     product_info = SubSection(
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased electrolyte stocks.",
@@ -692,15 +689,10 @@ class ElectrolyteStock(ELNSubstance):
             "label": "product info / supplier",
         },
     )
-
     volume_and_weights = SubSection(
-        section_def=SectionProxy('VolumeAndWeights'),
+        section_def=VolumeAndWeights,
         description="Volume and mass information for the electrolyte stock.",
-        a_eln={
-            "label": "volume and weights",
-        },
     )
-
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -738,12 +730,13 @@ class SeparatorStock(ELNSubstance):
         a_eln={
             "label": "HZB Battery: Separator Stock",
             "entry_type": "SeparatorStock",
-            "hide": ['pure_substance', 'elemental_composition'],
+            "hide": ['pure_substance', 'elemental_composition', "description"],
             "properties": {
                 "order": [
                     "name",
                     "dimensions_and_weights",
                     "chemicals",
+                    "product_info",
                 ],
                 "order_default": [
                     "description",
@@ -765,7 +758,6 @@ class SeparatorStock(ELNSubstance):
             "showSectionLabel": True,
         },
     )
-
     product_info = SubSection(
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased separator stocks.",
@@ -773,27 +765,10 @@ class SeparatorStock(ELNSubstance):
             "label": "product info / supplier",
         },
     )
-
-    # porosity = Quantity(
-    #     type=float,
-    #     description="Porosity percentage of the separator",
-    #     a_eln={
-    #         "component": "NumberEditQuantity",
-    #         "label": "porosity",
-    #         "defaultDisplayUnit": "%",
-    #         "props": {"minValue": 0, "maxValue": 100},
-    #     },
-    #     unit="dimensionless",
-    # )
-
     dimensions_and_weights = SubSection(
-        section_def=SectionProxy('DimensionsAndWeights'),
+        section_def=DimensionsAndWeights,
         description="Thickness and geometric dimensions of the separator stock.",
-        a_eln={
-            "label": "Dimensions and Weights",
-        },
     )
-
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -801,6 +776,9 @@ class SeparatorStock(ELNSubstance):
         a_eln={
             "label": "aggregated elements",
         }
+    )
+    notes = SubSection(
+        section_def=Notes,
     )
 
     def normalize(self, archive, logger):
@@ -820,200 +798,6 @@ class SeparatorStock(ELNSubstance):
 # SAMPLE COMPONENTS (Cut/Prepared from Batch)
 # ============================================================================
 
-class GeometricalShape(ArchiveSection):
-    """Base class for sample geometry."""
-    
-    m_def = Section(
-        label='Select shape from the dropdown',
-    )
-
-
-class CircleGeometry(GeometricalShape):
-    """Circular sample geometry with diameter."""
-    
-    m_def = Section(
-        label='Circle',
-    )
-    
-    diameter = Quantity(
-        type=float,
-        description="Diameter of the circular sample.",
-        unit="millimeter",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "diameter",
-            "defaultDisplayUnit": "millimeter",
-        },
-    )
-    
-    def derive_area(self):
-        if self.diameter is not None:
-            return 3.14159 * (self.diameter / 2) ** 2
-        return None
-    
-    area = Quantity(
-        type=float,
-        unit="centimeter**2",
-        description="Calculated area of the circular sample.",
-        #derived=derive_area,
-        a_eln={
-            "label": "area",
-            "defaultDisplayUnit": "centimeter**2",
-        },
-    )
-    
-    def normalize(self, archive, logger):
-        super().normalize(archive, logger)
-        if self.diameter is not None:
-            self.area = 3.14159 * (self.diameter / 2) ** 2
-
-
-class RectangleGeometry(GeometricalShape):
-    """Rectangular sample geometry with length and width."""
-    
-    m_def = Section(
-        label='Rectangle',
-    )
-    
-    length = Quantity(
-        type=float,
-        description="Length of the rectangular sample.",
-        unit="millimeter",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "length",
-            "defaultDisplayUnit": "millimeter",
-        },
-    )
-    
-    width = Quantity(
-        type=float,
-        description="Width of the rectangular sample.",
-        unit="millimeter",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "width",
-            "defaultDisplayUnit": "millimeter",
-        },
-    )
-    
-    def derive_area(self):
-        if self.length is not None and self.width is not None:
-            return self.length * self.width
-        return None
-    
-    area = Quantity(
-        type=float,
-        unit="centimeter**2",
-        description="Calculated area of the rectangular sample in cm².",
-        #derived=derive_area,
-        a_eln={
-            "label": "area",
-            "defaultDisplayUnit": "centimeter**2",
-        },
-    )
-    
-    def normalize(self, archive, logger):
-        super().normalize(archive, logger)
-        if self.length is not None and self.width is not None:
-            self.area = self.length * self.width
-
-
-class OtherGeometry(GeometricalShape):
-    """Other/custom sample geometry with free text description."""
-    
-    m_def = Section(
-        label='Other',
-    )
-    
-    description = Quantity(
-        type=str,
-        description="Free text description of the sample geometry.",
-        a_eln={
-            "component": "StringEditQuantity",
-            "label": "shape description",
-        },
-    )
-
-
-# ============================================================================
-# COMPOSITE SUBSECTIONS FOR DIMENSIONS, WEIGHT, AND VOLUME
-# ============================================================================
-
-class DimensionsAndWeights(ArchiveSection):
-    """
-    Composite subsection combining thickness, mass, and shape information for solid materials.
-    
-    """
-    
-    m_def = Section(
-        label='dimensions and weights',
-    )
-    
-    thickness = Quantity(
-        type=float,
-        description="Thickness of the solid material.",
-        unit="micrometer",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "thickness",
-            "defaultDisplayUnit": "micrometer",
-        },
-    )
-    
-    mass = Quantity(
-        type=float,
-        description="Mass of the material.",
-        unit="gram",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "mass",
-            "defaultDisplayUnit": "gram",
-            "units": ["gram", "milligram", "microgram"],
-        },
-    )
-    
-    shape = SubSection(
-        section_def=SectionProxy('GeometricalShape'),
-        description="Geometric shape and dimensions of the material."
-    )
-
-
-class VolumeAndWeights(ArchiveSection):
-    """
-    Composite subsection combining mass and volume information for materials and liquids.
-
-    """
-    
-    m_def = Section(
-        label='volume and weights',
-    )
-    
-    volume = Quantity(
-        type=float,
-        description="Volume of the material or solution.",
-        unit="milliliter",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "volume",
-            "defaultDisplayUnit": "milliliter",
-            "units": ["liter", "milliliter", "microliter"],
-        },
-    )
-
-    mass = Quantity(
-        type=float,
-        description="Mass of the material or solution.",
-        unit="gram",
-        a_eln={
-            "component": "NumberEditQuantity",
-            "label": "mass",
-            "defaultDisplayUnit": "gram",
-            "units": ["gram", "milligram", "microgram"],
-        },
-    )
-    
-    
 class ElectrodeSample(ELNSubstance):
     """
     Prepared electrode sample for battery assembly.
@@ -1027,13 +811,14 @@ class ElectrodeSample(ELNSubstance):
         a_eln={
             "label": "HZB Battery: Electrode Sample",
             "entry_type": "ElectrodeSample",
-            "hide": ['pure_substance', 'elemental_composition'],
+            "hide": ['pure_substance', 'elemental_composition', 'description'],
             "properties": {
                 "order": [
                     "name",
                     "electrode_sheet",
                     "dimensions_and_weights",
                     "chemicals",
+                    "product_info"  
                 ],
                 "order_default": [
                     "description",
@@ -1054,15 +839,10 @@ class ElectrodeSample(ELNSubstance):
                 "showSectionLabel": True,
                },
     )
-
     dimensions_and_weights = SubSection(
-        section_def=SectionProxy('DimensionsAndWeights'),
+        section_def=DimensionsAndWeights,
         description="Geometric shape, dimensions and mass information for the electrode sample.",
-        a_eln={            
-            "label": "dimensions and weights",
-        },
     )
-
     chemicals = SubSection(
         section_def=BS_ChemicalReference,
         repeats=True,
@@ -1072,7 +852,6 @@ class ElectrodeSample(ELNSubstance):
             "showSectionLabel": True,
         },
     )
-
     product_info = SubSection(
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased electrode samples.",
@@ -1080,7 +859,6 @@ class ElectrodeSample(ELNSubstance):
             "label": "product info / supplier",
         },
     )
-
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -1088,8 +866,11 @@ class ElectrodeSample(ELNSubstance):
         a_eln={
             "label": "aggregated elements",
         }
-    )    
-        
+    )
+    notes = SubSection(
+        section_def=Notes,
+    )
+
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
         
@@ -1123,12 +904,13 @@ class ElectrolyteSample(ELNSubstance):
         label="HZB Battery: Electrolyte Sample",
         a_eln={
             "label": "HZB Battery: Electrolyte Sample",
-            "hide": ['elemental_composition', 'pure_substance'],
+            "hide": ['elemental_composition', 'pure_substance', 'description'],
             "properties": {
                 "order": [
                     "name",
                     "electrolyte_stock",
                     "volume_and_weights",
+                    "product_info"  
                 ],
                 "order_default": [
                     "description",
@@ -1149,15 +931,10 @@ class ElectrolyteSample(ELNSubstance):
                 "showSectionLabel": True,
                },
     )
-
     volume_and_weights = SubSection(
-        section_def=SectionProxy('VolumeAndWeights'),
+        section_def=VolumeAndWeights,
         description="Volume and mass information for the electrolyte sample.",
-        a_eln={
-            "label": "volume and weights",
-        },
     )
-
     product_info = SubSection(
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased electrolyte samples.",
@@ -1165,7 +942,6 @@ class ElectrolyteSample(ELNSubstance):
             "label": "product info / supplier",
         },
     )
-
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -1173,6 +949,9 @@ class ElectrolyteSample(ELNSubstance):
         a_eln={
             "label": "aggregated elements",
         }
+    )
+    notes = SubSection(
+        section_def=Notes,
     )
 
     def normalize(self, archive, logger):
@@ -1197,12 +976,13 @@ class SeparatorSample(ELNSubstance):
         label="HZB Battery: Separator Sample",
         a_eln={
             "label": "HZB Battery: Separator Sample",
-            "hide": ['elemental_composition', 'pure_substance'],
+            "hide": ['elemental_composition', 'pure_substance', 'description'],
             "properties": {
                 "order": [
                     "name",
                     "separator_stock",
                     "dimensions_and_weights",
+                    "product_info",
                 ],
                 "order_default": [
                     "description",
@@ -1223,13 +1003,9 @@ class SeparatorSample(ELNSubstance):
             "showSectionLabel": True,
         },
     )
-
     dimensions_and_weights = SubSection(
-        section_def=SectionProxy('DimensionsAndWeights'),
+        section_def=DimensionsAndWeights,
         description="Thickness and geometric dimensions of the separator sample.",
-        a_eln={
-            "label": "Dimensions and Weights",
-        },
     )
 
     product_info = SubSection(
@@ -1239,7 +1015,6 @@ class SeparatorSample(ELNSubstance):
             "label": "product info / supplier",
         },
     )
-
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -1247,6 +1022,9 @@ class SeparatorSample(ELNSubstance):
         a_eln={
             "label": "aggregated elements",
         }
+    )
+    notes = SubSection(
+        section_def=Notes,
     )
 
     def normalize(self, archive, logger):
@@ -1285,7 +1063,8 @@ class BatterySample(ELNSubstance):
             "label": "HZB Battery: Generic Sample",
             "entry_type": "BatterySample",
             "hide": ['pure_substance', 
-                     'elemental_composition'],  
+                     'elemental_composition',
+                     'description'],  
             "properties": {
                 "order": [
                     "lab_id",
@@ -1322,32 +1101,30 @@ class BatterySample(ELNSubstance):
         """,
         a_eln=dict(component='StringEditQuantity', label='battery ID', required=True),
     )
-
     name = Quantity(
         type=str,
         description='The name of the battery entry.',
         a_eln=dict(component='StringEditQuantity', label='battery name', required=True),
     )
 
-    description = Quantity(
-        type=str,
-        description="""
-        A field for adding additional information about the battery that is not captured
-        by the other quantities and subsections.
-        """,
-        a_eln=dict(
-            component='RichTextEditQuantity',
-            label='detailed battery description',
-            props={"height": 200}, required=False
-        ),
-    )
+    # description = Quantity(
+    #     type=str,
+    #     description="""
+    #     A field for adding additional information about the battery that is not captured
+    #     by the other quantities and subsections.
+    #     """,
+    #     a_eln=dict(
+    #         component='RichTextEditQuantity',
+    #         label='detailed battery description',
+    #         props={"height": 200}, required=False
+    #     ),
+    # )
 
     procedure_sketch = Quantity(
         type=str,
         description="Photo or PDF file showing the assembly procedure sketch or technical drawing that documents the battery assembly steps and configuration.",
         a_eln={"component": "FileEditQuantity"}
     )
-
     aggregated_elements = Quantity(
         type=str,
         shape=['*'],
@@ -1356,7 +1133,6 @@ class BatterySample(ELNSubstance):
             "label": "aggregated elements",
         }
     )
-
     product_info = SubSection(
         section_def=ProductInfo,
         description="Product information for supplier/commercially purchased batteries or battery assemblies.",
@@ -1364,37 +1140,34 @@ class BatterySample(ELNSubstance):
             "label": "product info / supplier",
         },
     )
-
     # ---- Battery Components ----
-
     working_electrode = Quantity(
         type=Reference(ElectrodeSample.m_def),
         description="The working electrode sample used in the battery (negative or positive depending on setup).",
         a_eln={"component": "ReferenceEditQuantity", "showSectionLabel": True},
     )
-
     counter_electrode = Quantity(
         type=Reference(ElectrodeSample.m_def),
         description="The counter/auxiliary electrode sample used in the battery (opposite polarity to the working electrode).",
         a_eln={"component": "ReferenceEditQuantity", "showSectionLabel": True},
     )
-
     reference_electrode = Quantity(
         type=Reference(ElectrodeSample.m_def),
         description="Reference electrode for three-electrode setup (optional).",
         a_eln={"component": "ReferenceEditQuantity", "showSectionLabel": True},
     )
-
     separator = Quantity(
         type=Reference(SeparatorSample.m_def),
         description="The separator sample separating anode and cathode.",
         a_eln={"component": "ReferenceEditQuantity", "showSectionLabel": True},
     )
-
     electrolyte = Quantity(
         type=Reference(ElectrolyteSample.m_def),
         description="The electrolyte sample used in the battery.",
         a_eln={"component": "ReferenceEditQuantity", "showSectionLabel": True},
+    )
+    notes = SubSection(
+        section_def=Notes,
     )
 
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
@@ -1426,16 +1199,9 @@ class BatterySample(ELNSubstance):
         collect_and_store_elements(self, archive, referenced_components=referenced_components)
 
 
+
 # ============================================================================
-# VOILA NOTEBOOK (for battery batch sample uploads)
+# PACKAGE INITIALIZATION
 # ============================================================================
-
-class BS_VoilaNotebook(VoilaNotebook, EntryData):
-
-    m_def = Section(a_eln=dict(hide=['lab_id']))
-
-    def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
-        super().normalize(archive, logger)
-
 
 m_package.__init_metainfo__()

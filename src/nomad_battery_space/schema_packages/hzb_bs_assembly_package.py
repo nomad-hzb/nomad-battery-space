@@ -17,11 +17,13 @@
 #
 
 """
-Coin Cell Battery Package
+Battery Assembly Package
 
-This module implements the specific data model for coin cell batteries,
-extending the generalized BatterySample with coin cell-specific parameters
-like case type and crimping method.
+This module implements specific data models for assembled battery cells,
+extending the generalized BatterySample with format-specific parameters
+(e.g., coin cell, pouch cell, cylindrical cell). Each battery type includes
+parameters specific to its assembly and form factor while inheriting
+common components (electrodes, separator, electrolyte) from BatterySample.
 """
 
 from typing import TYPE_CHECKING
@@ -38,7 +40,6 @@ if TYPE_CHECKING:
     from structlog.stdlib import BoundLogger
 
 from .hzb_bs_package import BatterySample
-from .utils import create_string_quantity
 
 m_package = SchemaPackage()
 
@@ -48,7 +49,7 @@ class CoinCellBattery(BatterySample):
     Coin cell battery assembly with specific coin cell parameters.
     
     This extends BatterySample with coin cell-specific assembly parameters
-    like case type (IEC 60086 standard) and crimping method/pressure.
+    like case type and crimping method/pressure.
     
     Battery components (electrodes, separator, electrolyte) are inherited
     from the BatterySample base class.
@@ -59,7 +60,7 @@ class CoinCellBattery(BatterySample):
         a_eln={
             "label": "HZB Battery: Coin Cell",
             "entry_type": "CoinCell",
-            "hide": ['pure_substance','elemental_composition'],
+            "hide": ['pure_substance','elemental_composition', 'description'],
             "properties": {
                 "order": [
                     "lab_id",
@@ -76,7 +77,6 @@ class CoinCellBattery(BatterySample):
                     "product_info"
                 ],
                 "order_default": [
-                    "description",
                     "substance_identifiers",
                 ]
             },
@@ -88,14 +88,27 @@ class CoinCellBattery(BatterySample):
 
     # ---- Coin Cell Specific Parameters ----
 
-    case_id = create_string_quantity(
-        "Case-ID",
+    case_id = Quantity(
+        type=str,
+        label="case-id",
         description=(
-            "Standardized coin cell housing code according to IEC 60086.\n\n"
-            "Letters indicate the electrochemical system (e.g. CR = Li-MnO₂), "
-            "followed by four digits: first two = nominal diameter (mm), "
-            "last two = nominal height (0.1 mm).\n\n"
-            "Example: CR2032 → 20 mm diameter, 3.2 mm height."
+            "Coin cell case identifier based on standardized or non-standardized dimensions.\n\n"
+            "Enter the numeric code with first two digits indicating nominal diameter and last two digits indicating nominal height.\n"
+            "- 2032: 20 mm diameter, 3.2 mm height.\n"
+            "- 2025: 20 mm diameter, 2.5 mm height.\n"
+            "- operando: self-constructed operando cells for in-situ measurements\n"
+            "- other: other custom cell designs (specify details in notes)"
+        ),
+        a_eln=dict(
+            component='EnumEditQuantity',
+            props=dict(
+                suggestions=[
+                    '2032',
+                    '2025',
+                    'operando',
+                    'other',
+                ]
+            ),
         ),
     )
 
