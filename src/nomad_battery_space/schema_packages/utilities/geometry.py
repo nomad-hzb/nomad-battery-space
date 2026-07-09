@@ -1,6 +1,5 @@
 from nomad.datamodel.data import ArchiveSection
-from nomad.metainfo import Quantity
-from nomad.metainfo.metainfo import Section
+from nomad.metainfo import Quantity, Section
 
 
 class GeometricalShape(ArchiveSection):

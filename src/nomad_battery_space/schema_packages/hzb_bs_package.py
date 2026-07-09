@@ -566,10 +566,10 @@ class ElectrodeSheet(ELNSubstance):
     )
 
     casting_procedure = Quantity(
-        label="casting procedure",
         type=str,
         description="Procedure used to cast the electrode sheet (e.g., dry casting, spray coating, etc.).",
         a_eln=dict(
+            label="casting procedure",
             component='EnumEditQuantity',
             props=dict(
                 suggestions=[

@@ -90,23 +90,21 @@ class CoinCellBattery(BatterySample):
 
     case_id = Quantity(
         type=str,
-        label="case-id",
         description=(
             "Coin cell case identifier based on standardized or non-standardized dimensions.\n\n"
             "Enter the numeric code with first two digits indicating nominal diameter and last two digits indicating nominal height.\n"
             "- 2032: 20 mm diameter, 3.2 mm height.\n"
             "- 2025: 20 mm diameter, 2.5 mm height.\n"
-            "- operando: self-constructed operando cells for in-situ measurements\n"
-            "- other: other custom cell designs (specify details in notes)"
+            "- operando: self-constructed operando cells for in-situ measurements"
         ),
         a_eln=dict(
+            label="case-id",
             component='EnumEditQuantity',
             props=dict(
                 suggestions=[
                     '2032',
                     '2025',
                     'operando',
-                    'other',
                 ]
             ),
         ),
