@@ -21,12 +21,48 @@ classes_with_similar_properties: list[str] = [
     'SeparatorSample',
 ]
 
+# IDEA: SearchApp Menu's are built directly in schema class by implementing an inherited method. In that method same method of parent class creates parent search menu, and concrete class adds own entries.
+# Advantage: smaller search app
+
 # since inherited properties not yet supported (https://gitlab.mpcdf.mpg.de/nomad-lab/nomad-FAIR/-/work_items/2163) to have one common filter we need extra ones for each class. we try it DRY:
 subclass_filter_menus: dict[str, Menu] = {}
 for class_name in classes_with_similar_properties:
     menu = Menu(
         title=f'{class_name} Properties',
         items=[
+            Menu(
+                title='Chemical Properties',
+                items=[
+                    MenuItemTerms(
+                        search_quantity=f'data.chemicals.chemical_name#nomad_battery_space.schema_packages.hzb_bs_package.{class_name}',
+                        title='Chemical Name',
+                        options=5,
+                    ),
+                    MenuItemTerms(
+                        search_quantity=f'data.chemicals.role#nomad_battery_space.schema_packages.hzb_bs_package.{class_name}',
+                        title='Role',
+                        options=5,
+                    ),
+                    MenuItemHistogram(
+                        title='Volume',
+                        x=Axis(
+                            search_quantity=f'data.chemicals.volume#nomad_battery_space.schema_packages.hzb_bs_package.{class_name}'
+                        ),
+                    ),
+                    MenuItemHistogram(
+                        title='Mass',
+                        x=Axis(
+                            search_quantity=f'data.chemicals.mass#nomad_battery_space.schema_packages.hzb_bs_package.{class_name}'
+                        ),
+                    ),
+                    MenuItemHistogram(
+                        title='Concentration',
+                        x=Axis(
+                            search_quantity=f'data.chemicals.concentration_mol#nomad_battery_space.schema_packages.hzb_bs_package.{class_name}'
+                        ),
+                    ),
+                ],
+            ),
             MenuItemHistogram(
                 title='Thickness',
                 x=Axis(
