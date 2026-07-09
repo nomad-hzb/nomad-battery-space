@@ -31,7 +31,7 @@ The negative electrode component in a battery cell.
 
 ```yaml
 data:
-  m_def: nomad_battery_space.schema_packages.battery_sample_package.Anode
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.Anode
   name: Lithium
   mass: 0.008
   area: 1.54
@@ -61,7 +61,7 @@ The positive electrode component in a battery cell.
 
 ```yaml
 data:
-  m_def: nomad_battery_space.schema_packages.battery_sample_package.Cathode
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.Cathode
   name: Copper
   mass: 0.14
   area: 1.54
@@ -92,7 +92,7 @@ The ionic conductor component that enables charge transport between anode and ca
 
 ```yaml
 data:
-  m_def: nomad_battery_space.schema_packages.battery_sample_package.Electrolyte
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.Electrolyte
   name: Sulphuric acid
   state: Liquid
   mass: 0.108
@@ -123,7 +123,7 @@ The physical barrier that prevents electrode contact while allowing ionic transp
 
 ```yaml
 data:
-  m_def: nomad_battery_space.schema_packages.battery_sample_package.Separator
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.Separator
   name: Polypropylene
   thickness: 50.0
   description: "Polypropylene (C₃H₆)ₙ microporous separator with thermal shutdown capability"

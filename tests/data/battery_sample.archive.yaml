@@ -1,5 +1,5 @@
 data:
-  m_def: nomad_battery_space.schema_packages.battery_sample_package.BatterySample
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.BatterySample
   name: bat_01
   components:
     anode_q: '#anode_01'

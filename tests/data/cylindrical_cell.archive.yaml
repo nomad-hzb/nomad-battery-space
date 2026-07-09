@@ -1,5 +1,5 @@
 data:
-  m_def: nomad_battery_space.schema_packages.battery_cell_assembly_package.CylindricalCellBattery
+  m_def: nomad_battery_space.schema_packages.hzb_bs_assembly_package.CylindricalCellBattery
   lab_id: CYL_001
   name: cylindrical_cell_01
   datetime: 2024-03-05T09:20:00Z

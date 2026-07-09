@@ -46,7 +46,7 @@ This design allows the `BatterySample` class to be extended by specialized cell 
 The typical workflow is:
 
 1. Create component entries independently
-   
+
    - Anode entry with mass and area measurements
    - Cathode entry with mass and active material specification
    - Electrolyte entry with mass, volume, and state
@@ -55,7 +55,7 @@ The typical workflow is:
 2. Create BatterySample and reference components
    ```yaml
    data:
-     m_def: nomad_battery_space.schema_packages.battery_sample_package.BatterySample
+     m_def: nomad_battery_space.schema_packages.hzb_bs_package.BatterySample
      name: battery_sample_01
      lab_id: BAT_001
      components:

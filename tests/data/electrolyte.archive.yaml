@@ -1,5 +1,5 @@
 data:
-  m_def: nomad_battery_space.schema_packages.battery_sample_package.Electrolyte
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.Electrolyte
   name: electrolyte_01
   mass: 0.9
   volume: 1.1
