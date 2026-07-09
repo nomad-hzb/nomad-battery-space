@@ -68,7 +68,6 @@ from .utilities import (
 )
 from .utilities.helpers import (
     collect_and_store_elements,
-    create_string_quantity,
     validate_required,
 )
 
@@ -566,9 +565,23 @@ class ElectrodeSheet(ELNSubstance):
         ),
     )
 
-    casting_procedure = create_string_quantity(
-        "casting procedure",
-        description="Procedure used to cast the electrode sheet (e.g., dropcast, spray coating, etc.).",
+    casting_procedure = Quantity(
+        label="casting procedure",
+        type=str,
+        description="Procedure used to cast the electrode sheet (e.g., dry casting, spray coating, etc.).",
+        a_eln=dict(
+            component='EnumEditQuantity',
+            props=dict(
+                suggestions=[
+                    'Doctor blade casting',
+                    'Spray coating',
+                    'Dip coating',
+                    'Printing',
+                    'Dry casting',
+                    'Roll casting',
+                ]
+            ),
+        ),
     )
 
     electrode_materials = SubSection(
