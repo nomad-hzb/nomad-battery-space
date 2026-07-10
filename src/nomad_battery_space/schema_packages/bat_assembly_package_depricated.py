@@ -6,7 +6,7 @@ from nomad.metainfo import (
 )
 
 from .bat_sample_package_depricated import BatterySample
-from .utils import (
+from .utilities.helpers import (
     create_millimeter_quantity,
     create_string_quantity,
     validate_required,
