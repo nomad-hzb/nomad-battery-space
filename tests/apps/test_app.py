@@ -1,5 +1,5 @@
 def test_importing_app():
     # this will raise an exception if pydantic model validation fails for th app
-    from nomad_battery_space.apps import app_entry_point
+    from nomad_battery_space.apps import hzb_bat_search_app_entry_point
 
-    assert app_entry_point.app.label == 'NewApp'
+    assert hzb_bat_search_app_entry_point.app.label == 'HZB Batteries Search App'
