@@ -178,6 +178,9 @@ def create_class_filter_menus() -> dict[str, Menu]:
 
     classes: list[SchemaClassMetaInfo] = [
         SchemaClassMetaInfo(
+            'CoinCellBattery', 'hzb_bs_assembly_package', False, False, False, False
+        ),
+        SchemaClassMetaInfo(
             'ElectrodeSheet', 'hzb_bs_package', True, False, True, True
         ),
         SchemaClassMetaInfo(
@@ -239,6 +242,26 @@ def create_class_filter_menus() -> dict[str, Menu]:
                     options=5,
                 ),
             )
+
+        if info.class_name == 'CoinCellBattery':
+            menu.items += [
+                MenuItemTerms(
+                    search_quantity=f'data.case_id#nomad_battery_space.schema_packages.{info.package_name}.{info.class_name}',
+                    title='Case ID',
+                    options=5,
+                ),
+                MenuItemTerms(
+                    search_quantity=f'data.case_crimp#nomad_battery_space.schema_packages.{info.package_name}.{info.class_name}',
+                    title='Case Crimp',
+                    options=5,
+                ),
+                MenuItemHistogram(
+                    title='Pressure',
+                    x=Axis(
+                        search_quantity=f'data.pressure#nomad_battery_space.schema_packages.{info.package_name}.{info.class_name}'
+                    ),
+                ),
+            ]
 
         class_filter_menus[info.class_name] = menu
 

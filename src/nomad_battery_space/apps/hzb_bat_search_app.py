@@ -102,6 +102,7 @@ hzb_bat_search_app = App(
                     ),
                 ],
             ),
+            class_filter_menus['CoinCellBattery'],
             class_filter_menus['ElectrodeSheet'],
             class_filter_menus['ElectrodeSample'],
             class_filter_menus['SeparatorStock'],
