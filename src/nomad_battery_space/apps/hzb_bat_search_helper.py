@@ -149,7 +149,7 @@ def create_volume_and_weights_items(
     ]
 
 
-class SchemaClassMetaInfo:
+class ClassInfo:
     class_name: str
     package_name: str
     dimensions_and_weights: bool
@@ -174,31 +174,16 @@ class SchemaClassMetaInfo:
         self.product_info = product_info
 
 
-def create_class_filter_menus() -> dict[str, Menu]:
+def create_class_filter_menus(classes: list[ClassInfo]) -> dict[str, Menu]:
+    """
+    This function creates filter menus for all classes
 
-    classes: list[SchemaClassMetaInfo] = [
-        SchemaClassMetaInfo(
-            'CoinCellBattery', 'hzb_bs_assembly_package', False, False, False, False
-        ),
-        SchemaClassMetaInfo(
-            'ElectrodeSheet', 'hzb_bs_package', True, False, True, True
-        ),
-        SchemaClassMetaInfo(
-            'ElectrodeSample', 'hzb_bs_package', True, False, True, True
-        ),
-        SchemaClassMetaInfo(
-            'SeparatorStock', 'hzb_bs_package', True, False, True, True
-        ),
-        SchemaClassMetaInfo(
-            'SeparatorSample', 'hzb_bs_package', True, False, True, True
-        ),
-        SchemaClassMetaInfo(
-            'ElectrolyteStock', 'hzb_bs_package', False, True, True, True
-        ),
-        SchemaClassMetaInfo(
-            'ElectrolyteSample', 'hzb_bs_package', False, True, False, True
-        ),
-    ]
+    Suggestion of a redesign:
+    To have less "if"s in the code, it would be better to redesign the class ingeritance
+    structure and let each class and parent class create their own search app filters
+    by calling an inherited method and the parents one.
+    Then, this method is no longer needed.
+    """
 
     class_filter_menus: dict[str, Menu] = {}
 

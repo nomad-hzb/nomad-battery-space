@@ -5,16 +5,13 @@ from nomad.config.models.ui import (
     Menu,
     MenuItemCustomQuantities,
     MenuItemHistogram,
-    MenuItemOptimade,
     MenuItemPeriodicTable,
     MenuItemTerms,
     MenuItemVisibility,
     SearchQuantities,
 )
 
-from .hzb_bat_search_helper import (
-    create_class_filter_menus,
-)
+from .hzb_bat_search_helper import ClassInfo, create_class_filter_menus
 
 # i see a problem here, because it is only referencing one type of batteries. not used currently
 schema = 'nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBattery'
@@ -23,8 +20,16 @@ schema = 'nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBa
 # IDEA: SearchApp Menu's are built directly in schema class by implementing an inherited method. In that method same method of parent class creates parent search menu, and concrete class adds own entries.
 # Advantage: smaller search app
 
-# since inherited properties not yet supported (https://gitlab.mpcdf.mpg.de/nomad-lab/nomad-FAIR/-/work_items/2163) to have one common filter we need extra ones for each class. we try it DRY:
-class_filter_menus: dict[str, Menu] = create_class_filter_menus()
+classes: list[ClassInfo] = [
+    ClassInfo('CoinCellBattery', 'hzb_bs_assembly_package', False, False, False, False),
+    ClassInfo('ElectrodeSheet', 'hzb_bs_package', True, False, True, True),
+    ClassInfo('ElectrodeSample', 'hzb_bs_package', True, False, True, True),
+    ClassInfo('SeparatorStock', 'hzb_bs_package', True, False, True, True),
+    ClassInfo('SeparatorSample', 'hzb_bs_package', True, False, True, True),
+    ClassInfo('ElectrolyteStock', 'hzb_bs_package', False, True, True, True),
+    ClassInfo('ElectrolyteSample', 'hzb_bs_package', False, True, False, True),
+]
+class_filter_menus: dict[str, Menu] = create_class_filter_menus(classes)
 
 
 hzb_bat_search_app = App(
@@ -119,7 +124,7 @@ hzb_bat_search_app = App(
                     ),
                 ],
             ),
-            MenuItemOptimade(title='Optimade'),
+            # MenuItemOptimade(title='Optimade'),
             MenuItemVisibility(),
             MenuItemCustomQuantities(title='Custom Conditions'),
         ],
