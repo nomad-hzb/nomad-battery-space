@@ -29,7 +29,7 @@ classes: list[ClassInfo] = [
     ClassInfo('ElectrodeSheet', 'hzb_bs_package', True, False, True, True),
     ClassInfo('ElectrodeSample', 'hzb_bs_package', True, False, True, True),
     ClassInfo('SeparatorStock', 'hzb_bs_package', True, False, True, True),
-    ClassInfo('SeparatorSample', 'hzb_bs_package', True, False, True, True),
+    ClassInfo('SeparatorSample', 'hzb_bs_package', True, False, False, True),
     ClassInfo('ElectrolyteStock', 'hzb_bs_package', False, True, True, True),
     ClassInfo('ElectrolyteSample', 'hzb_bs_package', False, True, False, True),
 ]
