@@ -120,6 +120,35 @@ def create_dimensions_and_weights_items(
     ]
 
 
+def create_volume_and_weights_items(
+    package_name: str, class_name: str
+) -> list[
+    MenuItemTerms
+    | MenuItemHistogram
+    | MenuItemPeriodicTable
+    | MenuItemNestedObject
+    | MenuItemVisibility
+    | MenuItemDefinitions
+    | MenuItemOptimade
+    | MenuItemCustomQuantities
+    | Menu
+]:
+    return [
+        MenuItemHistogram(
+            title='Volume',
+            x=Axis(
+                search_quantity=f'data.volume_and_weights.volume#nomad_battery_space.schema_packages.{package_name}.{class_name}'
+            ),
+        ),
+        MenuItemHistogram(
+            title='Mass',
+            x=Axis(
+                search_quantity=f'data.volume_and_weights.mass#nomad_battery_space.schema_packages.{package_name}.{class_name}'
+            ),
+        ),
+    ]
+
+
 class SchemaClassMetaInfo:
     class_name: str
     package_name: str
@@ -160,6 +189,12 @@ def create_class_filter_menus() -> dict[str, Menu]:
         SchemaClassMetaInfo(
             'SeparatorSample', 'hzb_bs_package', True, False, True, True
         ),
+        SchemaClassMetaInfo(
+            'ElectrolyteStock', 'hzb_bs_package', False, True, True, True
+        ),
+        SchemaClassMetaInfo(
+            'ElectrolyteSample', 'hzb_bs_package', False, True, False, True
+        ),
     ]
 
     class_filter_menus: dict[str, Menu] = {}
@@ -182,10 +217,10 @@ def create_class_filter_menus() -> dict[str, Menu]:
                 info.package_name, info.class_name
             )
 
-        # if info.volume_and_weights:
-        #     menu.items += create_volume_and_weights_items(
-        #         info.package_name, info.class_name
-        #     )
+        if info.volume_and_weights:
+            menu.items += create_volume_and_weights_items(
+                info.package_name, info.class_name
+            )
 
         if info.class_name == 'ElectrodeSheet':
             menu.items.append(
@@ -196,47 +231,15 @@ def create_class_filter_menus() -> dict[str, Menu]:
                 ),
             )
 
+        if info.class_name == 'ElectrolyteStock':
+            menu.items.append(
+                MenuItemTerms(
+                    search_quantity=f'data.state#nomad_battery_space.schema_packages.{info.package_name}.{info.class_name}',
+                    title='State',
+                    options=5,
+                ),
+            )
+
         class_filter_menus[info.class_name] = menu
 
     return class_filter_menus
-
-
-# def create_class_filter_menus() -> dict[str, Menu]:
-
-#     classes: list[str] = [
-#         'ElectrodeSheet',
-#         'ElectrodeSample',
-#         'SeparatorStock',
-#         'SeparatorSample',
-#     ]
-
-#     class_filter_menus: dict[str, Menu] = {}
-#     for class_name in classes:
-#         menu = Menu(
-#             title=f'{class_name} Properties',
-#             items=[
-#                 create_chemical_properties_menu('hzb_bs_package', class_name),
-#             ],
-#         )
-
-#         menu.items += create_dimensions_and_weights_items('hzb_bs_package', class_name)
-#         menu.items.append(
-#             MenuItemTerms(
-#                 search_quantity=f'data.product_info.supplier#nomad_battery_space.schema_packages.hzb_bs_package.{class_name}',
-#                 title='Supplier',
-#                 options=10,
-#             ),
-#         )
-
-#         if class_name == 'ElectrodeSheet':
-#             menu.items.append(
-#                 MenuItemTerms(
-#                     search_quantity=f'data.casting_procedure#nomad_battery_space.schema_packages.hzb_bs_package.{class_name}',
-#                     title='Casting Procedure',
-#                     options=10,
-#                 ),
-#             )
-
-#         class_filter_menus[class_name] = menu
-
-#     return class_filter_menus

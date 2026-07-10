@@ -106,6 +106,8 @@ hzb_bat_search_app = App(
             class_filter_menus['ElectrodeSample'],
             class_filter_menus['SeparatorStock'],
             class_filter_menus['SeparatorSample'],
+            class_filter_menus['ElectrolyteStock'],
+            class_filter_menus['ElectrolyteSample'],
             Menu(
                 title='Chemical Properties',
                 items=[
