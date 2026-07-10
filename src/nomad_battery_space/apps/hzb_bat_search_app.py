@@ -11,7 +11,11 @@ from nomad.config.models.ui import (
     SearchQuantities,
 )
 
-from .hzb_bat_search_helper import ClassInfo, create_class_filter_menus
+from .hzb_bat_search_helper import (
+    ClassInfo,
+    create_class_filter_menus,
+    create_product_info_menu,
+)
 
 # i see a problem here, because it is only referencing one type of batteries. not used currently
 schema = 'nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBattery'
@@ -63,13 +67,14 @@ hzb_bat_search_app = App(
         size='sm',
         items=[
             Menu(
-                title='Author',
+                title='Author & Visibilities',
                 items=[
                     MenuItemTerms(
                         search_quantity='authors.name',
                         title='Author',
                         options=10,
                     ),
+                    MenuItemVisibility(),
                 ],
             ),
             Menu(
@@ -98,12 +103,12 @@ hzb_bat_search_app = App(
             ),
             Menu(
                 title='Elements',
-                width='36',
+                size='xxl',
                 items=[
                     MenuItemPeriodicTable(
                         search_quantity='results.material.elements',
                         title='Elements',
-                        width='36',
+                        # width='36',
                     ),
                 ],
             ),
@@ -116,16 +121,10 @@ hzb_bat_search_app = App(
             class_filter_menus['ElectrolyteSample'],
             Menu(
                 title='Chemical Properties',
-                items=[
-                    MenuItemTerms(
-                        search_quantity='data.product_info.supplier#nomad_battery_space.schema_packages.hzb_bs_package.BS_Chemical',
-                        title='Supplier',
-                        options=10,
-                    ),
-                ],
+                # since BS_Chemical only has product info and no other properties
+                items=create_product_info_menu('hzb_bs_package', 'BS_Chemical').items,
             ),
             # MenuItemOptimade(title='Optimade'),
-            MenuItemVisibility(),
             MenuItemCustomQuantities(title='Custom Conditions'),
         ],
     ),
