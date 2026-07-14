@@ -83,6 +83,7 @@ class CoinCellBattery(BatterySample):
         },
         a_template=dict(
             substance_identifiers=dict(),
+            case_crimp="manual",
         ),
     )
 
