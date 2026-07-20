@@ -656,7 +656,7 @@ class ElectrolyteStock(ELNSubstance):
         a_eln={
             "label": "HZB Battery: Electrolyte Stock",
             "entry_type": "ElectrolyteStock",
-            "hide": ['pure_substance', 'elemental_composition'],
+            "hide": ['pure_substance', 'elemental_composition', "description"],
             "properties": {
                 "order": [
                     "name",
@@ -715,6 +715,10 @@ class ElectrolyteStock(ELNSubstance):
         a_eln={
             "label": "aggregated elements",
         }
+    )
+
+    notes = SubSection(
+        section_def=Notes,
     )
 
     def normalize(self, archive, logger):
