@@ -62,8 +62,12 @@ if TYPE_CHECKING:
     from structlog.stdlib import BoundLogger
 
 from .utilities import (
+    CircleGeometry,  # noqa: F401 - Re-export for backward compatibility with old data
     DimensionsAndWeights,
+    GeometricalShape,  # noqa: F401 - Re-export for backward compatibility with old data
     Notes,
+    OtherGeometry,  # noqa: F401 - Re-export for backward compatibility with old data
+    RectangleGeometry,  # noqa: F401 - Re-export for backward compatibility with old data
     VolumeAndWeights,
 )
 from .utilities.helpers import (

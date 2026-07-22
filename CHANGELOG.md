@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this plugin will be documented in this file.
 
 
 ## [0.2.1] - 2026-07-20
