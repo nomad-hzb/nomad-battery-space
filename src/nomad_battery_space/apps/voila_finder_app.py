@@ -1,21 +1,17 @@
 from nomad.config.models.ui import (
     App,
     Column,
-    Dashboard,
     FilterMenu,
     FilterMenus,
     FilterMenuSizeEnum,
     Filters,
     Format,
-    Layout,
     ModeEnum,
     RowActionNorth,
     RowActions,
-    RowActionURL,
     RowDetails,
     Rows,
     RowSelection,
-    WidgetTerms,
 )
 
 schema_name = (
