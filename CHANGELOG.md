@@ -2,6 +2,15 @@
 
 All notable changes to this plugin will be documented in this file.
 
+## [0.2.2] - 2026-07-23
+
+### Added
+- **Voila Finder App**: New search application for discovering and launching Voila notebooks
+- **BS_VoilaNotebook Schema**: Extended Voila notebook schema for batch notebook uploads
+- **Voila launch functionality**: Direct launch of Voila dashboards from search results
+
+### Fixed
+- Error handling for non-jupyter file uploads in Voila notebook validation
 
 ## [0.2.1] - 2026-07-20
 

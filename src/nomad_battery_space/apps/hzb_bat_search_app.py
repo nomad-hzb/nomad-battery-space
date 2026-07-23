@@ -37,9 +37,10 @@ class_filter_menus: dict[str, Menu] = create_class_filter_menus(classes)
 
 
 hzb_bat_search_app = App(
-    label='HZB Batteries Search App',
-    path='search',
-    category='battery space',
+    label='BS ELN',
+    path='samples',
+    category='HZB battery space',
+    description='Provides filters to quickly find your samples and experimental data',
     search_quantities=SearchQuantities(
         include=[
             '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBattery',

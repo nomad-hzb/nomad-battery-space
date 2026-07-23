@@ -62,6 +62,7 @@ if TYPE_CHECKING:
     from structlog.stdlib import BoundLogger
 
 from .utilities import (
+    BS_VoilaNotebook,  # noqa: F401 - Re-export for package registration
     CircleGeometry,  # noqa: F401 - Re-export for backward compatibility with old data
     DimensionsAndWeights,
     GeometricalShape,  # noqa: F401 - Re-export for backward compatibility with old data
