@@ -38,7 +38,10 @@ voila_finder_app = App(
         }
     ),
     columns=[
-        Column(quantity=f'data.name#{schema_name}', selected=True),
+        #Column(quantity=f'data.name#{schema_name}', selected=True),
+        Column(
+            quantity='name', 
+            selected=True),
         Column(
             quantity='entry_type',
             label='Entry type',

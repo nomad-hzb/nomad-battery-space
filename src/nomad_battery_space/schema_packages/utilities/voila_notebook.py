@@ -17,12 +17,7 @@ class BS_VoilaNotebook(VoilaNotebook, EntryData):
     Extends VoilaNotebook for uploading battery samples in batch.
     """
 
-    m_def = Section(a_eln=dict(hide=['lab_id']), label_quantity='name')
-
-    name = Quantity(
-        type=str,
-        description='Name of the Voila notebook',
-    )
+    m_def = Section(a_eln=dict(hide=['lab_id']))
 
     file_uri = Quantity(
         type=str,
