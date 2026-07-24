@@ -157,7 +157,7 @@ class ClassInfo:
     chemical_reference: bool
     product_info: bool
 
-    def __init__(  # noqa: PLR0913
+    def __init__(  # noqa: PLR0913, PLR0917
         self,
         class_name: str,
         package_name: str,

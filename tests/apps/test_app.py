@@ -26,7 +26,7 @@ def test_voila_finder_app():
         assert 'name' in quantity_names, (
             f"'name' quantity not found in BS_VoilaNotebook. Found: {quantity_names}"
         )
-    except Exception as e:
+    except Exception:
         # If introspection fails, at least verify the label_quantity was set correctly
         assert schema_def.label_quantity == 'name', (
             "BS_VoilaNotebook.m_def must have label_quantity='name'"
