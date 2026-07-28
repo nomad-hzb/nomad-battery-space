@@ -39,9 +39,33 @@ def create_chemical_properties_menu(package_name: str, class_name: str) -> Menu:
                 ),
             ),
             MenuItemHistogram(
-                title='Concentration',
+                title='Concentration (Mol)',
                 x=Axis(
                     search_quantity=f'data.chemicals.concentration_mol#nomad_battery_space.schema_packages.{package_name}.{class_name}'
+                ),
+            ),
+            MenuItemHistogram(
+                title='Concentration (Mass)',
+                x=Axis(
+                    search_quantity=f'data.chemicals.concentration_mass#nomad_battery_space.schema_packages.{package_name}.{class_name}'
+                ),
+            ),
+            MenuItemHistogram(
+                title='Fraction',
+                x=Axis(
+                    search_quantity=f'data.chemicals.fraction#nomad_battery_space.schema_packages.{package_name}.{class_name}'
+                ),
+            ),
+            MenuItemHistogram(
+                title='Mass Fraction',
+                x=Axis(
+                    search_quantity=f'data.chemicals.mass_fraction#nomad_battery_space.schema_packages.{package_name}.{class_name}'
+                ),
+            ),
+            MenuItemHistogram(
+                title='Volume Fraction',
+                x=Axis(
+                    search_quantity=f'data.chemicals.volume_fraction#nomad_battery_space.schema_packages.{package_name}.{class_name}'
                 ),
             ),
         ],
