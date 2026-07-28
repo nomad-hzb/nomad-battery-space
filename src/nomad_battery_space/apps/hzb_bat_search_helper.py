@@ -57,6 +57,16 @@ def create_product_info_menu(package_name: str, class_name: str) -> Menu:
                 title='Supplier',
                 options=5,
             ),
+            MenuItemTerms(
+                search_quantity=f'data.product_info.product_number#nomad_battery_space.schema_packages.{package_name}.{class_name}',
+                title='Product Number',
+                options=5,
+            ),
+            MenuItemTerms(
+                search_quantity=f'data.product_info.lot_number#nomad_battery_space.schema_packages.{package_name}.{class_name}',
+                title='LOT Number',
+                options=5,
+            ),
             MenuItemHistogram(
                 title='Product Volume',
                 x=Axis(
@@ -149,6 +159,27 @@ def create_volume_and_weights_items(
     ]
 
 
+def create_synthesis_menu_for_electrodematerial(
+    package_name: str, class_name: str
+) -> Menu:
+    return Menu(
+        title=f'{class_name} synthesis',
+        items=[
+            # This is not working (path depth to high?)
+            MenuItemTerms(
+                search_quantity=f'data.synthesis.references.doi#nomad_battery_space.schema_packages.{package_name}.{class_name}',
+                title='DOI',
+                options=5,
+            ),
+            MenuItemTerms(
+                search_quantity=f'data.synthesis.references.paper_reference#nomad_battery_space.schema_packages.{package_name}.{class_name}',
+                title='paper URL',
+                options=5,
+            ),
+        ],
+    )
+
+
 class ClassInfo:
     class_name: str
     package_name: str
@@ -190,6 +221,8 @@ def create_class_filter_menus(classes: list[ClassInfo]) -> dict[str, Menu]:
     for info in classes:
         menu = Menu(title=f'{info.class_name} Properties', items=[])
 
+        ### adding common filters for the classes:
+
         if info.chemical_reference:
             menu.items.append(
                 create_chemical_properties_menu(info.package_name, info.class_name)
@@ -209,6 +242,8 @@ def create_class_filter_menus(classes: list[ClassInfo]) -> dict[str, Menu]:
             menu.items += create_volume_and_weights_items(
                 info.package_name, info.class_name
             )
+
+        ###  adding custom filter for the different classes:
 
         if info.class_name == 'ElectrodeSheet':
             menu.items.append(
@@ -244,6 +279,20 @@ def create_class_filter_menus(classes: list[ClassInfo]) -> dict[str, Menu]:
                     title='Pressure',
                     x=Axis(
                         search_quantity=f'data.pressure#nomad_battery_space.schema_packages.{info.package_name}.{info.class_name}'
+                    ),
+                ),
+            ]
+
+        if info.class_name == 'ElectrodeMaterial':
+            menu.items += [
+                # not working
+                # create_synthesis_menu_for_electrodematerial(
+                #     info.package_name, info.class_name
+                # ),
+                MenuItemHistogram(
+                    title='Yield',
+                    x=Axis(
+                        search_quantity=f'data.yield_percent#nomad_battery_space.schema_packages.{info.package_name}.{info.class_name}'
                     ),
                 ),
             ]

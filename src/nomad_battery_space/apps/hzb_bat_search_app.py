@@ -3,7 +3,6 @@ from nomad.config.models.ui import (
     Axis,
     Column,
     Menu,
-    MenuItemCustomQuantities,
     MenuItemHistogram,
     MenuItemPeriodicTable,
     MenuItemTerms,
@@ -25,7 +24,8 @@ schema = 'nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBa
 # Advantage: smaller search app
 
 classes: list[ClassInfo] = [
-    ClassInfo('CoinCellBattery', 'hzb_bs_assembly_package', False, False, False, False),
+    ClassInfo('CoinCellBattery', 'hzb_bs_assembly_package', False, False, False, True),
+    ClassInfo('ElectrodeMaterial', 'hzb_bs_package', False, True, True, True),
     ClassInfo('ElectrodeSheet', 'hzb_bs_package', True, False, True, True),
     ClassInfo('ElectrodeSample', 'hzb_bs_package', True, False, True, True),
     ClassInfo('SeparatorStock', 'hzb_bs_package', True, False, True, True),
@@ -50,6 +50,7 @@ hzb_bat_search_app = App(
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.BS_Chemical'
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeMaterial',
             # '*#nomad_battery_space.schema_packages.hzb_bs_package.DimensionsAndWeights',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorStock'
             '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorSample'
@@ -80,6 +81,7 @@ hzb_bat_search_app = App(
             ),
             Menu(
                 title='Entry Properties',
+                size='xxl',
                 items=[
                     MenuItemTerms(
                         search_quantity='entry_type',
@@ -114,6 +116,7 @@ hzb_bat_search_app = App(
                 ],
             ),
             class_filter_menus['CoinCellBattery'],
+            class_filter_menus['ElectrodeMaterial'],
             class_filter_menus['ElectrodeSheet'],
             class_filter_menus['ElectrodeSample'],
             class_filter_menus['SeparatorStock'],
@@ -125,8 +128,9 @@ hzb_bat_search_app = App(
                 # since BS_Chemical only has product info and no other properties
                 items=create_product_info_menu('hzb_bs_package', 'BS_Chemical').items,
             ),
+            MenuItemTerms(search_quantity='results.eln.tags'),
             # MenuItemOptimade(title='Optimade'),
-            MenuItemCustomQuantities(title='Custom Conditions'),
+            # MenuItemCustomQuantities(title='Custom Conditions'),
         ],
     ),
 )
