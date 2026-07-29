@@ -13,7 +13,6 @@ from nomad.config.models.ui import (
 from .hzb_bat_search_helper import (
     ClassInfo,
     create_class_filter_menus,
-    create_product_info_menu,
 )
 
 # i see a problem here, because it is only referencing one type of batteries. not used currently
@@ -32,6 +31,7 @@ classes: list[ClassInfo] = [
     ClassInfo('SeparatorSample', 'hzb_bs_package', True, False, False, True),
     ClassInfo('ElectrolyteStock', 'hzb_bs_package', False, True, True, True),
     ClassInfo('ElectrolyteSample', 'hzb_bs_package', False, True, False, True),
+    ClassInfo('BS_Chemical', 'hzb_bs_package', False, False, False, True),
 ]
 class_filter_menus: dict[str, Menu] = create_class_filter_menus(classes)
 
@@ -44,17 +44,15 @@ hzb_bat_search_app = App(
     search_quantities=SearchQuantities(
         include=[
             '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBattery',
-            '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.CylindricalCellBattery',
-            '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.PouchCellBattery',
+            # '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.CylindricalCellBattery',
+            # '*#nomad_battery_space.schema_packages.hzb_bs_assembly_package.PouchCellBattery',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.Electrode',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.BS_Chemical'
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeMaterial',
-            # '*#nomad_battery_space.schema_packages.hzb_bs_package.DimensionsAndWeights',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorStock'
             '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorSample'
-            #'data.aggregated_elements#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.BatterySample',
         ]
     ),
@@ -123,11 +121,7 @@ hzb_bat_search_app = App(
             class_filter_menus['SeparatorSample'],
             class_filter_menus['ElectrolyteStock'],
             class_filter_menus['ElectrolyteSample'],
-            Menu(
-                title='Chemical Properties',
-                # since BS_Chemical only has product info and no other properties
-                items=create_product_info_menu('hzb_bs_package', 'BS_Chemical').items,
-            ),
+            class_filter_menus['BS_Chemical'],
             MenuItemTerms(search_quantity='results.eln.tags'),
             # MenuItemOptimade(title='Optimade'),
             # MenuItemCustomQuantities(title='Custom Conditions'),
