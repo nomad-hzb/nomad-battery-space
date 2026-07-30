@@ -58,9 +58,10 @@ hzb_bat_search_app = App(
     ),
     # filters_locked={'section_defs.definition_qualified_name': [schema]},
     columns=[
-        Column(quantity='entry_id', selected=True),
         Column(quantity='entry_name', selected=True),
         Column(quantity='entry_type', selected=True),
+        Column(quantity='upload_name', selected=True),
+        Column(quantity='entry_create_time', selected=True),
     ],
     menu=Menu(
         title='Filter',
