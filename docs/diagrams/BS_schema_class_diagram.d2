@@ -1,0 +1,572 @@
+vars: {
+  d2-legend: {
+    * -> *: parent-child relationship
+  }
+}
+
+classes: {
+  bigger: {
+    style: {font-size: 28}
+  }
+  dashed_3: {
+    style: {
+      stroke-width: 5
+      stroke-dash: 3
+    }
+    target-arrowhead: {
+      shape: arrow
+    }
+  }
+  dashed_5: {
+    style: {
+      stroke-width: 2
+      stroke-dash: 5
+    }
+  }
+  orange: {
+    style: {
+      stroke: "#F67C09"
+      font-color: "#F67C09"
+    }
+  }
+  orange_filled: {
+    style: {
+      fill: "#FAD76E"
+    }
+  }
+  orange_light: {
+    style: {
+      stroke: "#F9AB62"
+      font-color: "#F67C09"
+    }
+  }
+  mint: {
+    style: {
+      stroke: "#04716E"
+      font-color: "#04716E"
+    }
+  }
+  mint_filled: {
+    style: {
+      fill: "#BAFDFA"
+    }
+  }
+  magenta: {
+    style: {
+      stroke: "#91069D"
+      font-color: "#91069D"
+    }
+  }
+  magenta_filled: {
+    style: {
+      fill: "#F7BAFD"
+    }
+  }
+  violet: {
+    style: {
+      stroke: "#0731CA"
+      font-color: "#0731CA"
+    }
+  }
+  violet_light: {
+    style: {
+      stroke: "#355FF8"
+      font-color: "#0731CA"
+    }
+  }
+  violet_filled: {
+    style: {
+      fill: "#BAC8FD"
+    }
+  }
+  border_bold: {
+    style: {
+      stroke-width: 8
+      bold: true
+    }
+  }
+  green: {
+    style: {
+      stroke: green
+      font-color: green
+    }
+  }
+  green_filled: {
+    style: {
+      fill: "#CAFDBA"
+    }
+  }
+}
+
+direction: right
+Env: NOMAD Battery Space: 3-Tier Electrode Setup {
+  label.near: outside-top-center
+  style: {
+    font-size: 40
+    bold: true
+    underline: true
+    font-color: "#0c4a6e"
+    stroke: transparent
+    fill: transparent
+  }
+
+  Battery: Battery {
+    label.near: border-top-center
+    class: [green; green_filled; border_bold]
+
+    GenericBattery: Generic Battery (base) {
+      shape: class
+      icon: https://icons.terrastruct.com/tech%2Fbattery-1.svg
+      icon.near: top-left
+
+      battery ID: string
+      battery name: string
+      procedure scetch: File
+      notes: Free text
+      aggregated elements: "[]element"
+
+      working electrode (reference): Electrode Sample
+      counter electrode (reference): Electrode Sample
+      reference electrode (reference): Electrode Sample
+
+      separator(reference): SeparatorSample
+      electrolyte(reference): ElectrolyteSample
+    }
+
+    CoinCell: Coin Cell {
+      shape: class
+      icon: https://mylikeled.com/wp-content/uploads/2023/11/button-Battery.jpg
+      icon.near: top-left
+
+      case-id: (2025|2032|operando)
+      case-crimp: (manual|automatic)
+      pressure: mPa
+    }
+    PouchCell: Pouch Cell {
+      shape: class
+      icon: https://www.batterydesign.net/wp-content/uploads/2022/11/pouch-cell-300x243.jpg
+      icon.near: top-left
+
+      pouch length: "     mm" # temporary with blanks to fill the space for fixing the header layout
+      "...": "..."
+    }
+
+    GenericBattery -> *: parent of...\n (quantities inherited) {
+      class: bigger
+      style: {
+        stroke: green
+        stroke-width: 5
+        fill: "#CAFDBA"
+        font-color: green
+      }
+    }
+  }
+
+  # ----------------------------------
+  # ELECTRODE
+  # ---------------------------------
+  Electrode: Electrode {
+    label.near: border-top-center
+    class: [orange; orange_filled; border_bold]
+
+    ElectrodeSample: Electrode Sample {
+      shape: class
+      # icon: https://static.vecteezy.com/system/resources/previews/034/213/378/original/electrolysis-icon-chemistry-electrolysis-line-icon-vector.jpg
+      icon.near: top-left
+
+      substance name: string
+      substance id: string
+      electrode sheet: reference
+
+      dimensions and weights (section): ""
+      chemicals (reference): "[]chemical"
+      product info / supplier (section): ""
+    }
+
+    ElectrodeSheet: Electrode Sheet {
+      shape: class
+      icon: https://xiaoweitop.com/wp-content/uploads/2024/07/Graphite-Anode-Electrode-for-battery-electrode.jpg
+      icon.near: top-left
+
+      substance name: string
+      substance id: string
+      casting procedure: string
+
+      dimensions and weights (section): ""
+      pure substance (section): PubChem substance
+      chemicals (reference): "[]chemical"
+      electrode materials (reference): "[] material"
+      product info / supplier (section): ""
+    }
+
+    ElectrodeSample -> ElectrodeSheet: "cut from" {
+      class: [bigger; dashed_3; orange; orange_filled]
+      source-arrowhead: * {
+        style: {
+          font-color: "#F67C09"
+        }
+      }
+      target-arrowhead: 1 {
+        style: {
+          font-color: "#F67C09"
+        }
+      }
+    }
+    # ------------------------------
+    # Electrode Material
+    # ------------------------------
+    ElectrodeMaterial: Electrode Material {
+      shape: class
+      # icon: https://img.freepik.com/premium-vector/chemical-mixing-test-tube-icon-science-education-related-design-element_581136-49.jpg?w=2000
+      icon.near: top-left
+
+      substance name: string
+      substance id: string
+      yield: %
+
+      synthesis (section): synthesis method
+      volume and weights (section): ""
+      pure substance (reference): PubChem substance
+      chemicals (reference): "[]chemical"
+      product info / supplier (section): ""
+    }
+
+    MaterialRef: Electrode Material \nReference {
+      shape: class
+      icon: https://icons.terrastruct.com/gcp%2FProducts%20and%20services%2FAPI%20Management%2FCloud%20Endpoints.svg
+      icon.near: top-left
+
+      electrode material: reference
+      role: string
+      mass: g
+      wt%: %
+    }
+    ElectrodeSheet -- MaterialRef: additional\n information... {
+      class: [bigger; dashed_5; orange_light; orange_filled]
+    }
+    MaterialRef -- ElectrodeMaterial: about usage {
+      class: [bigger; dashed_5; orange_light; orange_filled]
+    }
+    ElectrodeSheet -> ElectrodeMaterial: made from {
+      class: [bigger; dashed_3; orange; orange_filled]
+      source-arrowhead: * {
+        style: {
+          font-color: "#F67C09"
+        }
+      }
+      target-arrowhead: * {
+        style: {
+          font-color: "#F67C09"
+        }
+      }
+    }
+  }
+
+  # ----------------------------------
+  # ELECTROLYTE
+  # ---------------------------------
+  Electrolyte: Electrolyte {
+    label.near: border-top-center
+    class: [mint; mint_filled; border_bold]
+
+    ElectrolyteSample: Electrolyte Sample {
+      shape: class
+      # icon: https://static.vecteezy.com/system/resources/previews/024/188/568/original/water-drop-icon-png.png
+      icon.near: top-left
+
+      substance name: string
+      substance id: string
+      electrolyte stock: reference
+
+      volume and weights (section): ""
+      product info / supplier (section): ""
+    }
+
+    ElectrolyteStock: Electrolyte Stock {
+      shape: class
+      # icon: https://img.freepik.com/vektoren-premium/symbol-fuer-chemische-kolben-symbol-fuer-glas-im-wissenschaftslabor_53562-18936.jpg?w=1380
+      icon.near: top-left
+
+      substance name: string
+      substance id: string
+      state: (liquid | solid)
+
+      volume and weights (section): ""
+      chemicals (reference): "[]chemical"
+      product info / supplier (section): ""
+    }
+
+    ElectrolyteSample -> ElectrolyteStock: "taken from" {
+      class: [bigger; dashed_3; mint; mint_filled]
+      source-arrowhead: * {
+        style: {
+          font-color: "#04716E"
+        }
+      }
+      target-arrowhead: 1 {
+        style: {
+          font-color: "#04716E"
+        }
+      }
+    }
+  }
+
+  # ----------------------------------
+  # SEPARATOR
+  # ---------------------------------
+  Separator: Separator {
+    label.near: border-top-center
+    class: [magenta; magenta_filled; border_bold]
+
+    SeparatorSample: Separator Sample {
+      shape: class
+      icon: https://icons.terrastruct.com/essentials%2F220-layers.svg
+      icon.near: top-left
+
+      substance name: string
+      substance id: string
+      Separator stock: reference
+
+      dimensions and weights (section): ""
+      product info / supplier (section): ""
+    }
+
+    SeparatorStock: Separator Stock {
+      shape: class
+      icon: https://www.batterydesign.net/wp-content/uploads/2026/01/separator-01.jpg
+      icon.near: top-left
+
+      substance name: string
+      substance id: string
+
+      dimensions and weights (section): ""
+      chemicals (reference): "[]chemical"
+      product info / supplier (section): ""
+    }
+
+    SeparatorSample -> SeparatorStock: "cut from" {
+      class: [bigger; dashed_3; magenta; magenta_filled]
+      source-arrowhead: * {
+        style: {
+          font-color: "#91069D"
+        }
+      }
+      target-arrowhead: 1 {
+        style: {
+          font-color: "#91069D"
+        }
+      }
+    }
+  }
+
+  Battery -> Electrode.ElectrodeSample: references {
+    class: [bigger; dashed_3; orange; orange_filled]
+    source-arrowhead: * {
+      style: {
+        font-color: "#F67C09"
+      }
+    }
+    target-arrowhead: 2..3 {
+      style: {
+        font-color: "#F67C09"
+      }
+    }
+  }
+  Battery -> Electrolyte.ElectrolyteSample: references {
+    class: [bigger; dashed_3; mint; mint_filled]
+    source-arrowhead: * {
+      style: {
+        font-color: "#04716E"
+      }
+    }
+    target-arrowhead: 1 {
+      style: {
+        font-color: "#04716E"
+      }
+    }
+  }
+  Battery -> Separator.SeparatorSample: references {
+    class: [bigger; dashed_3; magenta; magenta_filled]
+    source-arrowhead: * {
+      style: {
+        font-color: "#91069D"
+      }
+    }
+    target-arrowhead: 1 {
+      style: {
+        font-color: "#91069D"
+      }
+    }
+  }
+
+  # ------------------------------
+  # BS_Chemical
+  # ------------------------------
+  Chemicals: Chemicals {
+    label.near: border-top-center
+    class: [violet; violet_filled; border_bold]
+
+    Chemical: Chemical {
+      shape: class
+      # icon: https://static.vecteezy.com/system/resources/previews/015/040/221/non_2x/chemical-formula-icon-outline-lab-science-vector.jpg
+      icon.near: top-left
+
+      substance name: string
+      substance id: string
+
+      pure substance (section): PubChem substance
+      product info / supplier (section): ""
+    }
+
+    ChemicalRef: Chemical Reference {
+      shape: class
+      icon: https://icons.terrastruct.com/gcp%2FProducts%20and%20services%2FAPI%20Management%2FCloud%20Endpoints.svg
+      icon.near: top-left
+
+      chemical: reference reference
+      role: string
+      volume: ml
+      mass: g
+      concentration_mol: mol/l
+      concentration_mass: g/l
+      fraction: %
+      mass_fraction: %
+      volume_fraction: %
+    }
+    ChemicalRef -- Chemical: about usage {
+      class: [bigger; dashed_5; violet_light; violet_filled]
+    }
+  }
+  Electrode.ElectrodeMaterial -> Chemicals.Chemical: synthesized from {
+    class: [bigger; dashed_3; violet; violet_filled]
+    source-arrowhead: * {
+      style: {
+        font-color: "#0731CA"
+      }
+    }
+    target-arrowhead: * {
+      style: {
+        font-color: "#0731CA"
+      }
+    }
+  }
+  Electrolyte.ElectrolyteStock -> Chemicals.Chemical: mixed from {
+    class: [bigger; dashed_3; violet; violet_filled]
+    source-arrowhead: * {
+      style: {
+        font-color: "#0731CA"
+      }
+    }
+    target-arrowhead: * {
+      style: {
+        font-color: "#0731CA"
+      }
+    }
+  }
+  Separator.SeparatorStock -> Chemicals.Chemical: prepared from {
+    class: [bigger; dashed_3; violet; violet_filled]
+    source-arrowhead: * {
+      style: {
+        font-color: "#0731CA"
+      }
+    }
+    target-arrowhead: * {
+      style: {
+        font-color: "#0731CA"
+      }
+    }
+  }
+  Electrode.ElectrodeMaterial -- Chemicals.ChemicalRef: additional\n information... {
+    class: [bigger; dashed_5; violet_light]
+  }
+  Electrolyte.ElectrolyteStock -- Chemicals.ChemicalRef: additional\n information... {
+    class: [bigger; dashed_5; violet_light]
+  }
+  Separator.SeparatorStock -- Chemicals.ChemicalRef: additional\n information... {
+    class: [bigger; dashed_5; violet_light]
+  }
+}
+
+HelpSections: help sections {
+  label.near: border-top-center
+  style: {
+    fill: transparent
+    stroke: black
+    border-radius: 3
+    stroke-dash: 5
+  }
+  # ------------------------------
+  # Dimensions and Weights 
+  # ------------------------------
+  DimWeights: Dimensions and Weights {
+    shape: class
+
+    thickness: um
+    mass: g
+    shape(section): (circle | rectangle | other)
+  }
+  # ------------------------------
+  # Volume and Weights
+  # ------------------------------
+  VolWeights: Volume and Weights {
+    shape: class
+
+    volume: ml
+    mass: g
+  }
+  # ------------------------------
+  # Product Info
+  # ------------------------------
+  ProductInfo: product info / supplier {
+    shape: class
+
+    product_number: string
+    lot_number: string
+    product_volume: ml
+    product_weight: g
+    shipping_date: datetime
+    opening_date: datetime
+    supplier: string
+    product_description: free text
+    cost: Eur
+  }
+
+  # ------------------------------
+  # Material Synthesis Method
+  # ------------------------------
+  SynthesisMethod: Material Synthesis Method {
+    shape: class
+
+    name: string
+    starting time: datetime
+    ending time: datetime
+    location: string
+    description: free text
+
+    steps(section): "[]step"
+    instruments(reference): "[]instrument"
+    references(section): (DOI / publication URLs)
+  }
+
+  DimWeights -- VolWeights -- ProductInfo -- SynthesisMethod: {
+    style: {
+      stroke: transparent
+    }
+  }
+}
+# DimAndWeights: Dimensions and Weights {
+#   thickness: {style: {stroke: transparent}}
+#   mass: {style: {stroke: transparent}}
+#   GeometricalShape: shape
+#   Circle: {
+#     shape: circle
+#   }
+#   Rectangle
+#   Other: {
+#     shape: cloud
+#   }
+
+#   GeometricalShape -> Circle
+#   GeometricalShape -> Rectangle
+#   GeometricalShape -> Other
+# }
