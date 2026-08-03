@@ -81,7 +81,7 @@ classes: {
   }
   border_bold: {
     style: {
-      stroke-width: 8
+      stroke-width: 6
       bold: true
     }
   }
@@ -96,9 +96,21 @@ classes: {
       fill: "#CAFDBA"
     }
   }
+  gray: {
+    style: {
+      stroke: "#5977CB"
+      font-color: "#5977CB"
+    }
+  }
+  gray_filled: {
+    style: {
+      fill: "#DFE5F5"
+    }
+  }
 }
 
-direction: right
+direction: left
+
 Env: NOMAD Battery Space: 3-Tier Electrode Setup {
   label.near: outside-top-center
   style: {
@@ -150,14 +162,24 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       pouch length: "     mm" # temporary with blanks to fill the space for fixing the header layout
       "...": "..."
     }
-
-    GenericBattery -> *: parent of...\n (quantities inherited) {
+    # relations:
+    GenericBattery <- *: subclass \n (quantities inherited) {
       class: bigger
       style: {
         stroke: green
         stroke-width: 5
         fill: "#CAFDBA"
         font-color: green
+      }
+      source-arrowhead: 1 {
+        style: {
+          font-color: green
+        }
+      }
+      target-arrowhead: * {
+        style: {
+          font-color: green
+        }
       }
     }
   }
@@ -171,7 +193,7 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
 
     ElectrodeSample: Electrode Sample {
       shape: class
-      # icon: https://static.vecteezy.com/system/resources/previews/034/213/378/original/electrolysis-icon-chemistry-electrolysis-line-icon-vector.jpg
+      icon: https://static.vecteezy.com/system/resources/previews/034/213/378/original/electrolysis-icon-chemistry-electrolysis-line-icon-vector.jpg
       icon.near: top-left
 
       substance name: string
@@ -198,26 +220,20 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       electrode materials (reference): "[] material"
       product info / supplier (section): ""
     }
+  }
 
-    ElectrodeSample -> ElectrodeSheet: "cut from" {
-      class: [bigger; dashed_3; orange; orange_filled]
-      source-arrowhead: * {
-        style: {
-          font-color: "#F67C09"
-        }
-      }
-      target-arrowhead: 1 {
-        style: {
-          font-color: "#F67C09"
-        }
-      }
-    }
+  # ---------------------------------
+  # SYNTHESIS
+  # ---------------------------------
+  Synthesis: Synthesis {
+    label.near: border-top-center
+    class: [gray; gray_filled; border_bold]
     # ------------------------------
     # Electrode Material
     # ------------------------------
     ElectrodeMaterial: Electrode Material {
       shape: class
-      # icon: https://img.freepik.com/premium-vector/chemical-mixing-test-tube-icon-science-education-related-design-element_581136-49.jpg?w=2000
+      icon: https://img.freepik.com/premium-vector/chemical-mixing-test-tube-icon-science-education-related-design-element_581136-49.jpg?w=2000
       icon.near: top-left
 
       substance name: string
@@ -241,28 +257,8 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       mass: g
       wt%: %
     }
-    ElectrodeSheet -- MaterialRef: additional\n information... {
-      class: [bigger; dashed_5; orange_light; orange_filled]
-    }
-    MaterialRef -- ElectrodeMaterial: about usage {
-      class: [bigger; dashed_5; orange_light; orange_filled]
-    }
-    ElectrodeSheet -> ElectrodeMaterial: made from {
-      class: [bigger; dashed_3; orange; orange_filled]
-      source-arrowhead: * {
-        style: {
-          font-color: "#F67C09"
-        }
-      }
-      target-arrowhead: * {
-        style: {
-          font-color: "#F67C09"
-        }
-      }
-    }
   }
-
-  # ----------------------------------
+  # ---------------------------------
   # ELECTROLYTE
   # ---------------------------------
   Electrolyte: Electrolyte {
@@ -271,7 +267,7 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
 
     ElectrolyteSample: Electrolyte Sample {
       shape: class
-      # icon: https://static.vecteezy.com/system/resources/previews/024/188/568/original/water-drop-icon-png.png
+      icon: https://static.vecteezy.com/system/resources/previews/024/188/568/original/water-drop-icon-png.png
       icon.near: top-left
 
       substance name: string
@@ -284,7 +280,7 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
 
     ElectrolyteStock: Electrolyte Stock {
       shape: class
-      # icon: https://img.freepik.com/vektoren-premium/symbol-fuer-chemische-kolben-symbol-fuer-glas-im-wissenschaftslabor_53562-18936.jpg?w=1380
+      icon: https://img.freepik.com/vektoren-premium/symbol-fuer-chemische-kolben-symbol-fuer-glas-im-wissenschaftslabor_53562-18936.jpg?w=1380
       icon.near: top-left
 
       substance name: string
@@ -294,20 +290,6 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       volume and weights (section): ""
       chemicals (reference): "[]chemical"
       product info / supplier (section): ""
-    }
-
-    ElectrolyteSample -> ElectrolyteStock: "taken from" {
-      class: [bigger; dashed_3; mint; mint_filled]
-      source-arrowhead: * {
-        style: {
-          font-color: "#04716E"
-        }
-      }
-      target-arrowhead: 1 {
-        style: {
-          font-color: "#04716E"
-        }
-      }
     }
   }
 
@@ -343,60 +325,6 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       chemicals (reference): "[]chemical"
       product info / supplier (section): ""
     }
-
-    SeparatorSample -> SeparatorStock: "cut from" {
-      class: [bigger; dashed_3; magenta; magenta_filled]
-      source-arrowhead: * {
-        style: {
-          font-color: "#91069D"
-        }
-      }
-      target-arrowhead: 1 {
-        style: {
-          font-color: "#91069D"
-        }
-      }
-    }
-  }
-
-  Battery -> Electrode.ElectrodeSample: references {
-    class: [bigger; dashed_3; orange; orange_filled]
-    source-arrowhead: * {
-      style: {
-        font-color: "#F67C09"
-      }
-    }
-    target-arrowhead: 2..3 {
-      style: {
-        font-color: "#F67C09"
-      }
-    }
-  }
-  Battery -> Electrolyte.ElectrolyteSample: references {
-    class: [bigger; dashed_3; mint; mint_filled]
-    source-arrowhead: * {
-      style: {
-        font-color: "#04716E"
-      }
-    }
-    target-arrowhead: 1 {
-      style: {
-        font-color: "#04716E"
-      }
-    }
-  }
-  Battery -> Separator.SeparatorSample: references {
-    class: [bigger; dashed_3; magenta; magenta_filled]
-    source-arrowhead: * {
-      style: {
-        font-color: "#91069D"
-      }
-    }
-    target-arrowhead: 1 {
-      style: {
-        font-color: "#91069D"
-      }
-    }
   }
 
   # ------------------------------
@@ -408,7 +336,7 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
 
     Chemical: Chemical {
       shape: class
-      # icon: https://static.vecteezy.com/system/resources/previews/015/040/221/non_2x/chemical-formula-icon-outline-lab-science-vector.jpg
+      icon: https://static.vecteezy.com/system/resources/previews/015/040/221/non_2x/chemical-formula-icon-outline-lab-science-vector.jpg
       icon.near: top-left
 
       substance name: string
@@ -423,7 +351,7 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       icon: https://icons.terrastruct.com/gcp%2FProducts%20and%20services%2FAPI%20Management%2FCloud%20Endpoints.svg
       icon.near: top-left
 
-      chemical: reference reference
+      chemical: "          reference"
       role: string
       volume: ml
       mass: g
@@ -433,11 +361,51 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       mass_fraction: %
       volume_fraction: %
     }
-    ChemicalRef -- Chemical: about usage {
-      class: [bigger; dashed_5; violet_light; violet_filled]
+  }
+
+  # ------------------------------
+  # Relations
+  # ------------------------------
+  Battery -> Electrode.ElectrodeSample: references {
+    class: [bigger; dashed_3; orange; orange_filled]
+    source-arrowhead: 1 {
+      style: {
+        font-color: "#F67C09"
+      }
+    }
+    target-arrowhead: 1 {
+      style: {
+        font-color: "#F67C09"
+      }
     }
   }
-  Electrode.ElectrodeMaterial -> Chemicals.Chemical: synthesized from {
+  Battery -> Electrolyte.ElectrolyteSample: references {
+    class: [bigger; dashed_3; mint; mint_filled]
+    source-arrowhead: 1 {
+      style: {
+        font-color: "#04716E"
+      }
+    }
+    target-arrowhead: 1 {
+      style: {
+        font-color: "#04716E"
+      }
+    }
+  }
+  Battery -> Separator.SeparatorSample: references {
+    class: [bigger; dashed_3; magenta; magenta_filled]
+    source-arrowhead: 1 {
+      style: {
+        font-color: "#91069D"
+      }
+    }
+    target-arrowhead: 1 {
+      style: {
+        font-color: "#91069D"
+      }
+    }
+  }
+  Synthesis.ElectrodeMaterial -> Chemicals.Chemical: synthesized from {
     class: [bigger; dashed_3; violet; violet_filled]
     source-arrowhead: * {
       style: {
@@ -476,7 +444,7 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       }
     }
   }
-  Electrode.ElectrodeMaterial -- Chemicals.ChemicalRef: additional\n information... {
+  Synthesis.ElectrodeMaterial -- Chemicals.ChemicalRef: additional\n information... {
     class: [bigger; dashed_5; violet_light]
   }
   Electrolyte.ElectrolyteStock -- Chemicals.ChemicalRef: additional\n information... {
@@ -485,7 +453,73 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
   Separator.SeparatorStock -- Chemicals.ChemicalRef: additional\n information... {
     class: [bigger; dashed_5; violet_light]
   }
+  Electrode.ElectrodeSheet -- Synthesis.MaterialRef: additional\n information... {
+    class: [bigger; dashed_5; gray_light; gray]
+  }
+  Synthesis.MaterialRef -- Synthesis.ElectrodeMaterial: about usage {
+    class: [bigger; dashed_5; gray_light; gray_filled; gray]
+  }
+  Electrode.ElectrodeSheet -> Synthesis.ElectrodeMaterial: made from {
+    class: [bigger; dashed_3; gray; gray_filled]
+    source-arrowhead: * {
+      style: {
+        font-color: "#5977CB"
+      }
+    }
+    target-arrowhead: * {
+      style: {
+        font-color: "#5977CB"
+      }
+    }
+  }
+  Electrolyte.ElectrolyteSample -> Electrolyte.ElectrolyteStock: "taken from" {
+    class: [bigger; dashed_3; mint; mint_filled]
+    source-arrowhead: * {
+      style: {
+        font-color: "#04716E"
+      }
+    }
+    target-arrowhead: 1 {
+      style: {
+        font-color: "#04716E"
+      }
+    }
+  }
+  Separator.SeparatorSample -> Separator.SeparatorStock: "cut from" {
+    class: [bigger; dashed_3; magenta; magenta_filled]
+    source-arrowhead: * {
+      style: {
+        font-color: "#91069D"
+      }
+    }
+    target-arrowhead: 1 {
+      style: {
+        font-color: "#91069D"
+      }
+    }
+  }
+  Electrode.ElectrodeSample -> Electrode.ElectrodeSheet: "cut from" {
+    class: [bigger; dashed_3; orange; orange_filled]
+    source-arrowhead: * {
+      style: {
+        font-color: "#F67C09"
+      }
+    }
+    target-arrowhead: 1 {
+      style: {
+        font-color: "#F67C09"
+      }
+    }
+  }
+
+  Chemicals.ChemicalRef -- Chemicals.Chemical: about usage {
+    class: [bigger; dashed_5; violet_light; violet_filled]
+  }
 }
+
+# ------------------------------
+# Help Sections
+# ------------------------------
 
 HelpSections: help sections {
   label.near: border-top-center
@@ -554,19 +588,3 @@ HelpSections: help sections {
     }
   }
 }
-# DimAndWeights: Dimensions and Weights {
-#   thickness: {style: {stroke: transparent}}
-#   mass: {style: {stroke: transparent}}
-#   GeometricalShape: shape
-#   Circle: {
-#     shape: circle
-#   }
-#   Rectangle
-#   Other: {
-#     shape: cloud
-#   }
-
-#   GeometricalShape -> Circle
-#   GeometricalShape -> Rectangle
-#   GeometricalShape -> Other
-# }
