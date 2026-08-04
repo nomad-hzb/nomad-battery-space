@@ -1,10 +1,12 @@
 from nomad.datamodel.data import ArchiveSection
-from nomad.metainfo import Quantity, Section
+from nomad.metainfo import Quantity, SchemaPackage, Section
+
+m_package = SchemaPackage()
 
 
 class GeometricalShape(ArchiveSection):
     """Base class for sample geometry."""
-    
+
     m_def = Section(
         label='Select shape from the dropdown',
     )
@@ -12,28 +14,28 @@ class GeometricalShape(ArchiveSection):
 
 class CircleGeometry(GeometricalShape):
     """Circular sample geometry with diameter."""
-    
+
     m_def = Section(
         label='Circle',
     )
-    
+
     diameter = Quantity(
         type=float,
-        description="Diameter of the circular sample.",
-        unit="millimeter",
+        description='Diameter of the circular sample.',
+        unit='millimeter',
         a_eln={
-            "component": "NumberEditQuantity",
-            "label": "diameter",
-            "defaultDisplayUnit": "millimeter",
+            'component': 'NumberEditQuantity',
+            'label': 'diameter',
+            'defaultDisplayUnit': 'millimeter',
         },
     )
     area = Quantity(
         type=float,
-        unit="centimeter**2",
-        description="Calculated area of the circular sample.",
+        unit='centimeter**2',
+        description='Calculated area of the circular sample.',
         a_eln={
-            "label": "area",
-            "defaultDisplayUnit": "centimeter**2",
+            'label': 'area',
+            'defaultDisplayUnit': 'centimeter**2',
         },
     )
 
@@ -45,38 +47,38 @@ class CircleGeometry(GeometricalShape):
 
 class RectangleGeometry(GeometricalShape):
     """Rectangular sample geometry with length and width."""
-    
+
     m_def = Section(
         label='Rectangle',
     )
-    
+
     length = Quantity(
         type=float,
-        description="Length of the rectangular sample.",
-        unit="millimeter",
+        description='Length of the rectangular sample.',
+        unit='millimeter',
         a_eln={
-            "component": "NumberEditQuantity",
-            "label": "length",
-            "defaultDisplayUnit": "millimeter",
+            'component': 'NumberEditQuantity',
+            'label': 'length',
+            'defaultDisplayUnit': 'millimeter',
         },
     )
     width = Quantity(
         type=float,
-        description="Width of the rectangular sample.",
-        unit="millimeter",
+        description='Width of the rectangular sample.',
+        unit='millimeter',
         a_eln={
-            "component": "NumberEditQuantity",
-            "label": "width",
-            "defaultDisplayUnit": "millimeter",
+            'component': 'NumberEditQuantity',
+            'label': 'width',
+            'defaultDisplayUnit': 'millimeter',
         },
     )
     area = Quantity(
         type=float,
-        unit="centimeter**2",
-        description="Calculated area of the rectangular sample in cm².",
+        unit='centimeter**2',
+        description='Calculated area of the rectangular sample in cm².',
         a_eln={
-            "label": "area",
-            "defaultDisplayUnit": "centimeter**2",
+            'label': 'area',
+            'defaultDisplayUnit': 'centimeter**2',
         },
     )
 
@@ -88,16 +90,23 @@ class RectangleGeometry(GeometricalShape):
 
 class OtherGeometry(GeometricalShape):
     """Other/custom sample geometry with free text description."""
-    
+
     m_def = Section(
         label='Other',
     )
-    
+
     description = Quantity(
         type=str,
-        description="Free text description of the sample geometry.",
+        description='Free text description of the sample geometry.',
         a_eln={
-            "component": "StringEditQuantity",
-            "label": "shape description",
+            'component': 'StringEditQuantity',
+            'label': 'shape description',
         },
     )
+
+
+# ============================================================================
+# PACKAGE INITIALIZATION
+# ============================================================================
+
+m_package.__init_metainfo__()

@@ -28,6 +28,33 @@ class HZBUtilitiesVoilaNotebookEntryPoint(SchemaPackageEntryPoint):
         return m_package
 
 
+class HZBUtilitiesNotesEntryPoint(SchemaPackageEntryPoint):
+    def load(self):
+        from nomad_battery_space.schema_packages.utilities.notes import (
+            m_package,
+        )
+
+        return m_package
+
+
+class HZBUtilitiesGeometryEntryPoint(SchemaPackageEntryPoint):
+    def load(self):
+        from nomad_battery_space.schema_packages.utilities.geometry import (
+            m_package,
+        )
+
+        return m_package
+
+
+class HZBUtilitiesDimensionsEntryPoint(SchemaPackageEntryPoint):
+    def load(self):
+        from nomad_battery_space.schema_packages.utilities.dimensions import (
+            m_package,
+        )
+
+        return m_package
+
+
 hzb_bs_package = HZBBSPackageEntryPoint(
     name='hzb_bs',
     description='Schema package for HZB battery samples.',
@@ -41,4 +68,19 @@ hzb_bs_assembly_package = HZBBSAssemblyPackageEntryPoint(
 hzb_utilities_voila_notebook = HZBUtilitiesVoilaNotebookEntryPoint(
     name='hzb_utilities_voila_notebook',
     description='Schema class for Voila notebooks',
+)
+
+hzb_utilities_notes = HZBUtilitiesNotesEntryPoint(
+    name='hzb_utilities_notes',
+    description='Schema class for notes',
+)
+
+hzb_utilities_geometry = HZBUtilitiesGeometryEntryPoint(
+    name='hzb_utilities_geometry',
+    description='Schema classes for geometry',
+)
+
+hzb_utilities_dimensions = HZBUtilitiesDimensionsEntryPoint(
+    name='hzb_utilities_dimensions',
+    description='Schema classes for dimensions',
 )

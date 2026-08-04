@@ -135,9 +135,13 @@ where = ["src"]
 parser_entry_point = "nomad_battery_space.parsers:parser_entry_point"
 hzb_bat_search_app = "nomad_battery_space.apps:hzb_bat_search_app_entry_point"
 voila_finder_app = "nomad_battery_space.apps:voila_finder_app_entry_point"
+
 hzb_bs_package = "nomad_battery_space.schema_packages:hzb_bs_package"
 hzb_bs_assembly_package = "nomad_battery_space.schema_packages:hzb_bs_assembly_package"
 hzb_utilities_voila_notebook = "nomad_battery_space.schema_packages:hzb_utilities_voila_notebook"
+hzb_utilities_notes = "nomad_battery_space.schema_packages:hzb_utilities_notes"
+hzb_utilities_geometry = "nomad_battery_space.schema_packages:hzb_utilities_geometry"
+hzb_utilities_dimensions = "nomad_battery_space.schema_packages:hzb_utilities_dimensions"
 
 [tool.cruft]
 # Avoid updating workflow files, this leads to permissions issues
