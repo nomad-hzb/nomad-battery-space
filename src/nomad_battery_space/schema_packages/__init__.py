@@ -2,7 +2,6 @@ from nomad.config.models.plugins import SchemaPackageEntryPoint
 
 
 class HZBBSPackageEntryPoint(SchemaPackageEntryPoint):
-
     def load(self):
         from nomad_battery_space.schema_packages.hzb_bs_package import (
             m_package,
@@ -12,9 +11,17 @@ class HZBBSPackageEntryPoint(SchemaPackageEntryPoint):
 
 
 class HZBBSAssemblyPackageEntryPoint(SchemaPackageEntryPoint):
-
     def load(self):
         from nomad_battery_space.schema_packages.hzb_bs_assembly_package import (
+            m_package,
+        )
+
+        return m_package
+
+
+class HZBUtilitiesVoilaNotebookEntryPoint(SchemaPackageEntryPoint):
+    def load(self):
+        from nomad_battery_space.schema_packages.utilities.voila_notebook import (
             m_package,
         )
 
@@ -31,3 +38,7 @@ hzb_bs_assembly_package = HZBBSAssemblyPackageEntryPoint(
     description='Schema package for HZB battery assembly samples.',
 )
 
+hzb_utilities_voila_notebook = HZBUtilitiesVoilaNotebookEntryPoint(
+    name='hzb_utilities_voila_notebook',
+    description='Schema class for Voila notebooks',
+)
