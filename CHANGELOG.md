@@ -13,6 +13,10 @@ All notable changes to this plugin will be documented in this file.
 - **BS_Chemical filter group**: Aligned filter structure for better organization
 - **Voila Finder App**: Stability improvements and CI/CD fixes
 
+### Fixed
+- Multiple CI/CD pipeline issues and GitHub Actions compatibility
+- Added constraint dependencies for pymatgen-core
+
 ## [0.2.2] - 2026-07-23
 
 ### Added
