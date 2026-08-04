@@ -3,17 +3,23 @@ from typing import TYPE_CHECKING
 
 from baseclasses.voila import VoilaNotebook
 from nomad.datamodel.data import EntryData
-from nomad.metainfo import Quantity, Section
+from nomad.metainfo import (
+    Quantity,
+    SchemaPackage,
+    Section,
+)
 
 if TYPE_CHECKING:
     from nomad.datamodel.datamodel import EntryArchive
     from structlog.stdlib import BoundLogger
 
+m_package = SchemaPackage()
+
 
 class BS_VoilaNotebook(VoilaNotebook, EntryData):
     """
     Voila Notebook for batch sample uploads.
-    
+
     Extends VoilaNotebook for uploading battery samples in batch.
     """
 
@@ -39,3 +45,8 @@ class BS_VoilaNotebook(VoilaNotebook, EntryData):
             logger.error('Please upload a jupyter notebook file (.ipynb).')
 
 
+# ============================================================================
+# PACKAGE INITIALIZATION
+# ============================================================================
+
+m_package.__init_metainfo__()
