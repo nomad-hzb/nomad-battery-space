@@ -2,6 +2,17 @@
 
 All notable changes to this plugin will be documented in this file.
 
+## [0.2.3] - 2026-08-04
+
+### Added
+- **Schema class diagrams**: D2 format diagrams for visual documentation of schema relationships
+
+### Changed
+- **Search App**: Refined and improved search interface with enhanced filter functionality
+- **Result columns**: Improved column configuration and display in search results
+- **BS_Chemical filter group**: Aligned filter structure for better organization
+- **Voila Finder App**: Stability improvements and CI/CD fixes
+
 ## [0.2.2] - 2026-07-23
 
 ### Added
