@@ -18,10 +18,10 @@ schema_name = (
     'nomad_battery_space.schema_packages.utilities.voila_notebook.BS_VoilaNotebook'
 )
 voila_finder_app = App(
-    label='Voilá',
+    label='Voila',
     path='voila-battery-space',
     category='HZB battery space',
-    description='Find and launch your Voilá Tools',
+    description='Find and launch your Voila Tools',
     filters=Filters(
         include=[
             f'*#{schema_name}',
@@ -38,10 +38,11 @@ voila_finder_app = App(
         }
     ),
     columns=[
-        #Column(quantity=f'data.name#{schema_name}', selected=True),
         Column(
-            quantity='name', 
-            selected=True),
+            quantity=f'data.name#{schema_name}', 
+            label='Notebook name',
+            selected=True
+        ),
         Column(
             quantity='entry_type',
             label='Entry type',
@@ -50,7 +51,7 @@ voila_finder_app = App(
         ),
         Column(
             quantity='entry_create_time',
-            label='Entry time',
+            label='Creation time',
             align='left',
             selected=True,
             format=Format(mode=ModeEnum.DATE),
@@ -69,7 +70,11 @@ voila_finder_app = App(
         ),
         Column(quantity='entry_id'),
         Column(quantity='upload_id'),
-        Column(quantity=f'data.notebook_file#{schema_name}'),
+        Column(
+            quantity=f'data.notebook_file#{schema_name}',
+            label='Notebook file',
+            align='left',
+        ),
         #Column(quantity=f'data.tags#{schema_name}'),
     ],
     rows=Rows(
