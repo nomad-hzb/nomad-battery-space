@@ -12,6 +12,7 @@ from nomad.config.models.ui import (
     RowDetails,
     Rows,
     RowSelection,
+    SearchQuantities,
 )
 
 schema_name = (
@@ -22,6 +23,11 @@ voila_finder_app = App(
     path='voila-battery-space',
     category='HZB battery space',
     description='Find and launch your Voila Tools',
+    search_quantities=SearchQuantities(
+        include=[
+            f'*#{schema_name}',
+        ]
+    ),
     filters=Filters(
         include=[
             f'*#{schema_name}',
@@ -39,9 +45,7 @@ voila_finder_app = App(
     ),
     columns=[
         Column(
-            quantity=f'data.name#{schema_name}', 
-            label='Notebook name',
-            selected=True
+            quantity=f'data.name#{schema_name}', label='Notebook name', selected=True
         ),
         Column(
             quantity='entry_type',
@@ -75,7 +79,7 @@ voila_finder_app = App(
             label='Notebook file',
             align='left',
         ),
-        #Column(quantity=f'data.tags#{schema_name}'),
+        # Column(quantity=f'data.tags#{schema_name}'),
     ],
     rows=Rows(
         actions=RowActions(
@@ -91,7 +95,6 @@ voila_finder_app = App(
         details=RowDetails(),
         selection=RowSelection(),
     ),
-
     # Controls the default dashboard shown in the search interface
     # dashboard=Dashboard(
     #     widgets=[
