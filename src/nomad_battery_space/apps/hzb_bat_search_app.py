@@ -49,10 +49,10 @@ hzb_bat_search_app = App(
             '*#nomad_battery_space.schema_packages.hzb_bs_package.Electrode',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample',
-            '*#nomad_battery_space.schema_packages.hzb_bs_package.BS_Chemical'
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.BS_Chemical',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeMaterial',
-            '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorStock'
-            '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorSample'
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorStock',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorSample',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.BatterySample',
         ]
     ),
