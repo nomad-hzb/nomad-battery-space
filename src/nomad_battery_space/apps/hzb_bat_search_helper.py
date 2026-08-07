@@ -204,6 +204,38 @@ def create_synthesis_menu_for_electrodematerial(
     )
 
 
+def create_activematerialcomponent_menu_for_electrodesheet(
+    package_name: str, class_name: str
+) -> Menu:
+    return Menu(
+        title='Material Properties',
+        items=[
+            MenuItemTerms(
+                search_quantity=f'data.electrode_materials.material_name#nomad_battery_space.schema_packages.{package_name}.{class_name}',
+                title='Material Name',
+                options=5,
+            ),
+            MenuItemTerms(
+                search_quantity=f'data.electrode_materials.role#nomad_battery_space.schema_packages.{package_name}.{class_name}',
+                title='Role',
+                options=5,
+            ),
+            MenuItemHistogram(
+                title='Mass',
+                x=Axis(
+                    search_quantity=f'data.electrode_materials.mass#nomad_battery_space.schema_packages.{package_name}.{class_name}'
+                ),
+            ),
+            MenuItemHistogram(
+                title='Weight Percent',
+                x=Axis(
+                    search_quantity=f'data.electrode_materials.wt_percent#nomad_battery_space.schema_packages.{package_name}.{class_name}'
+                ),
+            ),
+        ],
+    )
+
+
 class ClassInfo:
     class_name: str
     package_name: str
@@ -270,6 +302,11 @@ def create_class_filter_menus(classes: list[ClassInfo]) -> dict[str, Menu]:
         ###  adding custom filter for the different classes:
 
         if info.class_name == 'ElectrodeSheet':
+            menu.items.append(
+                create_activematerialcomponent_menu_for_electrodesheet(
+                    info.package_name, info.class_name
+                )
+            )
             menu.items.append(
                 MenuItemTerms(
                     search_quantity=f'data.casting_procedure#nomad_battery_space.schema_packages.{info.package_name}.{info.class_name}',
