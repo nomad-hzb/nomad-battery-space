@@ -54,6 +54,8 @@ hzb_bat_search_app = App(
             '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorStock',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorSample',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.BatterySample',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrolyteStock',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrolyteSample',
         ]
     ),
     # filters_locked={'section_defs.definition_qualified_name': [schema]},
