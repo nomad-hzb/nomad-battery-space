@@ -49,11 +49,13 @@ hzb_bat_search_app = App(
             '*#nomad_battery_space.schema_packages.hzb_bs_package.Electrode',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSheet',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeSample',
-            '*#nomad_battery_space.schema_packages.hzb_bs_package.BS_Chemical'
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.BS_Chemical',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeMaterial',
-            '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorStock'
-            '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorSample'
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorStock',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.SeparatorSample',
             '*#nomad_battery_space.schema_packages.hzb_bs_package.BatterySample',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrolyteStock',
+            '*#nomad_battery_space.schema_packages.hzb_bs_package.ElectrolyteSample',
         ]
     ),
     # filters_locked={'section_defs.definition_qualified_name': [schema]},
@@ -114,15 +116,7 @@ hzb_bat_search_app = App(
                     ),
                 ],
             ),
-            class_filter_menus['CoinCellBattery'],
-            class_filter_menus['ElectrodeMaterial'],
-            class_filter_menus['ElectrodeSheet'],
-            class_filter_menus['ElectrodeSample'],
-            class_filter_menus['SeparatorStock'],
-            class_filter_menus['SeparatorSample'],
-            class_filter_menus['ElectrolyteStock'],
-            class_filter_menus['ElectrolyteSample'],
-            class_filter_menus['BS_Chemical'],
+            *class_filter_menus.values(),
             MenuItemTerms(search_quantity='results.eln.tags'),
             # MenuItemOptimade(title='Optimade'),
             # MenuItemCustomQuantities(title='Custom Conditions'),
