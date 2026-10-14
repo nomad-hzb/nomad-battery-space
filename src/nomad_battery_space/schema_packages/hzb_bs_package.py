@@ -73,6 +73,8 @@ from .utilities import (
 )
 from .utilities.helpers import (
     collect_and_store_elements,
+    copy_product_info_to_dimensions_and_weights,
+    copy_product_info_to_volume_and_weights,
     validate_required,
 )
 
@@ -444,6 +446,13 @@ class ElectrodeMaterial(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the material's own volume/mass section
+        # only when the target field is still empty.
+        if self.product_info:
+            self.volume_and_weights = copy_product_info_to_volume_and_weights(
+                self.volume_and_weights, self.product_info
+            )
         
         # Normalize all referenced chemicals to ensure fresh data
         if self.chemicals:
@@ -554,8 +563,8 @@ class ElectrodeSheet(ELNSubstance):
                     "name",
                     "casting_procedure",
                     "dimensions_and_weights",
-                    'elemental_composition',
-                    'pure_substance',
+                    "elemental_composition",
+                    "pure_substance",
                     "chemicals",
                     "electrode_materials",   
                     "product_info"        
@@ -631,6 +640,13 @@ class ElectrodeSheet(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the sheet's own dimensions section
+        # only when the target field is still empty.
+        if self.product_info:
+            self.dimensions_and_weights = copy_product_info_to_dimensions_and_weights(
+                self.dimensions_and_weights, self.product_info
+            )
         
         # Normalize all referenced materials and chemicals to ensure fresh data
         if self.electrode_materials:
@@ -661,12 +677,14 @@ class ElectrolyteStock(ELNSubstance):
         a_eln={
             "label": "HZB Battery: Electrolyte Stock",
             "entry_type": "ElectrolyteStock",
-            "hide": ['pure_substance', 'elemental_composition', "description"],
+            "hide": ["description"],
             "properties": {
                 "order": [
                     "name",
                     "state",
                     "volume_and_weights",
+                    "elemental_composition",
+                    "pure_substance",
                     "chemicals",
                     "product_info"  
                 ],
@@ -728,6 +746,13 @@ class ElectrolyteStock(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the stock's own volume/mass section
+        # only when the target field is still empty.
+        if self.product_info:
+            self.volume_and_weights = copy_product_info_to_volume_and_weights(
+                self.volume_and_weights, self.product_info
+            )
         
         # Normalize all referenced chemicals to ensure fresh data
         if self.chemicals:
@@ -752,11 +777,14 @@ class SeparatorStock(ELNSubstance):
         a_eln={
             "label": "HZB Battery: Separator Stock",
             "entry_type": "SeparatorStock",
-            "hide": ['pure_substance', 'elemental_composition', "description"],
+            "hide": ["description"],
             "properties": {
                 "order": [
                     "name",
+                    "synthesis",
                     "dimensions_and_weights",
+                    "elemental_composition",
+                    "pure_substance",
                     "chemicals",
                     "product_info",
                 ],
@@ -769,6 +797,11 @@ class SeparatorStock(ELNSubstance):
         a_template=dict(
             substance_identifiers=dict(),
         ),
+    )
+
+    synthesis = SubSection(
+            section_def=MaterialSynthesisMethod,
+            description="Detailed synthesis methodology including steps, instruments, timing, and publication references.",
     )
 
     chemicals = SubSection(
@@ -805,6 +838,13 @@ class SeparatorStock(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the stock's own dimensions section
+        # only when the target field is still empty.
+        if self.product_info:
+            self.dimensions_and_weights = copy_product_info_to_dimensions_and_weights(
+                self.dimensions_and_weights, self.product_info
+            )
         
         # Normalize all referenced chemicals to ensure fresh data
         if self.chemicals:
@@ -895,13 +935,21 @@ class ElectrodeSample(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product mass into the sample dimensions section only if empty.
+        if self.product_info:
+            self.dimensions_and_weights = copy_product_info_to_dimensions_and_weights(
+                self.dimensions_and_weights, self.product_info
+            )
         
-        # Parent-override: Copy thickness from parent sheet
+        # Copy thickness from parent sheet only if child has no own thickness
         if self.electrode_sheet and self.electrode_sheet.dimensions_and_weights:
-            if not self.dimensions_and_weights:
-                self.dimensions_and_weights = DimensionsAndWeights()
-            if self.electrode_sheet.dimensions_and_weights.thickness:
-                self.dimensions_and_weights.thickness = self.electrode_sheet.dimensions_and_weights.thickness
+            parent_thickness = self.electrode_sheet.dimensions_and_weights.thickness
+            if parent_thickness is not None:
+                if not self.dimensions_and_weights:
+                    self.dimensions_and_weights = DimensionsAndWeights()
+                if self.dimensions_and_weights.thickness is None:
+                    self.dimensions_and_weights.thickness = parent_thickness
         
         # Normalize referenced components
         if self.electrode_sheet:
@@ -978,6 +1026,13 @@ class ElectrolyteSample(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the sample's own volume/mass section
+        # only when the target field is still empty.
+        if self.product_info:
+            self.volume_and_weights = copy_product_info_to_volume_and_weights(
+                self.volume_and_weights, self.product_info
+            )
         
         # Normalize referenced electrolyte_stock
         if self.electrolyte_stock:
@@ -1051,6 +1106,12 @@ class SeparatorSample(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product mass into the sample dimensions section only if empty.
+        if self.product_info:
+            self.dimensions_and_weights = copy_product_info_to_dimensions_and_weights(
+                self.dimensions_and_weights, self.product_info
+            )
         
         # Parent-override: Copy thickness from parent stock
         if self.separator_stock and self.separator_stock.dimensions_and_weights:

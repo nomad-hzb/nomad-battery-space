@@ -2,6 +2,38 @@ from nomad.datamodel.results import Material, Results
 from nomad.metainfo import Quantity
 
 
+def copy_product_info_to_dimensions_and_weights(section, product_info):
+    """Copy product mass into a dimensions section only when the target field is empty."""
+    if product_info is None:
+        return section
+
+    if section is None:
+        from .dimensions import DimensionsAndWeights
+        section = DimensionsAndWeights()
+
+    if section.mass is None and product_info.product_weight is not None:
+        section.mass = product_info.product_weight
+
+    return section
+
+
+def copy_product_info_to_volume_and_weights(section, product_info):
+    """Copy product mass/volume into a volume section only when target fields are empty."""
+    if product_info is None:
+        return section
+
+    if section is None:
+        from .dimensions import VolumeAndWeights
+        section = VolumeAndWeights()
+
+    if section.mass is None and product_info.product_weight is not None:
+        section.mass = product_info.product_weight
+    if section.volume is None and product_info.product_volume is not None:
+        section.volume = product_info.product_volume
+
+    return section
+
+
 def extract_elements(component, use_aggregated=True):
     """
     Extract chemical elements from a component with hierarchical aggregation support.
