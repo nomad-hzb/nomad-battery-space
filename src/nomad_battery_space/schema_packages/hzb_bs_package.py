@@ -73,8 +73,7 @@ from .utilities import (
 )
 from .utilities.helpers import (
     collect_and_store_elements,
-    copy_product_info_to_dimensions_and_weights,
-    copy_product_info_to_volume_and_weights,
+    copy_product_info,
     validate_required,
 )
 
@@ -447,11 +446,13 @@ class ElectrodeMaterial(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
 
-        # Copy supplier/product values into the material's own volume/mass section
-        # only when the target field is still empty.
+        # Copy supplier/product values into the volume/mass section
         if self.product_info:
-            self.volume_and_weights = copy_product_info_to_volume_and_weights(
-                self.volume_and_weights, self.product_info
+            self.volume_and_weights = copy_product_info(
+                self.volume_and_weights,
+                self.product_info,
+                VolumeAndWeights,
+                {'mass': 'product_weight', 'volume': 'product_volume'},
             )
         
         # Normalize all referenced chemicals to ensure fresh data
@@ -641,11 +642,13 @@ class ElectrodeSheet(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
 
-        # Copy supplier/product values into the sheet's own dimensions section
-        # only when the target field is still empty.
+        # Copy supplier/product values into the volume/mass section
         if self.product_info:
-            self.dimensions_and_weights = copy_product_info_to_dimensions_and_weights(
-                self.dimensions_and_weights, self.product_info
+            self.dimensions_and_weights = copy_product_info(
+                self.dimensions_and_weights,
+                self.product_info,
+                DimensionsAndWeights,
+                {'mass': 'product_weight'},
             )
         
         # Normalize all referenced materials and chemicals to ensure fresh data
@@ -747,11 +750,13 @@ class ElectrolyteStock(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
 
-        # Copy supplier/product values into the stock's own volume/mass section
-        # only when the target field is still empty.
+        # Copy supplier/product values into the volume/mass section
         if self.product_info:
-            self.volume_and_weights = copy_product_info_to_volume_and_weights(
-                self.volume_and_weights, self.product_info
+            self.volume_and_weights = copy_product_info(
+                self.volume_and_weights,
+                self.product_info,
+                VolumeAndWeights,
+                {'mass': 'product_weight', 'volume': 'product_volume'},
             )
         
         # Normalize all referenced chemicals to ensure fresh data
@@ -839,11 +844,13 @@ class SeparatorStock(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
 
-        # Copy supplier/product values into the stock's own dimensions section
-        # only when the target field is still empty.
+        # Copy supplier/product values into the volume/mass section
         if self.product_info:
-            self.dimensions_and_weights = copy_product_info_to_dimensions_and_weights(
-                self.dimensions_and_weights, self.product_info
+            self.dimensions_and_weights = copy_product_info(
+                self.dimensions_and_weights,
+                self.product_info,
+                DimensionsAndWeights,
+                {'mass': 'product_weight'},
             )
         
         # Normalize all referenced chemicals to ensure fresh data
@@ -936,10 +943,13 @@ class ElectrodeSample(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
 
-        # Copy supplier/product mass into the sample dimensions section only if empty.
+        # Copy supplier/product values into the volume/mass section
         if self.product_info:
-            self.dimensions_and_weights = copy_product_info_to_dimensions_and_weights(
-                self.dimensions_and_weights, self.product_info
+            self.dimensions_and_weights = copy_product_info(
+                self.dimensions_and_weights,
+                self.product_info,
+                DimensionsAndWeights,
+                {'mass': 'product_weight'},
             )
         
         # Copy thickness from parent sheet only if child has no own thickness
@@ -1027,11 +1037,13 @@ class ElectrolyteSample(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
 
-        # Copy supplier/product values into the sample's own volume/mass section
-        # only when the target field is still empty.
+        # Copy supplier/product values into the volume/mass section
         if self.product_info:
-            self.volume_and_weights = copy_product_info_to_volume_and_weights(
-                self.volume_and_weights, self.product_info
+            self.volume_and_weights = copy_product_info(
+                self.volume_and_weights,
+                self.product_info,
+                VolumeAndWeights,
+                {'mass': 'product_weight', 'volume': 'product_volume'},
             )
         
         # Normalize referenced electrolyte_stock
@@ -1107,10 +1119,13 @@ class SeparatorSample(ELNSubstance):
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
 
-        # Copy supplier/product mass into the sample dimensions section only if empty.
+        # Copy supplier/product values into the volume/mass section
         if self.product_info:
-            self.dimensions_and_weights = copy_product_info_to_dimensions_and_weights(
-                self.dimensions_and_weights, self.product_info
+            self.dimensions_and_weights = copy_product_info(
+                self.dimensions_and_weights,
+                self.product_info,
+                DimensionsAndWeights,
+                {'mass': 'product_weight'},
             )
         
         # Parent-override: Copy thickness from parent stock

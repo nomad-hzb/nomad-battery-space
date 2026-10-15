@@ -2,34 +2,30 @@ from nomad.datamodel.results import Material, Results
 from nomad.metainfo import Quantity
 
 
-def copy_product_info_to_dimensions_and_weights(section, product_info):
-    """Copy product mass into a dimensions section only when the target field is empty."""
+def copy_product_info(section, product_info, section_class, field_mapping):
+    """
+    Generic helper to copy product_info fields into a section.
+    
+    Args:
+        section: Target section (will be created if None)
+        product_info: Source product info object
+        section_class: Class to instantiate if section is None
+        field_mapping: Dict mapping {section_field: product_info_field}
+    
+    Returns:
+        Updated section
+    """
     if product_info is None:
         return section
 
     if section is None:
-        from .dimensions import DimensionsAndWeights
-        section = DimensionsAndWeights()
+        section = section_class()
 
-    if section.mass is None and product_info.product_weight is not None:
-        section.mass = product_info.product_weight
-
-    return section
-
-
-def copy_product_info_to_volume_and_weights(section, product_info):
-    """Copy product mass/volume into a volume section only when target fields are empty."""
-    if product_info is None:
-        return section
-
-    if section is None:
-        from .dimensions import VolumeAndWeights
-        section = VolumeAndWeights()
-
-    if section.mass is None and product_info.product_weight is not None:
-        section.mass = product_info.product_weight
-    if section.volume is None and product_info.product_volume is not None:
-        section.volume = product_info.product_volume
+    for target_field, source_field in field_mapping.items():
+        if getattr(section, target_field, None) is None:
+            value = getattr(product_info, source_field, None)
+            if value is not None:
+                setattr(section, target_field, value)
 
     return section
 
