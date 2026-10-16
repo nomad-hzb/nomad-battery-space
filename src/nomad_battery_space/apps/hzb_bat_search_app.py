@@ -109,6 +109,7 @@ hzb_bat_search_app = App(
         Column(quantity='entry_name', selected=True),
         Column(quantity='entry_type', selected=True),
         Column(quantity='upload_name', selected=True),
+        Column(quantity='authors', selected=True),
         Column(quantity='entry_create_time', selected=True),
     ],
     menu=Menu(
@@ -138,6 +139,11 @@ hzb_bat_search_app = App(
                     MenuItemTerms(
                         search_quantity='entry_name',
                         title='Entry Name',
+                        options=5,
+                    ),
+                    MenuItemTerms(
+                        search_quantity='upload_name',
+                        title='Upload Name',
                         options=5,
                     ),
                     MenuItemHistogram(
