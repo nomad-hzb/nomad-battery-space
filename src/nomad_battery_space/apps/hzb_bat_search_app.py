@@ -23,15 +23,61 @@ schema = 'nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBa
 # Advantage: smaller search app
 
 classes: list[ClassInfo] = [
-    ClassInfo('CoinCellBattery', 'hzb_bs_assembly_package', False, False, False, True),
-    ClassInfo('ElectrodeMaterial', 'hzb_bs_package', False, True, True, True),
-    ClassInfo('ElectrodeSheet', 'hzb_bs_package', True, False, True, True),
-    ClassInfo('ElectrodeSample', 'hzb_bs_package', True, False, True, True),
-    ClassInfo('SeparatorStock', 'hzb_bs_package', True, False, True, True),
-    ClassInfo('SeparatorSample', 'hzb_bs_package', True, False, False, True),
-    ClassInfo('ElectrolyteStock', 'hzb_bs_package', False, True, True, True),
-    ClassInfo('ElectrolyteSample', 'hzb_bs_package', False, True, False, True),
-    ClassInfo('BS_Chemical', 'hzb_bs_package', False, False, False, True),
+    ClassInfo(
+        'CoinCellBattery',
+        'Coin Cell',
+        'hzb_bs_assembly_package',
+        False,
+        False,
+        False,
+        True,
+    ),
+    ClassInfo(
+        'ElectrodeMaterial',
+        'Electrode Material',
+        'hzb_bs_package',
+        False,
+        True,
+        True,
+        True,
+    ),
+    ClassInfo(
+        'ElectrodeSheet', 'Electrode Sheet', 'hzb_bs_package', True, False, True, True
+    ),
+    ClassInfo(
+        'ElectrodeSample', 'Electrode Sample', 'hzb_bs_package', True, False, True, True
+    ),
+    ClassInfo(
+        'SeparatorStock', 'Separator Stock', 'hzb_bs_package', True, False, True, True
+    ),
+    ClassInfo(
+        'SeparatorSample',
+        'Separator Sample',
+        'hzb_bs_package',
+        True,
+        False,
+        False,
+        True,
+    ),
+    ClassInfo(
+        'ElectrolyteStock',
+        'Electrolyte Stock',
+        'hzb_bs_package',
+        False,
+        True,
+        True,
+        True,
+    ),
+    ClassInfo(
+        'ElectrolyteSample',
+        'Electrolyte Sample',
+        'hzb_bs_package',
+        False,
+        True,
+        False,
+        True,
+    ),
+    ClassInfo('BS_Chemical', 'Chemical', 'hzb_bs_package', False, False, False, True),
 ]
 class_filter_menus: dict[str, Menu] = create_class_filter_menus(classes)
 

@@ -239,6 +239,7 @@ def create_activematerialcomponent_menu_for_electrodesheet(
 class ClassInfo:
     class_name: str
     package_name: str
+    label: str
     dimensions_and_weights: bool
     volume_and_weights: bool
     chemical_reference: bool
@@ -247,6 +248,7 @@ class ClassInfo:
     def __init__(  # noqa: PLR0913, PLR0917
         self,
         class_name: str,
+        label: str,
         package_name: str,
         dimensions_and_weights: bool,
         volume_and_weights: bool,
@@ -255,6 +257,7 @@ class ClassInfo:
     ):
         self.class_name = class_name
         self.package_name = package_name
+        self.label = label
         self.dimensions_and_weights = dimensions_and_weights
         self.volume_and_weights = volume_and_weights
         self.chemical_reference = chemical_reference
@@ -275,7 +278,7 @@ def create_class_filter_menus(classes: list[ClassInfo]) -> dict[str, Menu]:
     class_filter_menus: dict[str, Menu] = {}
 
     for info in classes:
-        menu = Menu(title=f'{info.class_name} Properties', items=[])
+        menu = Menu(title=f'{info.label}', items=[])
 
         ### adding common filters for the classes:
 
