@@ -141,11 +141,6 @@ hzb_bat_search_app = App(
                         title='Entry Name',
                         options=5,
                     ),
-                    MenuItemTerms(
-                        search_quantity='upload_name',
-                        title='Upload Name',
-                        options=5,
-                    ),
                     MenuItemHistogram(
                         title='Create Time',
                         x=Axis(search_quantity='entry_create_time'),
@@ -169,6 +164,11 @@ hzb_bat_search_app = App(
                 ],
             ),
             *class_filter_menus.values(),
+            MenuItemTerms(
+                search_quantity='upload_name',
+                title='Upload Name',
+                options=5,
+            ),
             MenuItemTerms(search_quantity='results.eln.tags'),
             # MenuItemOptimade(title='Optimade'),
             # MenuItemCustomQuantities(title='Custom Conditions'),
