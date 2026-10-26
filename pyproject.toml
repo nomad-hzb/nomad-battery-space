@@ -16,7 +16,7 @@ name = "nomad-battery-space"
 description = "A schema package plugin for data space @HZB"
 version = "0.2.3"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
     { name = "Svetlana Grinman", email = "svetlana.grinman@helmholtz-berlin.de" },
 ]
