@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/nomad-hzb/battery-space"
+Repository = "https://github.com/nomad-hzb/nomad-battery-space"
 
 [project.optional-dependencies]
 dev = [
@@ -142,6 +142,7 @@ hzb_utilities_voila_notebook = "nomad_battery_space.schema_packages:hzb_utilitie
 hzb_utilities_notes = "nomad_battery_space.schema_packages:hzb_utilities_notes"
 hzb_utilities_geometry = "nomad_battery_space.schema_packages:hzb_utilities_geometry"
 hzb_utilities_dimensions = "nomad_battery_space.schema_packages:hzb_utilities_dimensions"
+hzb_utilities_processing = "nomad_battery_space.schema_packages:hzb_utilities_processing"
 
 [tool.cruft]
 # Avoid updating workflow files, this leads to permissions issues
