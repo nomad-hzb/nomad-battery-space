@@ -49,7 +49,7 @@ extra-index-url = [
   "https://gitlab.mpcdf.mpg.de/api/v4/projects/2187/packages/pypi/simple",
 ]
 constraint-dependencies = ["pymatgen-core<2026.10.16"]
-prerelease = "if-necessary-or-explicit"
+#prerelease = "if-necessary-or-explicit"
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
