@@ -54,6 +54,7 @@ from nomad.metainfo import (
     Reference,
     SchemaPackage,
     Section,
+    SectionProxy,
     SubSection,
 )
 
@@ -68,6 +69,8 @@ from .utilities import (
     GeometricalShape,  # noqa: F401 - Re-export for backward compatibility with old data
     Notes,
     OtherGeometry,  # noqa: F401 - Re-export for backward compatibility with old data
+    PrecursorReference,
+    ProcessedFromMixin,
     RectangleGeometry,  # noqa: F401 - Re-export for backward compatibility with old data
     VolumeAndWeights,
 )
@@ -356,7 +359,21 @@ class MaterialSynthesisMethod(SynthesisMethod):
     )
 
 
-class ElectrodeMaterial(ELNSubstance):    
+class ElectrodeMaterialReference(PrecursorReference):
+    """
+    Reference to an electrode material used as precursor of another electrode material.
+    """
+
+    reference = Quantity(
+        type=Reference(SectionProxy('ElectrodeMaterial')),
+        description='The electrode material this electrode material was derived from.',
+        a_eln={"component": "ReferenceEditQuantity", 
+               "label": "precursor material",
+               "showSectionLabel": True,},
+    )
+
+
+class ElectrodeMaterial(ELNSubstance, ProcessedFromMixin):
     """
     Synthesized electrode material.
     
@@ -364,6 +381,9 @@ class ElectrodeMaterial(ELNSubstance):
     for use in the battery. It includes references to
     initial chemicals used as inputs, composition information, and synthesis
     methodology details.
+
+    An electrode material can also be derived from another electrode material
+    by processing (e.g. spray drying), see `precursors` and `processing`.
     """
     m_def = Section(
         label="HZB Battery: Electrode Material",
@@ -376,6 +396,8 @@ class ElectrodeMaterial(ELNSubstance):
                     "name",
                     #"creator",
                     "synthesis",
+                    "precursors",
+                    "processing",
                     "yield_percent",
                     "description",
                     "volume_and_weights",
@@ -412,6 +434,12 @@ class ElectrodeMaterial(ELNSubstance):
     synthesis = SubSection(
         section_def=MaterialSynthesisMethod,
         description="Detailed synthesis methodology including steps, instruments, timing, and publication references.",
+    )
+    precursors = SubSection(
+        section_def=ElectrodeMaterialReference,
+        repeats=True,
+        description="Electrode materials this material was derived from by processing.",
+        a_eln={"label": "precursor materials"},
     )
 
     yield_percent = Quantity(
@@ -467,8 +495,13 @@ class ElectrodeMaterial(ELNSubstance):
                 if chem_ref.chemical:
                     chem_ref.chemical.normalize(archive, logger)
         
-        # Collect and store elements from all sources
-        collect_and_store_elements(self, archive, chemicals=self.chemicals)
+        # Collect and store elements from all sources, including precursor materials
+        collect_and_store_elements(
+            self,
+            archive,
+            chemicals=self.chemicals,
+            referenced_components=[p.reference for p in self.precursors],
+        )
 
 
 class ActiveMaterialComponent(ArchiveSection):
@@ -680,13 +713,30 @@ class ElectrodeSheet(ELNSubstance):
         collect_and_store_elements(self, archive, materials=self.electrode_materials, chemicals=self.chemicals)
 
 
-class ElectrolyteStock(ELNSubstance):
+class ElectrolyteStockReference(PrecursorReference):
+    """
+    Reference to an electrolyte stock used as precursor of another electrolyte stock.
+    """
+
+    reference = Quantity(
+        type=Reference(SectionProxy('ElectrolyteStock')),
+        description='The electrolyte stock this electrolyte stock was derived from.',
+        a_eln={"component": "ReferenceEditQuantity", 
+               "label": "precursor electrolyte stock",
+               "showSectionLabel": True,},
+    )
+
+
+class ElectrolyteStock(ELNSubstance, ProcessedFromMixin):
     """
     Electrolyte stock solution.
     
     Extends the baseclasses Electrolyte with stock/batch specific information.
     Contains salts and solvents mixed together for use in battery assembly.
     Tracks state (liquid/solid) and volume.
+
+    An electrolyte stock can also be derived from another electrolyte stock
+    by processing (e.g. drying, adding an additive), see `precursors` and `processing`.
     """
     m_def = Section(
         links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_fb0d9eef_92af_4628_8814_e065ca255d59'],
@@ -699,6 +749,8 @@ class ElectrolyteStock(ELNSubstance):
                 "order": [
                     "name",
                     "state",
+                    "precursors",
+                    "processing",
                     "volume_and_weights",
                     "elemental_composition",
                     "pure_substance",
@@ -725,6 +777,12 @@ class ElectrolyteStock(ELNSubstance):
             "component": "EnumEditQuantity",
             "label": "state",
         }
+    )
+    precursors = SubSection(
+        section_def=ElectrolyteStockReference,
+        repeats=True,
+        description="electrolyte stocks this electrolyte stock was derived from by processing.",
+        a_eln={"label": "precursor electrolyte stocks"},
     )
     chemicals = SubSection(
         links=['http://purl.obolibrary.org/obo/CHEBI_24431'],  
@@ -780,16 +838,38 @@ class ElectrolyteStock(ELNSubstance):
                 if chem_ref.chemical:
                     chem_ref.chemical.normalize(archive, logger)
         
-        # Collect and store elements from all sources
-        collect_and_store_elements(self, archive, chemicals=self.chemicals)
+        # Collect and store elements from all sources, including precursors
+        collect_and_store_elements(
+            self,
+            archive,
+            chemicals=self.chemicals,
+            referenced_components=[p.reference for p in self.precursors],
+        )
 
 
-class SeparatorStock(ELNSubstance):
+class SeparatorStockReference(PrecursorReference):
+    """
+    Reference to an separator stock used as precursor of another separator stock.
+    """
+
+    reference = Quantity(
+        type=Reference(SectionProxy('SeparatorStock')),
+        description='The separator stock this separator stock was derived from.',
+        a_eln={"component": "ReferenceEditQuantity", 
+               "label": "precursor separator stock",
+               "showSectionLabel": True,},
+    )
+
+
+class SeparatorStock(ELNSubstance, ProcessedFromMixin):
     """
     Separator material stock.
     
     Represents a sheet of separator material (e.g., porous polymer,
     ceramic coating) used to separate anode and cathode in the battery.
+
+    A separator stock can also be derived from another separator stock
+    by processing (e.g. coating), see `precursors` and `processing`.
     """
     m_def = Section(
         links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_331e6cca_f260_4bf8_af55_35304fe1bbe0'],
@@ -802,6 +882,8 @@ class SeparatorStock(ELNSubstance):
                 "order": [
                     "name",
                     "synthesis",
+                    "precursors",
+                    "processing",
                     "dimensions_and_weights",
                     "elemental_composition",
                     "pure_substance",
@@ -822,6 +904,12 @@ class SeparatorStock(ELNSubstance):
     synthesis = SubSection(
             section_def=MaterialSynthesisMethod,
             description="Detailed synthesis methodology including steps, instruments, timing, and publication references.",
+    )
+    precursors = SubSection(
+        section_def=SeparatorStockReference,
+        repeats=True,
+        description="separator stocks this separator stock was derived from by processing.",
+        a_eln={"label": "precursor separator stocks"},
     )
 
     chemicals = SubSection(
@@ -875,8 +963,13 @@ class SeparatorStock(ELNSubstance):
                 if chem_ref.chemical:
                     chem_ref.chemical.normalize(archive, logger)
         
-        # Collect and store elements from all sources
-        collect_and_store_elements(self, archive, chemicals=self.chemicals)
+        # Collect and store elements from all sources, including precursors
+        collect_and_store_elements(
+            self,
+            archive,
+            chemicals=self.chemicals,
+            referenced_components=[p.reference for p in self.precursors],
+        )
 
 
 # ============================================================================

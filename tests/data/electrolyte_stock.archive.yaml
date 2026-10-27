@@ -1,0 +1,11 @@
+data:
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.ElectrolyteStock
+  name: LP30
+  state: Liquid
+  elemental_composition:
+    - element: Li
+    - element: P
+    - element: F
+    - element: C
+    - element: H
+    - element: O

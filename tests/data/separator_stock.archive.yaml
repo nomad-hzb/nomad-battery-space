@@ -1,0 +1,8 @@
+data:
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.SeparatorStock
+  name: Celgard_2400
+  elemental_composition:
+    - element: C
+    - element: H
+  synthesis:
+    name: extrusion

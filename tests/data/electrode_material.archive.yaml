@@ -1,0 +1,15 @@
+data:
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeMaterial
+  name: NMC111_200um
+  yield_percent: 0.95
+  elemental_composition:
+    - element: Li
+    - element: Ni
+    - element: Mn
+    - element: Co
+    - element: O
+  synthesis:
+    name: milling
+    steps:
+      - name: milling with 200 um beads
+        duration: 3600
