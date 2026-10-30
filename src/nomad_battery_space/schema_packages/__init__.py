@@ -19,6 +19,15 @@ class HZBBSAssemblyPackageEntryPoint(SchemaPackageEntryPoint):
         return m_package
 
 
+class HZBBSMeasurementPackageEntryPoint(SchemaPackageEntryPoint):
+    def load(self):
+        from nomad_battery_space.schema_packages.hzb_bs_measurement_package import (
+            m_package,
+        )
+
+        return m_package
+
+
 class HZBUtilitiesVoilaNotebookEntryPoint(SchemaPackageEntryPoint):
     def load(self):
         from nomad_battery_space.schema_packages.utilities.voila_notebook import (
@@ -72,6 +81,11 @@ hzb_bs_package = HZBBSPackageEntryPoint(
 hzb_bs_assembly_package = HZBBSAssemblyPackageEntryPoint(
     name='hzb_bs_assembly',
     description='Schema package for HZB battery assembly samples.',
+)
+
+hzb_bs_measurement_package = HZBBSMeasurementPackageEntryPoint(
+    name='hzb_bs_measurement',
+    description='Schema package for measurements on HZB battery samples.',
 )
 
 hzb_utilities_voila_notebook = HZBUtilitiesVoilaNotebookEntryPoint(

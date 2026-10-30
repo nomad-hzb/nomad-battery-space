@@ -1,0 +1,8 @@
+data:
+  m_def: nomad_battery_space.schema_packages.hzb_bs_measurement_package.BS_Measurement
+  name: cell_01 cycling
+  method: galvanostatic cycling
+  operator: Jane Doe
+  data_file:
+    - cell_01_cycling.dta
+    - cell_01_operando.nxs
