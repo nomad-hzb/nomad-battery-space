@@ -24,7 +24,7 @@ All notable changes to this plugin will be documented in this file.
 
 ### Changed
 - **Compatibility with NOMAD 2.0.0**
-- **Search App**: Renamed from "BS ELN" to "Battery Space Search"; the `upload_name` column is shown as "Project name"
+- **Search App**: Renamed from "BS ELN" to "Battery Data Space Search"; the `upload_name` column is shown as "Project name"
 - **Search App**: Filter groups are named by human-readable labels (e.g. "Electrode Material" instead of "ElectrodeMaterial Properties"); simplified creation of class filter menus
 - `ElectrodeSample` only inherits the thickness of its electrode sheet if no thickness is set yet
 - Dependencies: Python >= 3.11 required, `pymatgen-core>=2026.10.16` constraint
