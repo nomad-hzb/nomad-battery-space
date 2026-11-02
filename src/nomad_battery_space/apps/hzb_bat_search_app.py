@@ -83,9 +83,9 @@ class_filter_menus: dict[str, Menu] = create_class_filter_menus(classes)
 
 
 hzb_bat_search_app = App(
-    label='Battery Space Search',
+    label='Battery Data Space Search',
     path='samples',
-    category='HZB battery space',
+    category='HZB battery data space',
     description='Provides filters to quickly find your samples and experimental data',
     search_quantities=SearchQuantities(
         include=[
