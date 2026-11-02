@@ -54,6 +54,7 @@ from nomad.metainfo import (
     Reference,
     SchemaPackage,
     Section,
+    SectionProxy,
     SubSection,
 )
 
@@ -68,11 +69,14 @@ from .utilities import (
     GeometricalShape,  # noqa: F401 - Re-export for backward compatibility with old data
     Notes,
     OtherGeometry,  # noqa: F401 - Re-export for backward compatibility with old data
+    PrecursorReference,
+    ProcessedFromMixin,
     RectangleGeometry,  # noqa: F401 - Re-export for backward compatibility with old data
     VolumeAndWeights,
 )
 from .utilities.helpers import (
     collect_and_store_elements,
+    copy_product_info,
     validate_required,
 )
 
@@ -92,6 +96,7 @@ class BS_Chemical(ELNSubstance):
     electrolyte stocks.
     """
     m_def = Section(
+        links=['http://purl.obolibrary.org/obo/CHEBI_24431'],  
         label="HZB Battery: Chemical",
         a_eln={
             "label": "HZB Battery: Chemical",
@@ -156,6 +161,7 @@ class BS_ChemicalReference(ArchiveSection):
     )
 
     chemical = Quantity(
+        links=['http://purl.obolibrary.org/obo/CHEBI_24431'],  
         type=Reference(BS_Chemical.m_def),
         description="Reference to the initial chemical substance.",
         a_eln={
@@ -244,6 +250,7 @@ class BS_ChemicalReference(ArchiveSection):
         unit="dimensionless",
     )
     mass_fraction = Quantity(
+        links=['http://purl.obolibrary.org/obo/PATO_0000033'],
         type=float,
         description="Mass of solute per unit mass of total solution.",
         a_eln={
@@ -254,6 +261,7 @@ class BS_ChemicalReference(ArchiveSection):
         },
     )
     volume_fraction = Quantity(
+        links=['http://purl.obolibrary.org/obo/PATO_0000033'],
         type=float,
         description="Volume of solute per unit volume of total solution.",
         a_eln={
@@ -351,7 +359,21 @@ class MaterialSynthesisMethod(SynthesisMethod):
     )
 
 
-class ElectrodeMaterial(ELNSubstance):    
+class ElectrodeMaterialReference(PrecursorReference):
+    """
+    Reference to an electrode material used as precursor of another electrode material.
+    """
+
+    reference = Quantity(
+        type=Reference(SectionProxy('ElectrodeMaterial')),
+        description='The electrode material this electrode material was derived from.',
+        a_eln={"component": "ReferenceEditQuantity", 
+               "label": "precursor material",
+               "showSectionLabel": True,},
+    )
+
+
+class ElectrodeMaterial(ELNSubstance, ProcessedFromMixin):
     """
     Synthesized electrode material.
     
@@ -359,6 +381,9 @@ class ElectrodeMaterial(ELNSubstance):
     for use in the battery. It includes references to
     initial chemicals used as inputs, composition information, and synthesis
     methodology details.
+
+    An electrode material can also be derived from another electrode material
+    by processing (e.g. spray drying), see `precursors` and `processing`.
     """
     m_def = Section(
         label="HZB Battery: Electrode Material",
@@ -371,6 +396,8 @@ class ElectrodeMaterial(ELNSubstance):
                     "name",
                     #"creator",
                     "synthesis",
+                    "precursors",
+                    "processing",
                     "yield_percent",
                     "description",
                     "volume_and_weights",
@@ -395,6 +422,7 @@ class ElectrodeMaterial(ELNSubstance):
     # )
 
     chemicals = SubSection(
+        links=['http://purl.obolibrary.org/obo/CHEBI_24431'],  
         section_def=BS_ChemicalReference,
         repeats=True,
         description="References to the chemical substances used as input materials for synthesizing this electrode material.",
@@ -407,8 +435,15 @@ class ElectrodeMaterial(ELNSubstance):
         section_def=MaterialSynthesisMethod,
         description="Detailed synthesis methodology including steps, instruments, timing, and publication references.",
     )
+    precursors = SubSection(
+        section_def=ElectrodeMaterialReference,
+        repeats=True,
+        description="Electrode materials this material was derived from by processing.",
+        a_eln={"label": "precursor materials"},
+    )
 
     yield_percent = Quantity(
+        links=['http://purl.obolibrary.org/obo/PATO_0000720'], 
         type=float,
         description="Synthesis yield percentage.",
         a_eln={
@@ -444,6 +479,15 @@ class ElectrodeMaterial(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the volume/mass section
+        if self.product_info:
+            self.volume_and_weights = copy_product_info(
+                self.volume_and_weights,
+                self.product_info,
+                VolumeAndWeights,
+                {'mass': 'product_weight', 'volume': 'product_volume'},
+            )
         
         # Normalize all referenced chemicals to ensure fresh data
         if self.chemicals:
@@ -451,8 +495,13 @@ class ElectrodeMaterial(ELNSubstance):
                 if chem_ref.chemical:
                     chem_ref.chemical.normalize(archive, logger)
         
-        # Collect and store elements from all sources
-        collect_and_store_elements(self, archive, chemicals=self.chemicals)
+        # Collect and store elements from all sources, including precursor materials
+        collect_and_store_elements(
+            self,
+            archive,
+            chemicals=self.chemicals,
+            referenced_components=[p.reference for p in self.precursors],
+        )
 
 
 class ActiveMaterialComponent(ArchiveSection):
@@ -463,6 +512,7 @@ class ActiveMaterialComponent(ArchiveSection):
     that is part of the electrode sheet, with its role and mass contribution.
     """
     m_def = Section(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_79d1b273_58cd_4be6_a250_434817f7c261'],
         label_quantity='material_name',
         a_eln={
             "hide": ["material_name"],
@@ -470,6 +520,7 @@ class ActiveMaterialComponent(ArchiveSection):
     )
 
     material = Quantity(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_79d1b273_58cd_4be6_a250_434817f7c261'],
         type=Reference(ElectrodeMaterial.m_def),
         description="Reference to the electrode material used in this component.",
         a_eln={"component": "ReferenceEditQuantity", 
@@ -482,6 +533,7 @@ class ActiveMaterialComponent(ArchiveSection):
         description="Auto-populated name of the referenced electrode material for display in the UI list."
     )
     role = Quantity(
+        links=['https://www.ebi.ac.uk/chebi/CHEBI:51086'],
         type=str,
         description="Role of this material in the sheet (e.g., active material, binder, current collector, additive).",
         a_eln=dict(
@@ -498,6 +550,7 @@ class ActiveMaterialComponent(ArchiveSection):
         ),
     )
     mass = Quantity(
+        links=['http://purl.obolibrary.org/obo/PATO_0000125', 'https://purl.archive.org/tfsco/TFSCO_00005020'],
         type=float,
         description="Mass of this material component in the sheet.",
         a_eln={
@@ -509,6 +562,7 @@ class ActiveMaterialComponent(ArchiveSection):
         unit="milligram",
     )
     wt_percent = Quantity(
+        links=['http://purl.obolibrary.org/obo/PATO_0000125'],
         type=float,
         description="Weight percent (wt%) of this material component in the electrode sheet.",
         a_eln={
@@ -544,6 +598,7 @@ class ElectrodeSheet(ELNSubstance):
     current collectors, additives) with their individual roles and masses.
     """
     m_def = Section(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_0f007072_a8dd_4798_b865_1bf9363be627'],
         label="HZB Battery: Electrode Sheet",
         a_eln={
             "label": "HZB Battery: Electrode Sheet",
@@ -554,8 +609,8 @@ class ElectrodeSheet(ELNSubstance):
                     "name",
                     "casting_procedure",
                     "dimensions_and_weights",
-                    'elemental_composition',
-                    'pure_substance',
+                    "elemental_composition",
+                    "pure_substance",
                     "chemicals",
                     "electrode_materials",   
                     "product_info"        
@@ -590,6 +645,7 @@ class ElectrodeSheet(ELNSubstance):
     )
 
     electrode_materials = SubSection(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_79d1b273_58cd_4be6_a250_434817f7c261'],
         section_def=ActiveMaterialComponent,
         repeats=True,
         description="Components (active materials, binders, current collectors, additives) that make up the electrode sheet.",
@@ -598,6 +654,7 @@ class ElectrodeSheet(ELNSubstance):
         },
     )
     chemicals = SubSection(
+        links=['http://purl.obolibrary.org/obo/CHEBI_24431'],  
         section_def=BS_ChemicalReference,
         repeats=True,
         description="References to initial chemical substances used as input materials for this electrode sheet.",
@@ -631,6 +688,15 @@ class ElectrodeSheet(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the volume/mass section
+        if self.product_info:
+            self.dimensions_and_weights = copy_product_info(
+                self.dimensions_and_weights,
+                self.product_info,
+                DimensionsAndWeights,
+                {'mass': 'product_weight'},
+            )
         
         # Normalize all referenced materials and chemicals to ensure fresh data
         if self.electrode_materials:
@@ -647,13 +713,30 @@ class ElectrodeSheet(ELNSubstance):
         collect_and_store_elements(self, archive, materials=self.electrode_materials, chemicals=self.chemicals)
 
 
-class ElectrolyteStock(ELNSubstance):
+class ElectrolyteStockReference(PrecursorReference):
+    """
+    Reference to an electrolyte stock used as precursor of another electrolyte stock.
+    """
+
+    reference = Quantity(
+        type=Reference(SectionProxy('ElectrolyteStock')),
+        description='The electrolyte stock this electrolyte stock was derived from.',
+        a_eln={"component": "ReferenceEditQuantity", 
+               "label": "precursor electrolyte stock",
+               "showSectionLabel": True,},
+    )
+
+
+class ElectrolyteStock(ELNSubstance, ProcessedFromMixin):
     """
     Electrolyte stock solution.
     
     Extends the baseclasses Electrolyte with stock/batch specific information.
     Contains salts and solvents mixed together for use in battery assembly.
     Tracks state (liquid/solid) and volume.
+
+    An electrolyte stock can also be derived from another electrolyte stock
+    by processing (e.g. drying, adding an additive), see `precursors` and `processing`.
     """
     m_def = Section(
         links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_fb0d9eef_92af_4628_8814_e065ca255d59'],
@@ -661,12 +744,16 @@ class ElectrolyteStock(ELNSubstance):
         a_eln={
             "label": "HZB Battery: Electrolyte Stock",
             "entry_type": "ElectrolyteStock",
-            "hide": ['pure_substance', 'elemental_composition', "description"],
+            "hide": ["description"],
             "properties": {
                 "order": [
                     "name",
                     "state",
+                    "precursors",
+                    "processing",
                     "volume_and_weights",
+                    "elemental_composition",
+                    "pure_substance",
                     "chemicals",
                     "product_info"  
                 ],
@@ -691,7 +778,14 @@ class ElectrolyteStock(ELNSubstance):
             "label": "state",
         }
     )
+    precursors = SubSection(
+        section_def=ElectrolyteStockReference,
+        repeats=True,
+        description="electrolyte stocks this electrolyte stock was derived from by processing.",
+        a_eln={"label": "precursor electrolyte stocks"},
+    )
     chemicals = SubSection(
+        links=['http://purl.obolibrary.org/obo/CHEBI_24431'],  
         section_def=BS_ChemicalReference,
         repeats=True,
         description="References to initial chemical substances used as input materials for this electrolyte stock.",
@@ -728,6 +822,15 @@ class ElectrolyteStock(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the volume/mass section
+        if self.product_info:
+            self.volume_and_weights = copy_product_info(
+                self.volume_and_weights,
+                self.product_info,
+                VolumeAndWeights,
+                {'mass': 'product_weight', 'volume': 'product_volume'},
+            )
         
         # Normalize all referenced chemicals to ensure fresh data
         if self.chemicals:
@@ -735,16 +838,38 @@ class ElectrolyteStock(ELNSubstance):
                 if chem_ref.chemical:
                     chem_ref.chemical.normalize(archive, logger)
         
-        # Collect and store elements from all sources
-        collect_and_store_elements(self, archive, chemicals=self.chemicals)
+        # Collect and store elements from all sources, including precursors
+        collect_and_store_elements(
+            self,
+            archive,
+            chemicals=self.chemicals,
+            referenced_components=[p.reference for p in self.precursors],
+        )
 
 
-class SeparatorStock(ELNSubstance):
+class SeparatorStockReference(PrecursorReference):
+    """
+    Reference to an separator stock used as precursor of another separator stock.
+    """
+
+    reference = Quantity(
+        type=Reference(SectionProxy('SeparatorStock')),
+        description='The separator stock this separator stock was derived from.',
+        a_eln={"component": "ReferenceEditQuantity", 
+               "label": "precursor separator stock",
+               "showSectionLabel": True,},
+    )
+
+
+class SeparatorStock(ELNSubstance, ProcessedFromMixin):
     """
     Separator material stock.
     
     Represents a sheet of separator material (e.g., porous polymer,
     ceramic coating) used to separate anode and cathode in the battery.
+
+    A separator stock can also be derived from another separator stock
+    by processing (e.g. coating), see `precursors` and `processing`.
     """
     m_def = Section(
         links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_331e6cca_f260_4bf8_af55_35304fe1bbe0'],
@@ -752,11 +877,16 @@ class SeparatorStock(ELNSubstance):
         a_eln={
             "label": "HZB Battery: Separator Stock",
             "entry_type": "SeparatorStock",
-            "hide": ['pure_substance', 'elemental_composition', "description"],
+            "hide": ["description"],
             "properties": {
                 "order": [
                     "name",
+                    "synthesis",
+                    "precursors",
+                    "processing",
                     "dimensions_and_weights",
+                    "elemental_composition",
+                    "pure_substance",
                     "chemicals",
                     "product_info",
                 ],
@@ -771,7 +901,19 @@ class SeparatorStock(ELNSubstance):
         ),
     )
 
+    synthesis = SubSection(
+            section_def=MaterialSynthesisMethod,
+            description="Detailed synthesis methodology including steps, instruments, timing, and publication references.",
+    )
+    precursors = SubSection(
+        section_def=SeparatorStockReference,
+        repeats=True,
+        description="separator stocks this separator stock was derived from by processing.",
+        a_eln={"label": "precursor separator stocks"},
+    )
+
     chemicals = SubSection(
+        links=['http://purl.obolibrary.org/obo/CHEBI_24431'],  
         section_def=BS_ChemicalReference,
         repeats=True,
         description="References to initial chemical substances used as input materials for this separator stock.",
@@ -805,6 +947,15 @@ class SeparatorStock(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the volume/mass section
+        if self.product_info:
+            self.dimensions_and_weights = copy_product_info(
+                self.dimensions_and_weights,
+                self.product_info,
+                DimensionsAndWeights,
+                {'mass': 'product_weight'},
+            )
         
         # Normalize all referenced chemicals to ensure fresh data
         if self.chemicals:
@@ -812,8 +963,13 @@ class SeparatorStock(ELNSubstance):
                 if chem_ref.chemical:
                     chem_ref.chemical.normalize(archive, logger)
         
-        # Collect and store elements from all sources
-        collect_and_store_elements(self, archive, chemicals=self.chemicals)
+        # Collect and store elements from all sources, including precursors
+        collect_and_store_elements(
+            self,
+            archive,
+            chemicals=self.chemicals,
+            referenced_components=[p.reference for p in self.precursors],
+        )
 
 
 # ============================================================================
@@ -829,6 +985,7 @@ class ElectrodeSample(ELNSubstance):
     The geometry subsection supports multiple shape types (Circle, Rectangle, Other).
     """
     m_def = Section(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_0f007072_a8dd_4798_b865_1bf9363be627'],
         label="HZB Battery: Electrode Sample",
         a_eln={
             "label": "HZB Battery: Electrode Sample",
@@ -866,6 +1023,7 @@ class ElectrodeSample(ELNSubstance):
         description="Geometric shape, dimensions and mass information for the electrode sample.",
     )
     chemicals = SubSection(
+        links=['http://purl.obolibrary.org/obo/CHEBI_24431'],  
         section_def=BS_ChemicalReference,
         repeats=True,
         description="References to chemical substances used as input materials for this electrode sample.",
@@ -895,13 +1053,24 @@ class ElectrodeSample(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the volume/mass section
+        if self.product_info:
+            self.dimensions_and_weights = copy_product_info(
+                self.dimensions_and_weights,
+                self.product_info,
+                DimensionsAndWeights,
+                {'mass': 'product_weight'},
+            )
         
-        # Parent-override: Copy thickness from parent sheet
+        # Copy thickness from parent sheet only if child has no own thickness
         if self.electrode_sheet and self.electrode_sheet.dimensions_and_weights:
-            if not self.dimensions_and_weights:
-                self.dimensions_and_weights = DimensionsAndWeights()
-            if self.electrode_sheet.dimensions_and_weights.thickness:
-                self.dimensions_and_weights.thickness = self.electrode_sheet.dimensions_and_weights.thickness
+            parent_thickness = self.electrode_sheet.dimensions_and_weights.thickness
+            if parent_thickness is not None:
+                if not self.dimensions_and_weights:
+                    self.dimensions_and_weights = DimensionsAndWeights()
+                if self.dimensions_and_weights.thickness is None:
+                    self.dimensions_and_weights.thickness = parent_thickness
         
         # Normalize referenced components
         if self.electrode_sheet:
@@ -923,6 +1092,7 @@ class ElectrolyteSample(ELNSubstance):
     for use in a specific battery cell.
     """
     m_def = Section(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_fb0d9eef_92af_4628_8814_e065ca255d59'],
         label="HZB Battery: Electrolyte Sample",
         a_eln={
             "label": "HZB Battery: Electrolyte Sample",
@@ -978,6 +1148,15 @@ class ElectrolyteSample(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the volume/mass section
+        if self.product_info:
+            self.volume_and_weights = copy_product_info(
+                self.volume_and_weights,
+                self.product_info,
+                VolumeAndWeights,
+                {'mass': 'product_weight', 'volume': 'product_volume'},
+            )
         
         # Normalize referenced electrolyte_stock
         if self.electrolyte_stock:
@@ -995,6 +1174,7 @@ class SeparatorSample(ELNSubstance):
     battery cell assembly.
     """
     m_def = Section(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_331e6cca_f260_4bf8_af55_35304fe1bbe0'],
         label="HZB Battery: Separator Sample",
         a_eln={
             "label": "HZB Battery: Separator Sample",
@@ -1018,6 +1198,7 @@ class SeparatorSample(ELNSubstance):
     )
 
     separator_stock = Quantity(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_331e6cca_f260_4bf8_af55_35304fe1bbe0'],
         type=Reference(SeparatorStock.m_def),
         description="Reference to the separator stock this sample comes from.",
         a_eln={
@@ -1051,6 +1232,15 @@ class SeparatorSample(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+        # Copy supplier/product values into the volume/mass section
+        if self.product_info:
+            self.dimensions_and_weights = copy_product_info(
+                self.dimensions_and_weights,
+                self.product_info,
+                DimensionsAndWeights,
+                {'mass': 'product_weight'},
+            )
         
         # Parent-override: Copy thickness from parent stock
         if self.separator_stock and self.separator_stock.dimensions_and_weights:
@@ -1164,11 +1354,13 @@ class BatterySample(ELNSubstance):
     )
     # ---- Battery Components ----
     working_electrode = Quantity(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_fb988878_ee54_4350_9ee9_228c00c3ad35'],
         type=Reference(ElectrodeSample.m_def),
         description="The working electrode sample used in the battery (negative or positive depending on setup).",
         a_eln={"component": "ReferenceEditQuantity", "showSectionLabel": True},
     )
     counter_electrode = Quantity(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_871bc4a4_2d17_4b88_9b0f_7ab85f14afea'],
         type=Reference(ElectrodeSample.m_def),
         description="The counter/auxiliary electrode sample used in the battery (opposite polarity to the working electrode).",
         a_eln={"component": "ReferenceEditQuantity", "showSectionLabel": True},
@@ -1179,11 +1371,13 @@ class BatterySample(ELNSubstance):
         a_eln={"component": "ReferenceEditQuantity", "showSectionLabel": True},
     )
     separator = Quantity(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_331e6cca_f260_4bf8_af55_35304fe1bbe0'],
         type=Reference(SeparatorSample.m_def),
         description="The separator sample separating anode and cathode.",
         a_eln={"component": "ReferenceEditQuantity", "showSectionLabel": True},
     )
     electrolyte = Quantity(
+        links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_fb0d9eef_92af_4628_8814_e065ca255d59'],
         type=Reference(ElectrolyteSample.m_def),
         description="The electrolyte sample used in the battery.",
         a_eln={"component": "ReferenceEditQuantity", "showSectionLabel": True},

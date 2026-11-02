@@ -2,6 +2,34 @@ from nomad.datamodel.results import Material, Results
 from nomad.metainfo import Quantity
 
 
+def copy_product_info(section, product_info, section_class, field_mapping):
+    """
+    Generic helper to copy product_info fields into a section.
+    
+    Args:
+        section: Target section (will be created if None)
+        product_info: Source product info object
+        section_class: Class to instantiate if section is None
+        field_mapping: Dict mapping {section_field: product_info_field}
+    
+    Returns:
+        Updated section
+    """
+    if product_info is None:
+        return section
+
+    if section is None:
+        section = section_class()
+
+    for target_field, source_field in field_mapping.items():
+        if getattr(section, target_field, None) is None:
+            value = getattr(product_info, source_field, None)
+            if value is not None:
+                setattr(section, target_field, value)
+
+    return section
+
+
 def extract_elements(component, use_aggregated=True):
     """
     Extract chemical elements from a component with hierarchical aggregation support.

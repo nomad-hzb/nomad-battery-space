@@ -23,23 +23,69 @@ schema = 'nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBa
 # Advantage: smaller search app
 
 classes: list[ClassInfo] = [
-    ClassInfo('CoinCellBattery', 'hzb_bs_assembly_package', False, False, False, True),
-    ClassInfo('ElectrodeMaterial', 'hzb_bs_package', False, True, True, True),
-    ClassInfo('ElectrodeSheet', 'hzb_bs_package', True, False, True, True),
-    ClassInfo('ElectrodeSample', 'hzb_bs_package', True, False, True, True),
-    ClassInfo('SeparatorStock', 'hzb_bs_package', True, False, True, True),
-    ClassInfo('SeparatorSample', 'hzb_bs_package', True, False, False, True),
-    ClassInfo('ElectrolyteStock', 'hzb_bs_package', False, True, True, True),
-    ClassInfo('ElectrolyteSample', 'hzb_bs_package', False, True, False, True),
-    ClassInfo('BS_Chemical', 'hzb_bs_package', False, False, False, True),
+    ClassInfo(
+        'CoinCellBattery',
+        'Coin Cell',
+        'hzb_bs_assembly_package',
+        False,
+        False,
+        False,
+        True,
+    ),
+    ClassInfo(
+        'ElectrodeMaterial',
+        'Electrode Material',
+        'hzb_bs_package',
+        False,
+        True,
+        True,
+        True,
+    ),
+    ClassInfo(
+        'ElectrodeSheet', 'Electrode Sheet', 'hzb_bs_package', True, False, True, True
+    ),
+    ClassInfo(
+        'ElectrodeSample', 'Electrode Sample', 'hzb_bs_package', True, False, True, True
+    ),
+    ClassInfo(
+        'SeparatorStock', 'Separator Stock', 'hzb_bs_package', True, False, True, True
+    ),
+    ClassInfo(
+        'SeparatorSample',
+        'Separator Sample',
+        'hzb_bs_package',
+        True,
+        False,
+        False,
+        True,
+    ),
+    ClassInfo(
+        'ElectrolyteStock',
+        'Electrolyte Stock',
+        'hzb_bs_package',
+        False,
+        True,
+        True,
+        True,
+    ),
+    ClassInfo(
+        'ElectrolyteSample',
+        'Electrolyte Sample',
+        'hzb_bs_package',
+        False,
+        True,
+        False,
+        True,
+    ),
+    ClassInfo('BS_Chemical', 'Chemical', 'hzb_bs_package', False, False, False, True),
 ]
 class_filter_menus: dict[str, Menu] = create_class_filter_menus(classes)
 
 
 hzb_bat_search_app = App(
-    label='BS ELN',
+    label='Battery Data Space Search',
     path='samples',
-    category='HZB battery space',
+    category='HZB battery data space',
     description='Provides filters to quickly find your samples and experimental data',
     search_quantities=SearchQuantities(
         include=[
@@ -62,7 +108,8 @@ hzb_bat_search_app = App(
     columns=[
         Column(quantity='entry_name', selected=True),
         Column(quantity='entry_type', selected=True),
-        Column(quantity='upload_name', selected=True),
+        Column(quantity='upload_name', title = 'Project name', selected=True),
+        Column(quantity='authors', selected=True),
         Column(quantity='entry_create_time', selected=True),
     ],
     menu=Menu(
@@ -117,6 +164,11 @@ hzb_bat_search_app = App(
                 ],
             ),
             *class_filter_menus.values(),
+            MenuItemTerms(
+                search_quantity='upload_name',
+                title='Project Name',
+                options=5,
+            ),
             MenuItemTerms(search_quantity='results.eln.tags'),
             # MenuItemOptimade(title='Optimade'),
             # MenuItemCustomQuantities(title='Custom Conditions'),

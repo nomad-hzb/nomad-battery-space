@@ -10,6 +10,7 @@ from .helpers import (
     validate_required,
 )
 from .notes import Notes
+from .processing import PrecursorReference, ProcessedFromMixin, SampleProcessing
 from .voila_notebook import BS_VoilaNotebook
 
 __all__ = [
@@ -21,6 +22,9 @@ __all__ = [
     'RectangleGeometry',
     'OtherGeometry',
     'BS_VoilaNotebook',
+    'PrecursorReference',
+    'ProcessedFromMixin',
+    'SampleProcessing',
     'collect_and_store_elements',
     'create_area_quantity',
     'create_millimeter_quantity',
