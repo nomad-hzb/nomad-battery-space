@@ -15,11 +15,12 @@ nav:
       - Install this Plugin: how_to/install_this_plugin.md
       - Use this Plugin: how_to/use_this_plugin.md
       - Contribute to this plugin: how_to/contribute_to_this_plugin.md
-  - Explanation: 
+  - Data Model Explanation:
       - Overview: explanation/overview.md
-      - Reference Model: explanation/reference_model.md
-      - Component Types: explanation/component_types.md
-      - Cell Assembly Types: explanation/cell_assembly_types.md
+      - Materials and Components: explanation/component_types.md
+      - Links between Entries: explanation/reference_model.md
+      - Battery Cells: explanation/cell_assembly_types.md
+      - Measurements: explanation/measurements.md
   - Reference: reference/references.md
 plugins:
   - search

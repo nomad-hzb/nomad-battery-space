@@ -1,120 +1,154 @@
-# Battery Data Schema – Reference Model
+# Links between Entries
 
-## Overview
+Entries in `nomad-battery-space` do not copy data from each other. They **reference** the
+entries they were made from. This page lists the kinds of links and the values that are
+filled in automatically along them.
 
-The `nomad-battery-space` plugin implements a modular schema for documenting battery systems. The design philosophy separates concerns by defining battery components as independent entries that are then referenced by battery samples.
+## Kinds of links
 
-This approach offers several advantages:
+| Link | From → To | Meaning |
+|---|---|---|
+| **chemicals** | Electrode Material, Electrode Sheet, Electrolyte Stock, Separator Stock, Electrode Sample → Chemical | These chemicals were used, with role and amount. |
+| **electrode materials** | Electrode Sheet → Electrode Material | The sheet contains these materials, with role, mass and wt%. |
+| **precursors** + **processing** | Electrode Material → Electrode Material, Electrolyte Stock → Electrolyte Stock, Separator Stock → Separator Stock | This entry was derived from another entry of the same type by processing. |
+| **cut / taken from** | Electrode Sample → Electrode Sheet, Electrolyte Sample → Electrolyte Stock, Separator Sample → Separator Stock | This sample is a piece of that stock; the material is unchanged. |
+| **cell components** | Battery Sample → Electrode Sample, Electrolyte Sample, Separator Sample | These samples were assembled into the cell. |
+| **samples** | Measurement → any sample | This sample was measured. |
 
-- **Reusability**: A single Anode entry can be referenced by multiple battery samples
-- **Data integrity**: Component properties are stored once and updated in one place
-- **Workflow efficiency**: Components can be created independently and reused across experiments
-- **Traceability**: Reference quantities maintain explicit links between batteries and their components
+In the ELN, a link is set with the reference field: choose an existing entry or create a
+new one with the **+** button. In YAML, a reference to an entry in the same upload is
+written as:
 
-## Component Types
-
-The plugin defines four core battery component types as independent ELN entries:
-
-| Component | Key Properties | Purpose |
-|-----------|----------------|---------|
-| **Anode** | mass, geometric area | Negative electrode material documentation |
-| **Cathode** | mass, geometric area, active material mass | Positive electrode material documentation |
-| **Electrolyte** | mass, volume, physical state (Liquid/Solid) | Electrolyte composition and quantity documentation |
-| **Separator** | thickness | Separator material specification |
-
-All components inherit from `ELNSubstance` (from NOMAD's data model), which provides standard substance properties like name, description, and material composition.
-
-## Battery Sample Architecture
-
-### Reference-based Component Model
-
-Battery samples do not embed components directly. Instead, they use **reference quantities** to link to component entries:
-
-```python
-class Components(ArchiveSection):
-    '''Pure UI grouping container inside BatterySample.'''
-    anode_q = Quantity(type=Reference(Anode.m_def))
-    cathode_q = Quantity(type=Reference(Cathode.m_def))
-    electrolyte_q = Quantity(type=Reference(Electrolyte.m_def))
-    separator_q = Quantity(type=Reference(Separator.m_def))
+```yaml
+electrolyte_stock: '../upload/archive/mainfile/LP30.archive.yaml#data'
 ```
 
-This design allows the `BatterySample` class to be extended by specialized cell types (see [Cell Assembly Types](cell_assembly_types.md)) without duplicating component handling logic.
+## Chemicals with amounts
 
-### Creating a Battery Sample
+A `chemicals` entry not only points to a [Chemical](component_types.md#chemical) but also
+records how it was used:
 
-The typical workflow is:
+| Field | Unit | Description |
+|---|---|---|
+| **chemical** | | The referenced chemical. |
+| **role** | | Solvent, precursor, dopant, binder, electrolyte salt, additive or other. Free text is allowed. |
+| **volume** | mL | Volume used. |
+| **mass** | g | Mass used. |
+| **molar concentration** | mol/L | |
+| **mass concentration** | g/L | |
+| **fraction** | %, ppm | Mass, volume or mole fraction. |
+| **mass fraction (wt%)** | | 0 to 100. |
+| **volume fraction (% V/V)** | | |
 
-1. Create component entries independently
+The name of the chemical is filled in automatically, so the list of chemicals in the ELN
+shows readable names.
 
-   - Anode entry with mass and area measurements
-   - Cathode entry with mass and active material specification
-   - Electrolyte entry with mass, volume, and state
-   - Separator entry with thickness measurement
+The same applies to the **electrode materials** of an electrode sheet: each entry points
+to an [Electrode Material](component_types.md#electrode-material) and has a role, a mass
+(mg) and wt%.
 
-2. Create BatterySample and reference components
-   ```yaml
-   data:
-     m_def: nomad_battery_space.schema_packages.hzb_bs_package.BatterySample
-     name: battery_sample_01
-     lab_id: BAT_001
-     components:
-       anode_q: '#anode_01'
-       cathode_q: '#cathode_01'
-       electrolyte_q: '#electrolyte_01'
-       separator_q: '#separator_01'
-   ```
+## Derived from another entry: precursors and processing
 
-### Normalization Behavior
+Some materials are made by modifying an existing material instead of synthesizing a new
+one, for example:
 
-During the normalization phase:
+- an electrode material that is spray-dried into coarse, medium and fine fractions,
+- an electrolyte that is dried or gets an additive,
+- a separator that is coated.
 
-- Component references are validated but not dereferenced (dereferencing occurs during server-side processing)
-- Elemental composition is aggregated from referenced components into `aggregated_elements`
-- Material results are populated in the archive's results section for search and discovery
+The result of such a step is a **new entry of the same type**. The existing material is
+its **precursor** (parent), the new entry is the **derived entry** (child).
 
-All reference values remain unchanged; the references themselves are not modified during normalization.
+!!! tip "Processing is always described in the new entry"
+    Fill in **precursors** and **processing** in the **new** entry, not in the existing
+    one. The processing section answers the question: *how was this entry obtained from
+    its precursor?*
 
-## Extended Battery Cell Types
+    The precursor entry stays as it is. Its own processing section is only used if the
+    precursor itself was derived from another entry.
 
-The plugin provides three specialized battery cell sub-types that extend `BatterySample`:
-
-- **CoinCellBattery**: Adds coin cell specifications (case ID, crimp method, pressure)
-- **PouchCellBattery**: Adds pouch cell geometry (cathode dimensions, number of layers, pouch envelope)
-- **CylindricalCellBattery**: Adds cylindrical cell specs (case ID, cylindrical dimensions)
-
-See [Cell Assembly Types](cell_assembly_types.md) for detailed specifications of each type.
-
-## Data Model Example
-
-```
-User Creates:
-├── Anode [anode_01]
-├── Cathode [cathode_01]
-├── Electrolyte [electrolyte_01]
-├── Separator [separator_01]
-└── BatterySample [battery_sample_01]
-     └── Components (grouping section)
-         ├── anode_q → Reference to anode_01
-         ├── cathode_q → Reference to cathode_01
-         ├── electrolyte_q → Reference to electrolyte_01
-         └── separator_q → Reference to separator_01
+```mermaid
+flowchart LR
+    P["NMC111_200um<br/>(precursor, unchanged)"]
+    C["NMC111_spray_dried_fine<br/>precursors: NMC111_200um<br/>processing: spray drying, sieving"]
+    P -- "is precursor of" --> C
 ```
 
-## Testing Strategy
+### Workflow in the ELN
 
-Because plugin tests run without the NOMAD processing backend:
+1. Make sure the existing material has an entry, e.g. `NMC111_200um`. Do not change it.
+2. Create a **new entry of the same type**, e.g. a new Electrode Material
+   `NMC111_spray_dried_fine`.
+3. In the new entry, add the existing material under **precursors** by selecting it from
+   the list. Entering its lab ID also works, with the same limitations as for
+   [measurements](measurements.md#which-samples-can-be-measured).
+4. In the new entry, describe under **processing** what was done to get from the
+   precursor to this material: name, date, steps and instruments.
+5. Fill in the properties of the new material as usual, e.g. volume and weights.
 
-- Full reference dereferencing is not supported during testing
-- You can validate the structure and presence of references
-- You can check reference values (the reference strings themselves)
-- You can verify component metadata after normalization
+If one material is split into several results, e.g. a coarse, a medium and a fine
+fraction, create one new entry per result. Each of them has the same precursor and its
+own processing.
 
-Tests focus on:
+If a material goes through several steps one after another, create one entry per
+intermediate you want to keep, e.g. to measure it. Each entry has the previous one as
+precursor. If the intermediates are not needed, one entry with several processing steps
+is enough.
 
-- Reference quantity presence and correct types
-- Metadata validation (e.g. name, lab_id)
-- Correct normalization of aggregated fields
-- Enforced required field validation
+```yaml
+data:
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.ElectrodeMaterial
+  name: NMC111_spray_dried_fine
+  precursors:
+    - reference: '../upload/archive/mainfile/NMC111_200um.archive.yaml#data'
+  processing:
+    name: spray drying
+    steps:
+      - name: spray drying
+      - name: sieving, fine fraction
+```
 
-See test files for complete examples of the testing approach.
+Because the result keeps its type, it can be used everywhere the original could: a
+spray-dried electrode material can go into an electrode sheet, and each intermediate can
+be measured on its own.
+
+The elements of the precursor are taken over automatically, see
+[Aggregated elements](#aggregated-elements).
+
+**Processing vs. cut from:** *processing* changes the material (new properties, new
+entry of the same type). *Cut from* takes a piece of an unchanged stock to use it in a
+cell (from stock level to sample level).
+
+## Values filled in automatically
+
+When an entry is saved, some values are taken from the entries it references. They are
+only filled if the field is still empty, unless noted otherwise.
+
+| Value | Source | Applies to |
+|---|---|---|
+| **aggregated elements** (always recalculated) | All referenced entries, see below | All entry types except Chemical and Measurement |
+| **mass**, **volume** | `product_weight` and `product_volume` of the product info | All entries with product info and volume or dimensions |
+| **thickness** | Electrode sheet | Electrode Sample |
+| **thickness** | Separator stock | Separator Sample |
+| **area** | Diameter, or length × width | Circle and rectangle geometry |
+| **chemical / material name** | Referenced chemical or electrode material | Chemicals and electrode material lists |
+| **pressure** (cleared) | Set to empty for manual crimping | Coin Cell |
+
+### Aggregated elements
+
+Every entry collects the chemical elements of everything it was made from:
+
+- its own elemental composition,
+- the referenced chemicals,
+- the referenced electrode materials (electrode sheet),
+- the precursors,
+- the stock it was cut from,
+- for a cell: all its electrodes, separator and electrolyte.
+
+The result is stored in **aggregated elements** and in the search index of NOMAD. A cell
+with an NMC111 cathode can therefore be found in the *HZB sample search app* by
+filtering for Ni, Mn or Co, although these elements were only entered in the electrode
+material.
+
+Referenced entries contribute their own aggregated elements, so the elements are passed
+on through the whole chain.
