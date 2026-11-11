@@ -2,6 +2,21 @@
 
 All notable changes to this plugin will be documented in this file.
 
+## [0.2.5] - 2026-11-11
+
+### Changed
+- **Documentation**: Rewritten for the current data model (chemical, stocks, samples, battery cells, measurements); the descriptions of the deprecated `Anode`, `Cathode`, `Electrolyte`, `Separator`, `PouchCellBattery` and `CylindricalCellBattery` classes were removed
+  - New pages: links between entries (incl. precursors/processing workflow), measurements, reference of entry types and shared sections
+  - Coin cell setup visualization and schema class diagram included in the overview
+  - Theme aligned with the current NOMAD documentation (Material for MkDocs 9, light/dark mode, NOMAD logo); removed outdated header override and the `polyfill.io` script
+- Dev dependencies: `mkdocs-material` is no longer pinned to 8.1.1; added `mkdocs-glightbox`
+
+### Fixed
+- `SeparatorSample` no longer overwrites its own thickness with the thickness of its separator stock; the stock thickness is only used if no thickness is set (same as `ElectrodeSample`)
+
+### Removed
+- Tests and test data for the deprecated data model; coin cell tests updated to the current model, new tests for element aggregation along the preparation chain and for thickness inheritance
+
 ## [0.2.4] - 2026-10-30
 
 ### Added
