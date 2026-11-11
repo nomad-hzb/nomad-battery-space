@@ -1,5 +1,0 @@
-data:
-  m_def: nomad_battery_space.schema_packages.hzb_bs_package.Cathode
-  name: cathode_01
-  mass: 3.4
-  mass_active_material: 2.1
