@@ -765,17 +765,18 @@ class ElectrolyteStock(ELNSubstance, ProcessedFromMixin):
         },
         a_template=dict(
             substance_identifiers=dict(),
+            state="Liquid", # TODO: remove from here after the issue is fixed @FAIRmat
         ),
     )
 
     StateEnum = Enum(["Liquid", "Solid"])
     state = Quantity(
-        type=StateEnum,
-        default='Liquid',
+        type=StateEnum,        
         description="Physical state of the electrolyte stock.",
         a_eln={
             "component": "EnumEditQuantity",
             "label": "state",
+            "default": "Liquid",
         }
     )
     precursors = SubSection(
