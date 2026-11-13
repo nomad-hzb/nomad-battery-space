@@ -62,6 +62,7 @@ if TYPE_CHECKING:
     from nomad.datamodel.datamodel import EntryArchive
     from structlog.stdlib import BoundLogger
 
+from .categories import BatteryDataSpaceCategory
 from .utilities import (
     BS_VoilaNotebook,  # noqa: F401 - Re-export for package registration
     CircleGeometry,  # noqa: F401 - Re-export for backward compatibility with old data
@@ -96,6 +97,7 @@ class BS_Chemical(ELNSubstance):
     electrolyte stocks.
     """
     m_def = Section(
+        categories=[BatteryDataSpaceCategory],
         links=['http://purl.obolibrary.org/obo/CHEBI_24431'],  
         label="HZB Battery: Chemical",
         a_eln={
@@ -386,6 +388,7 @@ class ElectrodeMaterial(ELNSubstance, ProcessedFromMixin):
     by processing (e.g. spray drying), see `precursors` and `processing`.
     """
     m_def = Section(
+        categories=[BatteryDataSpaceCategory],
         label="HZB Battery: Electrode Material",
         a_eln={
             "label": "HZB Battery: Electrode Material",
@@ -598,6 +601,7 @@ class ElectrodeSheet(ELNSubstance):
     current collectors, additives) with their individual roles and masses.
     """
     m_def = Section(
+        categories=[BatteryDataSpaceCategory],
         links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_0f007072_a8dd_4798_b865_1bf9363be627'],
         label="HZB Battery: Electrode Sheet",
         a_eln={
@@ -739,6 +743,7 @@ class ElectrolyteStock(ELNSubstance, ProcessedFromMixin):
     by processing (e.g. drying, adding an additive), see `precursors` and `processing`.
     """
     m_def = Section(
+        categories=[BatteryDataSpaceCategory],
         links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_fb0d9eef_92af_4628_8814_e065ca255d59'],
         label="HZB Battery: Electrolyte Stock",
         a_eln={
@@ -873,6 +878,7 @@ class SeparatorStock(ELNSubstance, ProcessedFromMixin):
     by processing (e.g. coating), see `precursors` and `processing`.
     """
     m_def = Section(
+        categories=[BatteryDataSpaceCategory],
         links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_331e6cca_f260_4bf8_af55_35304fe1bbe0'],
         label="HZB Battery: Separator Stock",
         a_eln={
@@ -986,6 +992,7 @@ class ElectrodeSample(ELNSubstance):
     The geometry subsection supports multiple shape types (Circle, Rectangle, Other).
     """
     m_def = Section(
+        categories=[BatteryDataSpaceCategory],
         links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_0f007072_a8dd_4798_b865_1bf9363be627'],
         label="HZB Battery: Electrode Sample",
         a_eln={
@@ -1093,6 +1100,7 @@ class ElectrolyteSample(ELNSubstance):
     for use in a specific battery cell.
     """
     m_def = Section(
+        categories=[BatteryDataSpaceCategory],
         links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_fb0d9eef_92af_4628_8814_e065ca255d59'],
         label="HZB Battery: Electrolyte Sample",
         a_eln={
@@ -1175,6 +1183,7 @@ class SeparatorSample(ELNSubstance):
     battery cell assembly.
     """
     m_def = Section(
+        categories=[BatteryDataSpaceCategory],
         links=['https://w3id.org/emmo/domain/electrochemistry#electrochemistry_331e6cca_f260_4bf8_af55_35304fe1bbe0'],
         label="HZB Battery: Separator Sample",
         a_eln={
@@ -1272,6 +1281,7 @@ class BatterySample(ELNSubstance):
     battery implementations (e.g., CoinCellBattery). 
     '''
     m_def = Section(
+        categories=[BatteryDataSpaceCategory],
         links=['https://w3id.org/emmo/domain/battery#battery_68ed592a_7924_45d0_a108_94d6275d57f0'],
         label="HZB Battery: Generic Sample",
         a_eln={
