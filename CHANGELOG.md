@@ -2,6 +2,36 @@
 
 All notable changes to this plugin will be documented in this file.
 
+## [0.2.4] - 2026-10-30
+
+### Added
+- **Search App**: 
+  -  New filter `Project Name` 
+  -  `authors` column in search results
+- **Precursor/processing relation for derived samples**: `ElectrodeMaterial`, `ElectrolyteStock` and `SeparatorStock` can now be derived from other entries of the same type by processing (e.g. spray drying)
+  - New `precursors` subsection with typed references (`ElectrodeMaterialReference`, `ElectrolyteStockReference`, `SeparatorStockReference`)
+  - New `processing` subsection (`SampleProcessing`) describing steps and instruments
+  - Elements of precursors are included in `aggregated_elements`
+- **Processing utilities package**: New `hzb_utilities_processing` schema package entry point 
+- **Measurement entry**: New `hzb_bs_measurement` schema package with `BS_Measurement` ("HZB Battery: Measurement")
+  - Raw data files of any format (e.g. `.dta`, `.nxs`) can be uploaded; they are stored, not parsed
+  - Links to one or more measured samples via `BS_SampleReference`, which accepts all battery samples (by reference or by sample ID)
+- `ElectrolyteStock` and `SeparatorStock`: `elemental_composition` and `pure_substance` are now added to the ELN
+- **Mass/volume from product info**: Mass and volume from `product_info` are copied into `dimensions_and_weights` / `volume_and_weights` if not set
+- **SeparatorStock synthesis**: New `synthesis` subsection (`MaterialSynthesisMethod`)
+- **Ontology links**: Links to CHEBI, PATO, EMMO electrochemistry and TFSCO terms for several classes and quantities
+- **Documentation**: Coin cell setup visualization (`docs/diagrams/Coincell_setup_visualization.png`)
+
+### Changed
+- **Compatibility with NOMAD 2.0.0**
+- **Search App**: Renamed from "BS ELN" to "Battery Data Space Search"; the `upload_name` column is shown as "Project name"
+- **Search App**: Filter groups are named by human-readable labels (e.g. "Electrode Material" instead of "ElectrodeMaterial Properties"); simplified creation of class filter menus
+- `ElectrodeSample` only inherits the thickness of its electrode sheet if no thickness is set yet
+- Dependencies: Python >= 3.11 required, `pymatgen-core>=2026.10.16` constraint
+
+### Fixed
+- Repository URL in `pyproject.toml` now points to `nomad-hzb/nomad-battery-space`
+
 ## [0.2.3] - 2026-08-04
 
 ### Added

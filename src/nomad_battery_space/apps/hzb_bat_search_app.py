@@ -83,9 +83,9 @@ class_filter_menus: dict[str, Menu] = create_class_filter_menus(classes)
 
 
 hzb_bat_search_app = App(
-    label='BS ELN',
+    label='Battery Data Space Search',
     path='samples',
-    category='HZB battery space',
+    category='HZB battery data space',
     description='Provides filters to quickly find your samples and experimental data',
     search_quantities=SearchQuantities(
         include=[
@@ -108,7 +108,7 @@ hzb_bat_search_app = App(
     columns=[
         Column(quantity='entry_name', selected=True),
         Column(quantity='entry_type', selected=True),
-        Column(quantity='upload_name', selected=True),
+        Column(quantity='upload_name', title = 'Project name', selected=True),
         Column(quantity='authors', selected=True),
         Column(quantity='entry_create_time', selected=True),
     ],
@@ -166,7 +166,7 @@ hzb_bat_search_app = App(
             *class_filter_menus.values(),
             MenuItemTerms(
                 search_quantity='upload_name',
-                title='Upload Name',
+                title='Project Name',
                 options=5,
             ),
             MenuItemTerms(search_quantity='results.eln.tags'),

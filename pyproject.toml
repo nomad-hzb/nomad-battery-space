@@ -13,8 +13,8 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 name = "nomad-battery-space"
-description = "A schema package plugin for data space @HZB"
-version = "0.2.3"
+description = "A schema package plugin for battery data space @HZB"
+version = "0.2.4"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/nomad-hzb/battery-space"
+Repository = "https://github.com/nomad-hzb/nomad-battery-space"
 
 [project.optional-dependencies]
 dev = [
@@ -139,10 +139,12 @@ voila_finder_app = "nomad_battery_space.apps:voila_finder_app_entry_point"
 
 hzb_bs_package = "nomad_battery_space.schema_packages:hzb_bs_package"
 hzb_bs_assembly_package = "nomad_battery_space.schema_packages:hzb_bs_assembly_package"
+hzb_bs_measurement_package = "nomad_battery_space.schema_packages:hzb_bs_measurement_package"
 hzb_utilities_voila_notebook = "nomad_battery_space.schema_packages:hzb_utilities_voila_notebook"
 hzb_utilities_notes = "nomad_battery_space.schema_packages:hzb_utilities_notes"
 hzb_utilities_geometry = "nomad_battery_space.schema_packages:hzb_utilities_geometry"
 hzb_utilities_dimensions = "nomad_battery_space.schema_packages:hzb_utilities_dimensions"
+hzb_utilities_processing = "nomad_battery_space.schema_packages:hzb_utilities_processing"
 
 [tool.cruft]
 # Avoid updating workflow files, this leads to permissions issues
