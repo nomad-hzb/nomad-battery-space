@@ -2,36 +2,41 @@ import os
 
 import pytest
 from nomad.client import normalize_all, parse
+from nomad.datamodel import EntryArchive, EntryMetadata
+
+from nomad_battery_space.schema_packages.hzb_bs_assembly_package import (
+    CoinCellBattery,
+)
 
 
-@pytest.mark.skip(reason="Deprecated: requires update to new data model")
 def test_coin_cell_battery():
-    """Test CoinCellBattery schema with manual case crimping."""
-    path = os.path.join("tests", "data", "coin_cell.archive.yaml")
+    """Manual crimping clears the pressure."""
+    path = os.path.join('tests', 'data', 'coin_cell.archive.yaml')
 
     archive = parse(path)[0]
     normalize_all(archive)
 
     data = archive.data
 
-    # Check entry type
-    assert data.m_def.name == "CoinCellBattery"
-
-    # Basic metadata
-    assert data.lab_id == "CC_001"
-    assert data.name == "coin_cell_01"
-    assert data.case_id == "CR2032"
-    assert data.case_crimp == "manual"
-    
-    # Verify normalization: manual crimp should set pressure to None
+    assert isinstance(data, CoinCellBattery)
+    assert data.lab_id == 'CC_001'
+    assert data.name == 'coin_cell_01'
+    assert data.case_id == '2032'
+    assert data.case_crimp == 'manual'
     assert data.pressure is None
 
-    # Check components
-    assert data.components is not None
-    assert hasattr(data.components, "anode_q")
-    assert hasattr(data.components, "cathode_q")
-    assert hasattr(data.components, "electrolyte_q")
-    assert hasattr(data.components, "separator_q")
 
-    # Check sample identifiers
-    assert data.sample_identifiers.sample_id == "CC_ABC123"
+def test_automatic_crimping_keeps_pressure():
+    cell = CoinCellBattery(
+        lab_id='CC_002', name='coin_cell_02', case_crimp='automatic', pressure=0.8
+    )
+    normalize_all(EntryArchive(data=cell, metadata=EntryMetadata()))
+
+    assert cell.pressure.magnitude == 0.8
+
+
+def test_battery_id_is_required():
+    cell = CoinCellBattery(name='coin_cell_03')
+
+    with pytest.raises(ValueError, match='battery ID'):
+        cell.normalize(EntryArchive(data=cell, metadata=EntryMetadata()), None)

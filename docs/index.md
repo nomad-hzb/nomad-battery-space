@@ -1,18 +1,23 @@
 # Welcome to the `nomad-battery-space` documentation
 
-A schema package plugin for data space @HZB
+A NOMAD plugin for documenting battery research at HZB.
 
 ## Introduction
 
-!!! note "Attention"
-    TODO
+`nomad-battery-space` provides ELN entries for the whole preparation chain of a battery
+cell: from purchased chemicals, via synthesized electrode materials, cast electrode
+sheets, electrolyte and separator stocks, to the electrode, electrolyte and separator
+samples that are assembled into a cell. Measurement data can be attached to every step.
+
+All entries are linked, so each cell can be traced back to the materials it was made
+from, and cells can be searched by the chemical elements of their components.
 
 <div markdown="block" class="home-grid">
 <div markdown="block">
 
 ### Tutorial
 
-TODO
+Step-by-step guides for registering samples in the HZB NOMAD Oasis:
 
 - [Tutorial](tutorial/tutorial.md)
 
@@ -31,22 +36,23 @@ How-to guides provide step-by-step instructions for a wide range of tasks, with 
 
 <div markdown="block">
 
-### Explanation
+### Data Model Explanation
 
-The explanation sections provides background knowledge on this plugin:
+How the entries of this plugin are structured and connected:
 
 - [Overview](explanation/overview.md)
-- [Component Types](explanation/component_types.md)
-- [Battery Sample Model](explanation/reference_model.md)
-- [Cell Assembly Types](explanation/cell_assembly_types.md)
+- [Materials and Components](explanation/component_types.md)
+- [Links between Entries](explanation/reference_model.md)
+- [Battery Cells](explanation/cell_assembly_types.md)
+- [Measurements](explanation/measurements.md)
 
 </div>
 <div markdown="block">
 
 ### Reference
 
-The reference [section](reference/references.md) includes all CLI commands and arguments, all configuration options,
-the possible schema annotations and their arguments, and a glossary of used terms.
+The [reference](reference/references.md) lists all entry types, shared sections, schema
+packages and apps of this plugin.
 
 </div>
 </div>

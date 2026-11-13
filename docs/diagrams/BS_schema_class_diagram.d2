@@ -133,16 +133,16 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
 
       battery ID: string
       battery name: string
-      procedure scetch: File
+      procedure sketch: File
       notes: Free text
       aggregated elements: "[]element"
 
-      working electrode (reference): Electrode Sample
-      counter electrode (reference): Electrode Sample
-      reference electrode (reference): Electrode Sample
+      working electrode (reference): electrode sample
+      counter electrode (reference): electrode sample
+      reference electrode (reference): electrode sample
 
-      separator(reference): SeparatorSample
-      electrolyte(reference): ElectrolyteSample
+      separator(reference): separator sample
+      electrolyte(reference): electrolyte sample
     }
 
     CoinCell: Coin Cell {
@@ -150,9 +150,9 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       icon: https://mylikeled.com/wp-content/uploads/2023/11/button-Battery.jpg
       icon.near: top-left
 
-      case-id: (2025|2032|operando)
+      case-id: Free text
       case-crimp: (manual|automatic)
-      pressure: mPa
+      pressure: MPa
     }
     PouchCell: Pouch Cell {
       shape: class
@@ -241,8 +241,10 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       yield: %
 
       synthesis (section): synthesis method
+      precursors (reference): "[]electrode material"
+      processing (section): processing method
       volume and weights (section): ""
-      pure substance (reference): PubChem substance
+      pure substance (section): PubChem substance
       chemicals (reference): "[]chemical"
       product info / supplier (section): ""
     }
@@ -254,7 +256,7 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
 
       electrode material: reference
       role: string
-      mass: g
+      mass: mg
       wt%: %
     }
   }
@@ -287,7 +289,10 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       substance id: string
       state: (liquid | solid)
 
+      precursors (reference): "[]electrolyte stock"
+      processing (section): processing method
       volume and weights (section): ""
+      pure substance (section): PubChem substance
       chemicals (reference): "[]chemical"
       product info / supplier (section): ""
     }
@@ -321,7 +326,11 @@ Env: NOMAD Battery Space: 3-Tier Electrode Setup {
       substance name: string
       substance id: string
 
+      synthesis (section): synthesis method
+      precursors (reference): "[]separator stock"
+      processing (section): processing method
       dimensions and weights (section): ""
+      pure substance (section): PubChem substance
       chemicals (reference): "[]chemical"
       product info / supplier (section): ""
     }
