@@ -5,7 +5,7 @@ line needs to be added to the `pyproject.toml` file of the Oasis repo:
 ```
 [project.optional-dependencies]
 plugins = [
- 'nomad-battery-space @ git+https://https://github.com/nomad-hzb/nomad-battery-space.git',
+ 'nomad-battery-space @ git+https://github.com/nomad-hzb/nomad-battery-space.git',
 ]
 ```
 

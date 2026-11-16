@@ -81,6 +81,7 @@ voila_finder_app = App(
         ),
         # Column(quantity=f'data.tags#{schema_name}'),
     ],
+
     rows=Rows(
         actions=RowActions(
             items=[
@@ -95,6 +96,8 @@ voila_finder_app = App(
         details=RowDetails(),
         selection=RowSelection(),
     ),
+
+ 
     # Controls the default dashboard shown in the search interface
     # dashboard=Dashboard(
     #     widgets=[

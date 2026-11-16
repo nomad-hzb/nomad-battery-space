@@ -1,6 +1,6 @@
 # nomad-battery-space
 
-A schema package plugin for data space @HZB
+A schema package plugin for battery data space @HZB
 
 This `nomad` plugin was generated with `Cookiecutter` along with `@nomad`'s [`cookiecutter-nomad-plugin`](https://github.com/FAIRmat-NFDI/cookiecutter-nomad-plugin) template.
 
@@ -8,8 +8,8 @@ This `nomad` plugin was generated with `Cookiecutter` along with `@nomad`'s [`co
 
 If you want to develop locally this plugin, clone the project and in the plugin folder, create a virtual environment (you can use Python 3.10, 3.11 or 3.12):
 ```sh
-git clone https://github.com/nomad-hzb/battery-space.git
-cd battery-space
+git clone git@github.com:nomad-hzb/nomad-battery-space.git
+cd nomad-battery-space
 python3.11 -m venv .pyenv
 . .pyenv/bin/activate
 ```
@@ -116,3 +116,4 @@ We use [`cruft`](https://github.com/cruft/cruft) to update the project based on 
 | Name | E-mail     |
 |------|------------|
 | Svetlana Grinman | [svetlana.grinman@helmholtz-berlin.de](mailto:svetlana.grinman@helmholtz-berlin.de)
+| Marcus Lewerenz | [marcus.lewerenz@helmholtz-berlin.de](mailto:marcus.lewerenz@helmholtz-berlin.de)

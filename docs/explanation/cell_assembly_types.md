@@ -1,144 +1,98 @@
-# Battery Cell Assembly Types
+# Battery Cells
 
-This document describes the three specialized battery cell types available in the `nomad-battery-space` plugin. Each type extends the base `BatterySample` class with geometry and specification fields specific to that cell form factor.
+A battery cell entry combines the samples that were assembled into one cell: electrodes,
+separator and electrolyte.
 
-## Overview
+There are two kinds of cell entries:
 
-All battery cell types share common base properties from `BatterySample`:
+- the generic [Battery Sample](#battery-sample), which works for every cell format, and
+- [specialized cell types](#specialized-cell-types) for specific formats. They have all
+  fields of the battery sample plus fields for their format.
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| **battery name** | string | Yes | Descriptive name of the battery entry |
-| **lab_id** | string | Yes | Lab-specific identifier (must be unique within lab) |
-| **description** | string | No | Detailed description of the battery |
-| **datetime** | datetime | No | Creation/assembly date and time |
-| **components** | section | No | References to Anode, Cathode, Electrolyte, and Separator |
-| **aggregated elements** | section | No | Aggregated elementary and compound components |
+## Battery Sample
 
-All specialized types inherit these properties and add type-specific fields for geometry and assembly parameters.
+**ELN label:** HZB Battery: Generic Sample · **Class:** `BatterySample`
+
+The generic cell entry, used for any cell format. It is also the base of all
+[specialized cell types](#specialized-cell-types). Use it for formats that have no
+specialized type yet.
+
+| Field | Required | Description |
+|---|---|---|
+| **battery ID** (`lab_id`) | Yes | Human-readable ID of the cell, unique at least within the lab. |
+| **battery name** (`name`) | Yes | Name of the entry. |
+| **datetime** | | Date and time of assembly. |
+| **working electrode** | | The [Electrode Sample](component_types.md#electrode-sample) used as working electrode. |
+| **counter electrode** | | The [Electrode Sample](component_types.md#electrode-sample) used as counter electrode. |
+| **reference electrode** | | Optional, for three-electrode setups. |
+| **separator** | | The [Separator Sample](component_types.md#separator-sample). |
+| **electrolyte** | | The [Electrolyte Sample](component_types.md#electrolyte-sample). |
+| **procedure sketch** | | Photo or PDF of the assembly procedure or a technical drawing. |
+| **aggregated elements** | | Filled automatically from all components, see [Aggregated elements](reference_model.md#aggregated-elements). |
+| **product info / supplier** | | For bought cells. |
+| **sample identifiers** | | Further identifiers (collapsed by default). |
+| **notes** | | Free text. |
+
+Electrodes are named by their function in the measurement (working, counter, reference),
+not by their polarity: whether the working electrode is the anode or the cathode depends
+on the setup.
+
+```yaml
+data:
+  m_def: nomad_battery_space.schema_packages.hzb_bs_package.BatterySample
+  lab_id: BAT_001
+  name: half_cell_NMC111_01
+  datetime: 2026-01-15T10:30:00Z
+  working_electrode: '../upload/archive/mainfile/NMC111_sheet_01_disc_03.archive.yaml#data'
+  counter_electrode: '../upload/archive/mainfile/Li_foil_disc_01.archive.yaml#data'
+  separator: '../upload/archive/mainfile/Celgard_2400_disc_01.archive.yaml#data'
+  electrolyte: '../upload/archive/mainfile/LP30_cell_01.archive.yaml#data'
+```
 
 ---
 
-## Coin Cell Battery
+## Specialized cell types
 
-For coin-shaped battery cells following IEC 60086 standardization.
+A specialized cell type extends the [Battery Sample](#battery-sample) with fields for
+one cell format, e.g. the case or the crimping of a coin cell. Electrodes, separator,
+electrolyte and the aggregation of elements work the same for all of them.
 
-### Entry Type: `CoinCellBattery`
+Currently available:
 
-### Specific Properties
+| Cell type | ELN label | Class |
+|---|---|---|
+| [Coin Cell](#coin-cell) | HZB Battery: Coin Cell | `CoinCellBattery` |
 
-| Property | Type | Unit | Required | Description |
-|----------|------|------|----------|-------------|
-| **case_id** | string | — | No | IEC 60086 code (e.g., "CR2032", "CR2025") |
-| **case_crimp** | enum | — | No | Assembly method: "manual" or "hydraulic" |
-| **pressure** | float | MPa | No | Crimping pressure (hydraulic only) |
+More cell types will be added.
 
-### Example Data
+### Coin Cell
+
+**ELN label:** HZB Battery: Coin Cell · **Class:** `CoinCellBattery`
+
+A coin cell. It has all fields of the [Battery Sample](#battery-sample) plus:
+
+| Field | Unit | Description |
+|---|---|---|
+| **case-id** | | Case code: the first two digits are the diameter in mm, the last two the height in 0.1 mm. Suggestions: `2032` (20 mm × 3.2 mm), `2025` (20 mm × 2.5 mm), `operando` (self-built cells for in-situ measurements). Other values are allowed. |
+| **case-crimp** | | `manual` (default) or `automatic`. |
+| **pressure** | MPa | Crimping pressure. Only used for automatic crimping; for manual crimping it is cleared on save. |
 
 ```yaml
 data:
   m_def: nomad_battery_space.schema_packages.hzb_bs_assembly_package.CoinCellBattery
   lab_id: CC_001
-  name: coin_cell_cr2032_01
-  datetime: 2024-01-15T10:30:00Z
-  description: Test coin cell for electrochemical performance evaluation
-  case_id: CR2032
-  case_crimp: manual
-  components:
-    anode_q: '#anode_01'
-    cathode_q: '#cathode_01'
-    electrolyte_q: '#electrolyte_01'
-    separator_q: '#separator_01'
-  sample_identifiers:
-    sample_id: CC_ABC123
+  name: coin_cell_01
+  datetime: 2026-01-15T10:30:00Z
+  case_id: '2032'
+  case_crimp: automatic
+  pressure: 0.8
+  working_electrode: '../upload/archive/mainfile/NMC111_sheet_01_disc_03.archive.yaml#data'
+  counter_electrode: '../upload/archive/mainfile/Li_foil_disc_01.archive.yaml#data'
+  separator: '../upload/archive/mainfile/Celgard_2400_disc_01.archive.yaml#data'
+  electrolyte: '../upload/archive/mainfile/LP30_cell_01.archive.yaml#data'
 ```
 
----
+## Related pages
 
-## Pouch Cell Battery
-
-For single-unit flexible packet battery cells.
-
-### Entry Type: `PouchCellBattery`
-
-### Specific Properties
-
-| Property | Type | Unit | Required | Description |
-|----------|------|------|----------|-------------|
-| **cathode_length** | float | mm | Yes | Length of cathode electrode |
-| **cathode_width** | float | mm | Yes | Width of cathode electrode |
-| **number_of_layers** | int | — | Yes | Number of anode-cathode layer pairs (stack count) |
-| **pouch_length** | float | mm | No | External length of pouch envelope |
-| **pouch_width** | float | mm | No | External width of pouch envelope |
-| **pouch_height** | float | mm | No | Thickness of pouch package |
-
-### Example Data
-
-```yaml
-data:
-  m_def: nomad_battery_space.schema_packages.hzb_bs_assembly_package.PouchCellBattery
-  lab_id: PC_001
-  name: pouch_cell_01
-  datetime: 2024-02-10T14:45:00Z
-  description: Multi-layer pouch cell for high-capacity testing
-  cathode_length: 50.5
-  cathode_width: 40.0
-  number_of_layers: 3
-  pouch_length: 60.0
-  pouch_width: 50.0
-  pouch_height: 5.5
-  components:
-    anode_q: '#anode_01'
-    cathode_q: '#cathode_01'
-    electrolyte_q: '#electrolyte_01'
-    separator_q: '#separator_01'
-  sample_identifiers:
-    sample_id: PC_DEF456
-```
-
----
-
-## Cylindrical Cell Battery
-
-For cylindrical form factor battery cells (18650, 21700, 32650, etc.).
-
-### Entry Type: `CylindricalCellBattery`
-
-### Specific Properties
-
-| Property | Type | Unit | Required | Description |
-|----------|------|------|----------|-------------|
-| **case_id** | string | — | No | Standardized cylindrical cell code (e.g., "18650", "21700") |
-| **cathode_length** | float | mm | No | Length of cathode electrode |
-| **cathode_width** | float | mm | No | Width of cathode electrode |
-| **cylindrical_length** | float | mm | No | Total length of cylindrical cell |
-| **cylindrical_diameter** | float | mm | No | Outer diameter of cylindrical cell |
-
-### Example Data
-
-```yaml
-data:
-  m_def: nomad_battery_space.schema_packages.hzb_bs_assembly_package.CylindricalCellBattery
-  lab_id: CYL_001
-  name: cylindrical_cell_18650_01
-  datetime: 2024-03-05T09:20:00Z
-  description: Cylindrical cell for high-energy-density application
-  case_id: '18650'
-  cathode_length: 45.0
-  cathode_width: 42.0
-  cylindrical_length: 65.0
-  cylindrical_diameter: 18.0
-  components:
-    anode_q: '#anode_01'
-    cathode_q: '#cathode_01'
-    electrolyte_q: '#electrolyte_01'
-    separator_q: '#separator_01'
-```
-
----
-
-## Related Documentation
-
-- See [Component Types](component_types.md) for properties of referenced components
-- See [Reference Model](reference_model.md) for the reference system
-- See [Tutorial](../tutorial/tutorial.md) for step-by-step assembly examples
+- [Materials and Components](component_types.md): the samples referenced by a cell.
+- [Measurements](measurements.md): attaching measurement data to a cell.

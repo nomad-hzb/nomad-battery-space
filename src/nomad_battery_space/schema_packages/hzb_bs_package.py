@@ -765,17 +765,18 @@ class ElectrolyteStock(ELNSubstance, ProcessedFromMixin):
         },
         a_template=dict(
             substance_identifiers=dict(),
+            state="Liquid", # TODO: remove from here after the issue is fixed @FAIRmat
         ),
     )
 
     StateEnum = Enum(["Liquid", "Solid"])
     state = Quantity(
-        type=StateEnum,
-        default='Liquid',
+        type=StateEnum,        
         description="Physical state of the electrolyte stock.",
         a_eln={
             "component": "EnumEditQuantity",
             "label": "state",
+            "default": "Liquid",
         }
     )
     precursors = SubSection(
@@ -1242,12 +1243,14 @@ class SeparatorSample(ELNSubstance):
                 {'mass': 'product_weight'},
             )
         
-        # Parent-override: Copy thickness from parent stock
+        # Copy thickness from parent stock only if child has no own thickness
         if self.separator_stock and self.separator_stock.dimensions_and_weights:
-            if not self.dimensions_and_weights:
-                self.dimensions_and_weights = DimensionsAndWeights()
-            if self.separator_stock.dimensions_and_weights.thickness:
-                self.dimensions_and_weights.thickness = self.separator_stock.dimensions_and_weights.thickness
+            parent_thickness = self.separator_stock.dimensions_and_weights.thickness
+            if parent_thickness is not None:
+                if not self.dimensions_and_weights:
+                    self.dimensions_and_weights = DimensionsAndWeights()
+                if self.dimensions_and_weights.thickness is None:
+                    self.dimensions_and_weights.thickness = parent_thickness
         
         # Normalize referenced components
         if self.separator_stock:

@@ -83,7 +83,7 @@ class CoinCellBattery(BatterySample):
         },
         a_template=dict(
             substance_identifiers=dict(),
-            case_crimp="manual",
+            case_crimp="manual", # TODO: remove from here after the issue is fixed @FAIRmat
         ),
     )
 
@@ -114,9 +114,11 @@ class CoinCellBattery(BatterySample):
     CaseCrimpEnum = Enum(["manual", "automatic"])
     case_crimp = Quantity(
         type=CaseCrimpEnum,
-        default='manual',
         description="Method used to seal/crimp the coin cell case.",
-        a_eln={"component": "EnumEditQuantity", "label": "case-crimp"}
+        a_eln={"component": "EnumEditQuantity", 
+               "label": "case-crimp",   
+               "default": "manual",
+            }
     )
 
     pressure = Quantity(
