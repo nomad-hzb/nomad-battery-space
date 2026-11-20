@@ -25,6 +25,8 @@ maintainers = [
 ]
 license = { file = "LICENSE" }
 dependencies = [
+    "httpx",
+    "markdown-it-py",
     "nomad-lab>=1.4.0",
     "nomad-baseclasses @ git+https://github.com/nomad-hzb/nomad-baseclasses.git@v1.0.1",
 ]
@@ -145,6 +147,9 @@ hzb_utilities_notes = "nomad_battery_space.schema_packages:hzb_utilities_notes"
 hzb_utilities_geometry = "nomad_battery_space.schema_packages:hzb_utilities_geometry"
 hzb_utilities_dimensions = "nomad_battery_space.schema_packages:hzb_utilities_dimensions"
 hzb_utilities_processing = "nomad_battery_space.schema_packages:hzb_utilities_processing"
+
+changelog_dashboard = "nomad_battery_space.dashboards:changelog_dashboard"
+maintenance_dashboard = "nomad_battery_space.dashboards:maintenance_dashboard"
 
 [tool.cruft]
 # Avoid updating workflow files, this leads to permissions issues

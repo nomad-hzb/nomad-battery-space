@@ -1,0 +1,44 @@
+/* Fallbacks, used in 'tab' mode or if the parent is unreachable.
+   nomad-theme.js overrides them with the live NOMAD GUI theme. */
+:root {
+  --bg: #ffffff;
+  --text: #1a1a1a;
+  --primary: #2a4cdf;
+}
+body {
+  margin: 0;
+  padding: 16px;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+h1, a { color: var(--primary); }
+
+/* Rendered markdown */
+.markdown { max-width: 860px; line-height: 1.5; }
+.markdown h1 { margin-top: 0; }
+.markdown h2 {
+  margin-top: 2em;
+  padding-bottom: 0.2em;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 20%, transparent);
+}
+.markdown h3 { margin-top: 1.2em; font-size: 1.05em; }
+.markdown ul { padding-left: 1.4em; }
+.markdown li { margin: 0.2em 0; }
+.markdown code {
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+}
+footer {
+  margin-top: 2em;
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+.error { color: #c62828; }
+.markdown img { max-width: 100%; height: auto; }
+.markdown table { border-collapse: collapse; }
+.markdown th, .markdown td {
+  padding: 0.3em 0.6em;
+  border: 1px solid color-mix(in srgb, var(--text) 20%, transparent);
+}
