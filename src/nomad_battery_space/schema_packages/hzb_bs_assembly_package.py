@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     from nomad.datamodel.datamodel import EntryArchive
     from structlog.stdlib import BoundLogger
 
+from .categories import BatteryDataSpaceCategory
 from .hzb_bs_package import BatterySample
 
 m_package = SchemaPackage()
@@ -55,6 +56,7 @@ class CoinCellBattery(BatterySample):
     from the BatterySample base class.
     """
     m_def = Section(
+        categories=[BatteryDataSpaceCategory],
         links=['https://w3id.org/emmo/domain/battery#battery_b7fdab58_6e91_4c84_b097_b06eff86a124'],
         label="HZB Battery: Coin Cell",
         a_eln={

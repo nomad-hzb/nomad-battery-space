@@ -35,6 +35,8 @@ from nomad.datamodel.metainfo.basesections.v1 import (
 )
 from nomad.metainfo import Quantity, SchemaPackage, Section, SubSection
 
+from .categories import BatteryDataSpaceCategory
+
 m_package = SchemaPackage()
 
 
@@ -66,6 +68,7 @@ class BS_Measurement(BaseMeasurement, EntryData):
     """
 
     m_def = Section(
+        categories=[BatteryDataSpaceCategory],
         label='HZB Battery: Measurement',
         a_eln={
             'label': 'HZB Battery: Measurement',
