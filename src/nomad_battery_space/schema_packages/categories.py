@@ -6,7 +6,7 @@ are grouped under their own filter chip in the "Create entry" dialog.
 """
 
 from nomad.datamodel.data import EntryDataCategory
-from nomad.metainfo.metainfo import Category
+from nomad.metainfo import Category
 
 
 class BatteryDataSpaceCategory(EntryDataCategory):
