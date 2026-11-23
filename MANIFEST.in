@@ -1,3 +1,2 @@
 recursive-include * nomad_plugin.yaml
-#graft src/nomad-battery_space/example_uploads
 recursive-include src/nomad_battery_space/dashboards/static *
