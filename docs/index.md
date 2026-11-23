@@ -17,9 +17,10 @@ from, and cells can be searched by the chemical elements of their components.
 
 ### Tutorial
 
-Step-by-step guides for registering samples in the HZB NOMAD Oasis:
+The starting point for new users: how to document battery samples in the HZB NOMAD Oasis.
 
-- [Tutorial](tutorial/tutorial.md)
+- [Overview](tutorial/tutorial.md)
+- [Workflow](tutorial/workflow.md)
 
 </div>
 <div markdown="block">

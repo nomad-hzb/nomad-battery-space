@@ -7,7 +7,8 @@ types and the three sample types. For how they are connected, see
 All of these entry types are based on NOMAD's `ELNSubstance`. They share:
 
 - **name**: the name of the entry.
-- **lab ID**: a human-readable ID. Other entries can reference this entry by its lab ID.
+- **lab ID**: a human-readable ID. It is generated automatically when the entry is
+  created and can be overwritten. Other entries can reference this entry by its lab ID.
 - **substance identifiers**: further identifiers (collapsed by default).
 - **notes**: a free text field for anything not covered by the other fields, see [Notes](../reference/references.md#notes).
 

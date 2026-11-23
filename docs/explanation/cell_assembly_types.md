@@ -19,7 +19,7 @@ specialized type yet.
 
 | Field | Required | Description |
 |---|---|---|
-| **battery ID** (`lab_id`) | Yes | Human-readable ID of the cell, unique at least within the lab. |
+| **battery ID** (`lab_id`) | Yes | Human-readable ID of the cell, unique at least within the lab. Generated automatically when the entry is created, can be overwritten. |
 | **battery name** (`name`) | Yes | Name of the entry. |
 | **datetime** | | Date and time of assembly. |
 | **working electrode** | | The [Electrode Sample](component_types.md#electrode-sample) used as working electrode. |

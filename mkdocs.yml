@@ -9,8 +9,7 @@ nav:
   - Home: index.md
   - Tutorial: 
       - Overview: tutorial/tutorial.md
-      - Workflow...: tutorial/register_bat_sample.md
-      - Register Coin Cell Sample: tutorial/register_coin_cell.md
+      - Workflow: tutorial/workflow.md
   - How-to guides:
       - Install this Plugin: how_to/install_this_plugin.md
       - Use this Plugin: how_to/use_this_plugin.md
@@ -94,7 +93,7 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
 extra:
   generator: false
-  homepage: https://nomad-lab.eu
+  homepage: https://nomad-hzb-bat.helmholtz-berlin.de/nomad-oasis/
 use_directory_urls: false
 extra_css:
   - stylesheets/extra.css
