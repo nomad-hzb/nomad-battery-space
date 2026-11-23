@@ -20,6 +20,7 @@ _PAGE = """<!doctype html>
 <head>
   <meta charset="utf-8">
   <base target="_blank">
+  <meta name="referrer" content="no-referrer">
   <link rel="stylesheet" href="{base}/static/style.css">
   <script src="{base}/static/nomad-theme.js"></script>
 </head>
