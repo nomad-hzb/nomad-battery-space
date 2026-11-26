@@ -2,6 +2,21 @@ from nomad.datamodel.results import Material, Results
 from nomad.metainfo import Quantity
 
 
+def sync_entry_name(section, archive):
+    """
+    Sets the entry name to the section's name.
+
+    Workaround for NOMAD's BaseSection.normalize: if the raw file has no `name`
+    (e.g. right after "create entry" in the GUI), it sets `entry_name` to the file
+    name and derives `name` from it, but does not update `entry_name` afterwards.
+    The new GUI only saves changed fields, so the derived name never reaches the
+    raw file and the file name would stay the entry name in search, project
+    overview and reference selection. Call this after `super().normalize()`.
+    """
+    if archive.metadata is not None and archive.data is section and section.name:
+        archive.metadata.entry_name = section.name
+
+
 def copy_product_info(section, product_info, section_class, field_mapping):
     """
     Generic helper to copy product_info fields into a section.
