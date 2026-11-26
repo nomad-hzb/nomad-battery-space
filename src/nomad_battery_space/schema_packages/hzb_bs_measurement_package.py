@@ -36,6 +36,7 @@ from nomad.datamodel.metainfo.basesections.v1 import (
 from nomad.metainfo import Quantity, SchemaPackage, Section, SubSection
 
 from .categories import BatteryDataSpaceCategory
+from .utilities.helpers import sync_entry_name
 
 m_package = SchemaPackage()
 
@@ -107,6 +108,10 @@ class BS_Measurement(BaseMeasurement, EntryData):
         repeats=True,
         description='The samples measured in this measurement.',
     )
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
+        sync_entry_name(self, archive)
 
 
 m_package.__init_metainfo__()

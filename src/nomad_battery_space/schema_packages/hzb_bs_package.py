@@ -78,6 +78,7 @@ from .utilities import (
 from .utilities.helpers import (
     collect_and_store_elements,
     copy_product_info,
+    sync_entry_name,
     validate_required,
 )
 
@@ -146,6 +147,7 @@ class BS_Chemical(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+        sync_entry_name(self, archive)
 
 
 class BS_ChemicalReference(ArchiveSection):
@@ -482,6 +484,7 @@ class ElectrodeMaterial(ELNSubstance, ProcessedFromMixin):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+        sync_entry_name(self, archive)
 
         # Copy supplier/product values into the volume/mass section
         if self.product_info:
@@ -692,6 +695,7 @@ class ElectrodeSheet(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+        sync_entry_name(self, archive)
 
         # Copy supplier/product values into the volume/mass section
         if self.product_info:
@@ -828,6 +832,7 @@ class ElectrolyteStock(ELNSubstance, ProcessedFromMixin):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+        sync_entry_name(self, archive)
 
         # Copy supplier/product values into the volume/mass section
         if self.product_info:
@@ -954,6 +959,7 @@ class SeparatorStock(ELNSubstance, ProcessedFromMixin):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+        sync_entry_name(self, archive)
 
         # Copy supplier/product values into the volume/mass section
         if self.product_info:
@@ -1061,6 +1067,7 @@ class ElectrodeSample(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+        sync_entry_name(self, archive)
 
         # Copy supplier/product values into the volume/mass section
         if self.product_info:
@@ -1157,6 +1164,7 @@ class ElectrolyteSample(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+        sync_entry_name(self, archive)
 
         # Copy supplier/product values into the volume/mass section
         if self.product_info:
@@ -1242,6 +1250,7 @@ class SeparatorSample(ELNSubstance):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+        sync_entry_name(self, archive)
 
         # Copy supplier/product values into the volume/mass section
         if self.product_info:
@@ -1401,6 +1410,7 @@ class BatterySample(ELNSubstance):
 
     def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
         super().normalize(archive, logger)
+        sync_entry_name(self, archive)
 
         # Normalize all referenced battery components to ensure fresh data
         if self.working_electrode:
